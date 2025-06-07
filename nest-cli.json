@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true
+  },
+  "projects": {
+    "auth": {
+      "type": "library",
+      "root": "libs/auth",
+      "entryFile": "index",
+      "sourceRoot": "libs/auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/auth/tsconfig.lib.json"
+      }
+    },
+    "user": {
+      "type": "library",
+      "root": "libs/user",
+      "entryFile": "index",
+      "sourceRoot": "libs/user/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/user/tsconfig.lib.json"
+      }
+    },
+    "dto": {
+      "type": "library",
+      "root": "libs/shared/dto",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/dto/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/dto/tsconfig.lib.json"
+      }
+    },
+    "schema": {
+      "type": "library",
+      "root": "libs/shared/schema",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/schema/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/schema/tsconfig.lib.json"
+      }
+    },
+    "service": {
+      "type": "library",
+      "root": "libs/shared/service",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/service/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/service/tsconfig.lib.json"
+      }
+    },
+    "strategy": {
+      "type": "library",
+      "root": "libs/shared/strategy",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/strategy/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/strategy/tsconfig.lib.json"
+      }
+    },
+    "guard": {
+      "type": "library",
+      "root": "libs/shared/guard",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/guard/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/guard/tsconfig.lib.json"
+      }
+    },
+    "enum": {
+      "type": "library",
+      "root": "libs/shared/enum",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/enum/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/enum/tsconfig.lib.json"
+      }
+    },
+    "decorator": {
+      "type": "library",
+      "root": "libs/shared/decorator",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/decorator/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/decorator/tsconfig.lib.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@app/auth": [
+        "libs/auth/src"
+      ],
+      "@app/auth/*": [
+        "libs/auth/src/*"
+      ],
+      "@app/user": [
+        "libs/user/src"
+      ],
+      "@app/user/*": [
+        "libs/user/src/*"
+      ],
+      "@app/dto": [
+        "libs/shared/dto/src"
+      ],
+      "@app/dto/*": [
+        "libs/shared/dto/src/*"
+      ],
+      "@app/schema": [
+        "libs/shared/schema/src"
+      ],
+      "@app/schema/*": [
+        "libs/shared/schema/src/*"
+      ],
+      "@app/service": [
+        "libs/shared/service/src"
+      ],
+      "@app/service/*": [
+        "libs/shared/service/src/*"
+      ],
+      "@app/strategy": [
+        "libs/shared/strategy/src"
+      ],
+      "@app/strategy/*": [
+        "libs/shared/strategy/src/*"
+      ],
+      "@app/guard": [
+        "libs/shared/guard/src"
+      ],
+      "@app/guard/*": [
+        "libs/shared/guard/src/*"
+      ],
+      "@app/enum": [
+        "libs/shared/enum/src"
+      ],
+      "@app/enum/*": [
+        "libs/shared/enum/src/*"
+      ],
+      "@app/decorator": [
+        "libs/shared/decorator/src"
+      ],
+      "@app/decorator/*": [
+        "libs/shared/decorator/src/*"
+      ],
+      "@app/ride": [
+        "libs/ride/src"
+      ],
+      "@app/ride/*": [
+        "libs/ride/src/*"
+      ],
+      "@app/admin": [
+        "libs/admin/src"
+      ],
+      "@app/admin/*": [
+        "libs/admin/src/*"
+      ],
+      "@app/fee": [
+        "libs/fee/src"
+      ],
+      "@app/fee/*": [
+        "libs/fee/src/*"
+      ],
+      "@app/chat": [
+        "libs/chat/src"
+      ],
+      "@app/chat/*": [
+        "libs/chat/src/*"
+      ],
+      "@app/ad": [
+        "libs/ad/src"
+      ],
+      "@app/ad/*": [
+        "libs/ad/src/*"
+      ],
+      "@app/dispute": [
+        "libs/dispute/src"
+      ],
+      "@app/dispute/*": [
+        "libs/dispute/src/*"
+      ],
+      "@app/promo": [
+        "libs/promo/src"
+      ],
+      "@app/promo/*": [
+        "libs/promo/src/*"
+      ],
+      "@app/dispute-type": [
+        "libs/dispute-type/src"
+      ],
+      "@app/dispute-type/*": [
+        "libs/dispute-type/src/*"
+      ],
+      "@app/wallet": [
+        "libs/wallet/src"
+      ],
+      "@app/wallet/*": [
+        "libs/wallet/src/*"
+      ],
+      "@app/state": [
+        "libs/state/src"
+      ],
+      "@app/state/*": [
+        "libs/state/src/*"
+      ],
+      "@app/country": [
+        "libs/country/src"
+      ],
+      "@app/country/*": [
+        "libs/country/src/*"
+      ],
+      "@app/shared/json": [
+        "libs/shared/json/src"
+      ],
+      "@app/shared/json/*": [
+        "libs/shared/json/src/*"
+      ]
+    }
+  }
+}

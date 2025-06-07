@@ -1,0 +1,609 @@
+import {
+    Injectable,
+    NotAcceptableException,
+    NotFoundException,
+    UnauthorizedException,
+  } from "@nestjs/common";
+  
+  import * as bcrypt from "bcrypt";
+  import { InjectModel } from "@nestjs/mongoose";
+  import {
+    UserModel,
+    UserDoc,
+    AuthenticatorModel,
+    AuthenticatorDoc,
+    OTPDoc,
+    OTPModel,
+    AssignRoleModel,
+    AssignRoleDoc,
+    FeeDoc,
+    FeeModel,
+  } from "@app/schema";
+  import { Model } from "mongoose";
+  
+  import { JwtService } from "@nestjs/jwt";
+  
+  import { authenticator } from "otplib";
+  
+  import { MailerService } from "@nestjs-modules/mailer";
+  
+  import {
+    ObjectReturnType,
+    PaystackService,
+    SendMailService,
+  } from "@app/service";
+  import { OTPDTO, PayStackUserDTO, UserDTO } from "@app/dto";
+  import { WalletModel, WalletDoc } from "@app/schema/shared/waller.schema";
+  import { FeeCategory } from "@app/enum";
+  import { SmsService } from "@app/service/shared/sms.service";
+  import { FlutterwaveService } from "@app/service/shared/payment/flutterwave";
+  
+  @Injectable()
+  export class AuthService {
+    constructor(
+      private readonly mailService: MailerService,
+      @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
+      @InjectModel(FeeModel.name) private feeModel: Model<FeeDoc>,
+      private paystackService: PaystackService,
+      @InjectModel(OTPModel.name) private otpModel: Model<OTPDoc>,
+      @InjectModel(AssignRoleModel.name)
+      private assignRoleModel: Model<AssignRoleDoc>,
+      @InjectModel(WalletModel.name) private walletModel: Model<WalletDoc>,
+      @InjectModel(AuthenticatorModel.name)
+      private authenticatorModel: Model<AuthenticatorDoc>,
+      private jwtService: JwtService,
+      private flutterwaveService: FlutterwaveService,
+      private smsService: SmsService,
+      private sendMailService: SendMailService
+    ) {}
+  
+    async register(users: UserDTO): Promise<any> {
+      try {
+        let checkUserRefId;
+  
+        if (users.useRefCode) {
+          const user = await this.userModel.findOne({
+            refCode: users.useRefCode,
+          });
+  
+          if (!user) {
+            throw new NotFoundException("Referral code not found");
+          }
+          checkUserRefId = user._id.toString();
+        }
+  
+        const fee = await this.feeModel.findOne({
+          category: FeeCategory.REFFERALPRICE,
+        });
+  
+        let referral = {
+          refCode: users.refCode,
+          refBy: checkUserRefId,
+          amount: fee?.fee,
+          max: fee?.maxAmount,
+        };
+        const created = await this.userModel.create({
+          ...users,
+          refBy: checkUserRefId,
+          referral,
+        });
+  
+        const data = await this.otpModel.create({
+          userID: created._id,
+          type: "EmailVerification",
+        });
+        const message = await this.smsService.generateMessage(
+          data.toJSON() as any
+        );
+  
+        this.sendMailService.sendMail({
+          to: created.email,
+          subject: "Email Code Verification",
+          text: message,
+        });
+  
+        this.flutterwaveService.createVirtualAccount({
+          account_name: created.fullname,
+          email: created.email,
+          mobilenumber: created.phone,
+        });
+  
+        return {
+          message:
+            "Registration successful, Please Proceed to Email Verification",
+          userID: created._id,
+        };
+      } catch (error) {
+        throw new NotAcceptableException(error.message);
+      }
+    }
+  
+    async login(username: string, password: string): Promise<any> {
+      const user = await this.userModel
+        .findOne({ email: username })
+        .select(["email", "username", "id", "password", "userType"]);
+      if (user) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        console.log(isMatch, password);
+        if (isMatch) {
+          const payload = {
+            sub: user._id,
+            username: user.username,
+            email: user.email,
+          };
+  
+          const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
+          const refresh_token = this.jwtService.sign(payload, {
+            expiresIn: "30d",
+          });
+          return {
+            message: "Login successful",
+            status: true,
+            data: user,
+            access_token,
+            refresh_token,
+          };
+        }
+        throw new UnauthorizedException("Invalid Credentials");
+      }
+  
+      throw new NotFoundException("No User Found");
+    }
+  
+    async editProfile(body: UserDTO, userID: string) {
+      delete body.email;
+      delete body.id;
+      delete body.isAdmin;
+      delete body.isSuperAdmin;
+      delete body.status;
+      delete body.password;
+      delete body.roles;
+      const user = await this.userModel.findByIdAndUpdate(userID, body, {
+        new: true,
+      });
+      return {
+        message: "User profile updated",
+        data: user, // You may want to implement rotation here
+      };
+    }
+  
+    //add and remove bank details
+    async addBankAccount(userID: string, bankAccount: any) {
+      const user = await this.userModel.findById(userID);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+  
+      user.bankAccount.push(bankAccount);
+  
+      await user.save();
+      return {
+        message: "Bank account added",
+        data: user.bankAccount,
+      };
+    }
+  
+    async removeBankAccount(userID: string, accountNumber: string) {
+      const user = await this.userModel.findById(userID);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+      if (!user.bankAccount) {
+        throw new NotFoundException("No bank account found");
+      }
+      const index = user.bankAccount.findIndex(
+        (account) => account.accountNumber === accountNumber
+      );
+      if (index === -1) {
+        throw new NotFoundException("Bank account not found");
+      }
+      user.bankAccount.splice(index, 1);
+      await user.save();
+      return {
+        message: "Bank account removed",
+        data: user.bankAccount,
+      };
+    }
+  
+    async refreshToken(token: string) {
+      console.log(token);
+      const payload = this.jwtService.verify(token);
+      if (!payload) {
+        throw new UnauthorizedException("Invalid refresh token");
+      }
+      const user = await this.userModel.findById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException("User not found");
+      }
+  
+      const payload1 = {
+        sub: user._id,
+        username: user.username,
+        email: user.email,
+      };
+      const newAccessToken = this.jwtService.sign(payload1, { expiresIn: "1d" });
+      const refresh_token = this.jwtService.sign(payload1, {
+        expiresIn: "30d",
+      });
+      return {
+        access_token: newAccessToken,
+        refresh_token, // You may want to implement rotation here
+      };
+    }
+    async ssoGoogle(req: any): Promise<any> {
+      const user = await this.userModel.findOne({ email: req.user.email });
+  
+      if (user) {
+        const payload = {
+          sub: user._id,
+          username: user.username,
+          email: user.email,
+        };
+        const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
+        const refresh_token = this.jwtService.sign(payload, {
+          expiresIn: "100d",
+        });
+        const organization = await this.assignRoleModel
+          .find({ users: user._id.toString() })
+          .select("description users organizationID name permissions")
+          .populate({
+            path: "organizationID", // This is the field to populate
+            select: "name", // Select only the 'name' field from the related organization
+          });
+        const seenOrganizations = new Set();
+        const filteredData = organization.filter((item: any) => {
+          const orgID = item.organizationID._id;
+          if (seenOrganizations.has(orgID)) {
+            return false;
+          }
+          seenOrganizations.add(orgID);
+          return true;
+        });
+        return {
+          message: "Login successful",
+          data: user,
+          access_token,
+          refresh_token,
+          roles: filteredData,
+        };
+      } else {
+        const created = await this.userModel.create({
+          ...req.user,
+          username: req.user.email,
+          password: "",
+        });
+  
+        const payload = {
+          sub: created._id,
+          username: created.username,
+          email: created.email,
+        };
+        const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
+        const refresh_token = this.jwtService.sign(payload, {
+          expiresIn: "100d",
+        });
+        return {
+          message: "Registration successful",
+          data: created,
+          access_token,
+          refresh_token,
+        };
+      }
+    }
+  
+    async ssoFacebook(req: any): Promise<any> {
+      const user = await this.userModel.findOne({ email: req.user.email });
+  
+      if (user) {
+        const payload = {
+          sub: user._id,
+          username: user.username,
+          email: user.email,
+        };
+        const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
+        const refresh_token = this.jwtService.sign(payload, {
+          expiresIn: "100d",
+        });
+        const organization = await this.assignRoleModel
+          .find({ users: user._id.toString() })
+          .select("description users organizationID name permissions")
+          .populate({
+            path: "organizationID", // This is the field to populate
+            select: "name", // Select only the 'name' field from the related organization
+          });
+        const seenOrganizations = new Set();
+        const filteredData = organization.filter((item: any) => {
+          const orgID = item.organizationID._id;
+          if (seenOrganizations.has(orgID)) {
+            return false;
+          }
+          seenOrganizations.add(orgID);
+          return true;
+        });
+        return {
+          message: "Login successful",
+          data: user,
+          access_token,
+          refresh_token,
+          roles: filteredData,
+        };
+      } else {
+        const created = await this.userModel.create({
+          ...req.user,
+          username: req.user.email,
+          password: "",
+        });
+  
+        const payload = {
+          sub: created._id,
+          username: created.username,
+          email: created.email,
+        };
+        const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
+        const refresh_token = this.jwtService.sign(payload, {
+          expiresIn: "100d",
+        });
+        return {
+          message: "Registration successful",
+          data: created,
+          access_token,
+          refresh_token,
+        };
+      }
+    }
+  
+    async twoFactorAuthenticationLogin(body: any): Promise<any> {
+      let isValid = false;
+      if (body.token) {
+        const secret = await this.authenticatorModel.findOne({
+          userID: body.userID,
+        });
+  
+        if (!secret) {
+          throw new NotFoundException("User has not set authenticator");
+        }
+  
+        isValid = authenticator.check(body.token, secret.secret);
+      }
+      const code = await this.otpModel.findOne({
+        code: body.code,
+        type: body.type,
+      });
+  
+      isValid = code ? true : isValid;
+  
+      if (!isValid) {
+        throw new NotFoundException("Code not found or expired");
+      }
+      const user = await this.userModel.findByIdAndUpdate(
+        body.userID,
+        {
+          emailStatus: "verified",
+        },
+        { new: true }
+      );
+      const payload = {
+        sub: user._id,
+        username: user.username,
+        email: user.email,
+      };
+  
+      const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
+      const refresh_token = this.jwtService.sign(payload, {
+        expiresIn: "100d",
+      });
+      if (code) {
+        await this.otpModel.findByIdAndDelete(code._id);
+      }
+      //   const organization = await this.assignRoleModel
+      //   .find({ users: user._id.toString() })
+      //   .select('description users organizationID name permissions')
+      //   .populate({
+      //     path: 'organizationID', // This is the field to populate
+      //     select: 'name', // Select only the 'name' field from the related organization
+      //   });
+  
+      // const seenOrganizations = new Set();
+      // const filteredData = organization.filter((item: any) => {
+      //   const orgID = item.organizationID._id;
+      //   if (seenOrganizations.has(orgID)) {
+      //     return false;
+      //   }
+      //   seenOrganizations.add(orgID);
+      //   return true;
+      // });
+  
+      return {
+        message: "Login successful",
+        data: user,
+        status: true,
+        access_token,
+        refresh_token,
+        // roles:filteredData
+      };
+    }
+  
+    async sendTwoFactorAuthenticationMail(body: any): Promise<any> {
+      const user = await this.userModel.findOne({
+        $or: [{ _id: body.userID }, { email: body.email || body.userID }],
+      });
+      if (!user) {
+        throw new NotFoundException("No User Found");
+      }
+  
+      const data = await this.otpModel.create({
+        userID: user._id.toString(),
+        type: body.type,
+      });
+      const message = await this.smsService.generateMessage(data.toJSON() as any);
+  
+      this.sendMailService.sendMail({
+        to: user.email,
+        subject: body.type,
+        text: message,
+      });
+  
+      return {
+        message: "Code sent",
+        data,
+      };
+    }
+  
+    async sendTwoFactorAuthenticationSms(body: any): Promise<any> {
+      const user = await this.userModel.findOne({
+        $or: [{ _id: body.userID }, { email: body.email || body.userID }],
+      });
+      if (!user) {
+        throw new NotFoundException("No User Found");
+      }
+  
+      const data = await this.otpModel.create({
+        userID: user._id.toString(),
+        type: body.type,
+      });
+  
+      const message = await this.smsService.generateMessage(data.toJSON() as any);
+  
+      this.smsService.sendSingleSMS(user.phone, message);
+  
+      return {
+        message: "Code sent",
+        data,
+      };
+    }
+  
+    async setTwoFactorAuthenticator(body: any): Promise<any> {
+      const isValid = authenticator.check(body.code, body.secret);
+      if (!isValid) {
+        throw new UnauthorizedException("Invalid Token");
+      }
+  
+      const data = await this.authenticatorModel.create({
+        userID: body.userID,
+        secret: body.secret,
+      });
+      const user = await this.userModel.findById(body.userID);
+  
+      this.sendMailService.sendMail({
+        to: user.email,
+        subject: "Two Factor Authenticator",
+        text: `${body.secret}`,
+      });
+      return {
+        message: "authenticator set",
+        data,
+      };
+    }
+  
+    async changePassword(
+      userID: string,
+      currentPassword: string,
+      newPassword: string
+    ): Promise<any> {
+      // Step 1: Find the user by their user ID
+      const user = await this.userModel.findById(userID);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+  
+      // Step 2: Check if the current password matches the one in the database
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        throw new UnauthorizedException("Current password is incorrect");
+      }
+  
+      const salt = await bcrypt.genSalt();
+      // Step 3: Hash the new password before saving it
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+      await this.userModel.findByIdAndUpdate(userID, {
+        password: hashedPassword,
+      });
+  
+      return {
+        message: "Password successfully updated",
+      };
+    }
+  
+    async deleteAccount(
+      userID: string,
+      email: string,
+      reason: string
+    ): Promise<any> {
+      const user = await this.userModel.findOne({ email });
+  
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+  
+      if (user._id.toString() !== userID) {
+        throw new NotAcceptableException(
+          "You are not allowed to delete this account"
+        );
+      }
+      await this.userModel.findByIdAndDelete(userID);
+      return {
+        message: "Account successfully deleted",
+        status: true,
+      };
+    }
+  
+    async forgotPassword(
+      token: string,
+      code: string,
+      newPassword: string
+    ): Promise<any> {
+      let isValid = false;
+      // if (token) {
+      //   const secret = await this.authenticatorModel.findOne({
+      //     userID: userID,
+      //   });
+  
+      //   if (!secret) {
+      //     throw new NotFoundException('User has not set authenticator');
+      //   }
+  
+      //   isValid = authenticator.check(token, secret.secret);
+      // }
+      const checkCode = await this.otpModel.findOne({
+        code: code,
+        type: "PasswordReset",
+      });
+  
+      isValid = checkCode ? true : isValid;
+  
+      if (!isValid) {
+        throw new NotFoundException("Code not found or expired");
+      }
+  
+      // Step 1: Find the user by their user ID
+      const user = await this.userModel.findById(checkCode.userID);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+      const salt = await bcrypt.genSalt();
+      // Step 3: Hash the new password before saving it
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+  
+      await this.userModel.findByIdAndUpdate(checkCode.userID, {
+        password: hashedPassword,
+      });
+      return {
+        message: "Password successfully updated",
+      };
+    }
+  
+    //Single-step account assignment
+    async singleStepAccountAssignment(userData: PayStackUserDTO) {
+      const data = await this.paystackService.singleStepAccountAssignment(
+        userData,
+        userData.preferred_bank
+      );
+  
+      console.log(data);
+    }
+  }
+  
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+  
