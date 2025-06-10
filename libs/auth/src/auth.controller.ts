@@ -20,7 +20,7 @@ import { JwtAuthGuard, LocalAuthGuard } from '@app/guard';
 
   class RegisterDTO extends PickType(
     UserDTO,
-    ['title','useRefCode','firstname' , 'fullname' , 'lastname' , 'email' , 'password' ,  'gender' , 'phone' , 'residentialAddress']
+    ['title','isAdmin','isSuperAdmin', 'userType','useRefCode','firstname' , 'fullname' , 'lastname' , 'email' , 'password' ,  'gender' , 'phone' , 'residentialAddress']
 ) {}
 
 @ApiBearerAuth('access-token')
