@@ -1,4 +1,4 @@
-import { Role } from '@app/enum';
+import { Gender, Role } from '@app/enum';
 import { UserType } from '@app/enum/shared/ride.enum';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -11,23 +11,6 @@ export class UserIDDTO {
   type: string;
 }
 
-export class LocationDTO {
-  @ApiProperty({ description: 'Address' })
-  address: string;
-  @ApiProperty({ description: 'longitude' })
-  long: string;
-  @ApiProperty({ description: 'langitude' })
-  lag: string;
-}
-
-export class VehicleDTO {
-  @ApiProperty({ description: 'Vehicle name' })
-  name: string;
-  @ApiProperty({ description: 'Model name' })
-  model: string;
-  @ApiProperty({ description: 'Model name' })
-  number: string;
-}
 
 export class BankAccountDTO {
   @ApiProperty({ description: 'Bank name' })
@@ -68,7 +51,28 @@ export class SetAuthenticatorDto {
   @ApiProperty({ description: 'secret' })
   secret: String;
 }
+export class NextOfKinDTO {
+  @ApiProperty({ description: 'Title of next of kin', enum: ['Mr.', 'Mrs.', 'Ms.', 'Dr.'] })
+  title: string;
 
+  @ApiProperty({ description: 'First name of next of kin' })
+  firstName: string;
+
+  @ApiProperty({ description: 'Last name of next of kin' })
+  lastName: string;
+
+  @ApiProperty({ description: 'Relationship to next of kin' })
+  relationship: string;
+
+  @ApiProperty({ description: 'Gender of next of kin', enum: ['male', 'female', 'other'] })
+  gender: string;
+
+  @ApiProperty({ description: 'Phone number of next of kin', example: '08000000000' })
+  phoneNumber: string;
+
+  @ApiProperty({ description: 'Residential address of next of kin' })
+  residentialAddress: string;
+}
 export class VerifyAuthenticationDto {
   @ApiProperty({ description: 'user_id' })
   userID: String;
@@ -79,89 +83,74 @@ export class VerifyAuthenticationDto {
   @ApiProperty({ description: 'Type of OTP' })
   type: string;
 }
+export class BankStatementDTO {
+  @ApiProperty({ description: 'Document URL for the bank statement' })
+  documentUrl: string;
+
+  @ApiProperty({ description: 'Month and year of the statement', example: '2023-01' })
+  statementDate: string;
+
+  @ApiProperty({ description: 'Status of document verification', enum: ['pending', 'verified', 'rejected'], default: 'pending' })
+  status: string;
+
+  @ApiProperty({ description: 'Upload date of the statement' })
+  uploadedAt: Date;
+}
 export class VerificationsDTO {
-  @ApiProperty({
-    description: 'National Identification Number (NIN)',
-    example: '012345678900',
-    required: false,
-  })
-  nin?: string;
+  @ApiProperty({ description: 'Type of ID document', enum: ['passport', 'drivers_license', 'national_id', 'voter_card'] })
+  idType: string;
+  @ApiProperty({ description: 'ID document number' })
+  idNumber: string;
 
-  @ApiProperty({
-    description: 'URL of the uploaded NIN Slip/Card',
-    example: 'https://example.com/nin.jpg',
-    required: false,
-  })
-  ninDocument?: string;
+  @ApiProperty({ description: 'Date when ID was issued', example: '2020-01-01' })
+  issueDate: Date;
 
-  @ApiProperty({
-    description: 'Driver’s License Number',
-    example: 'A123456789',
-    required: false,
-  })
-  driverLicense?: string;
+  @ApiProperty({ description: 'Date when ID expires', example: '2025-01-01' })
+  expiryDate: Date;
 
-  @ApiProperty({
-    description: 'URL of the uploaded Driver’s License',
-    example: 'https://example.com/license.jpg',
-    required: false,
-  })
-  driverLicenseDocument?: string;
+  @ApiProperty({ description: 'Bank verification number' })
+  bvn: string;
 
-  @ApiProperty({
-    description: 'Utility Bill Number',
-    example: '987654321',
-    required: false,
-  })
-  utilityBillNumber?: string;
+  @ApiProperty({ description: 'Status of verification', enum: ['pending', 'verified', 'rejected'], default: 'pending' })
+  status: string;
 
-  @ApiProperty({
-    description: 'URL of the uploaded Utility Bill',
-    example: 'https://example.com/utility.jpg',
-    required: false,
-  })
-  utilityBillDocument?: string;
+  @ApiProperty({ description: 'URL to uploaded ID document image', required: false })
+  documentUrl?: string;
 
-  @ApiProperty({ description: 'Rejection Reason' })
-  rejectionReason?: string;
+  @ApiProperty({ description: 'Additional verification notes', required: false })
+  notes?: string;
 
-  @ApiProperty({
-    description: 'statusNinDocument',
-    enum: ['pending', 'verified', 'rejected'],
-    default: 'pending',
-  })
-  statusNinDocument?: 'pending' | 'verified' | 'rejected';
+  @ApiProperty({ description: 'Date when verification was completed', required: false })
+  verifiedAt?: Date;
 
-  @ApiProperty({
-    description: 'statusUtilityBill',
-    enum: ['pending', 'verified', 'rejected'],
-    default: 'pending',
-  })
-  statusUtilityBill?: 'pending' | 'verified' | 'rejected';
+  @ApiProperty({ description: 'Next of kin information' })
+  nextOfKin: NextOfKinDTO;
 
-  @ApiProperty({
-    description: 'statusDriverLicense',
-    enum: ['pending', 'verified', 'rejected'],
-    default: 'pending',
+  @ApiProperty({ description: 'Whether KYC verification is complete', default: false })
+  isKycComplete?: boolean;
+
+  @ApiProperty({ description: 'Date when KYC was completed', required: false })
+  kycCompletedAt?: Date;
+
+  @ApiProperty({ description: 'KYC verification level', enum: ['level1', 'level2', 'level3'], default: 'level1' })
+  kycLevel?: string;
+
+  @ApiProperty({ 
+    description: 'Bank statements for the last 6 months',
+    type: [BankStatementDTO],
+    required: false
   })
-  statusDriverLicense?: 'pending' | 'verified' | 'rejected';
+  bankStatements?: BankStatementDTO[];
+
+  @ApiProperty({ description: 'Total number of bank statements uploaded', minimum: 0, maximum: 6 })
+  totalBankStatements?: number;
 }
 export class RefreshTokenDTO {
   @ApiProperty({ description: 'refresh_token:' })
   refresh_token: String;
 }
 
-export class UpdateVerificationStatusDTO {
-  
-  @ApiProperty({ description: 'user_id' })
-  userID: string;
-  @ApiProperty({ description: 'verification type' ,example:'NinDocument' ,enum: ['NinDocument', 'UtilityBill', 'DriverLicense']})
-  verificationType: string;
-  @ApiProperty({ description: 'status' })
-  status: string;
-  @ApiProperty({ description: 'rejection reason' })
-  rejectionReason?: string;
-}
+
 
 export class Refferal {
   @ApiProperty({ description: 'referral code' })
@@ -175,39 +164,7 @@ export class Refferal {
   amount: number;
 }
 
-export class PayStackUserDTO {
-  @ApiProperty({ description: 'user_id' })
-  userID: string;
-  @ApiProperty({ description: 'email',example:"janedoe@test.com" })
-  email: string;
-  @ApiProperty({ description: 'first_name' ,example:"Jane" })
-  first_name: string;
-  @ApiProperty({ description: 'middle_name',example:"Karen" })
-  middle_name: string;
-  @ApiProperty({ description: 'last_name',example:"Doe" })
-  last_name: string;
-  @ApiProperty({ description: 'phone', example: '+2348100000000' })
-  phone: string;
-  @ApiProperty({ description: 'preferred_bank' ,example: 'test-bank'})
-  preferred_bank: string;
-  @ApiProperty({ description: 'country', example: 'NG' })
-  country: string;
 
-
-  // @ApiProperty({ description: 'account_number', example: '1234567890' })
-  // account_number: string; 
-  // @ApiProperty({ description: 'account_name', example: 'Jane Doe' })
-  // account_name: string;
-  // @ApiProperty({ description: 'bank_name', example: 'Test Bank' })
-  // bank_name: string;
-  // @ApiProperty({ description: 'bank_code', example: '123' })
-  // bank_code: string;
-  // @ApiProperty({ description: 'customer_code', example: '123456' })
-  // customer_code: string;
-  // @ApiProperty({ description: 'amount', example: '10000' })
-  // amount: number;
-
-}
 
 export class UserDTO {
   @ApiProperty({
@@ -216,8 +173,11 @@ export class UserDTO {
   })
   _id?: string;
 
-  @ApiProperty({ description: 'User ID', example: '12345', required: false })
+    @ApiProperty({ description: 'User ID', example: '12345', required: false })
   id: string;
+
+  @ApiProperty({ description: 'title', example: 'mr', required: false })
+  title: string;
   @ApiProperty({ description: 'One signal Player ID', example: 'player123', required: false })
   playerId?: string;
   @ApiProperty({
@@ -232,7 +192,7 @@ export class UserDTO {
 
   status?: string;
 
-  territory?: string;
+ 
 
   emailStatus?: string;
 
@@ -244,9 +204,17 @@ export class UserDTO {
 
   @ApiProperty({ description: 'Full name of the user', example: 'John Doe' })
   fullname: string;
-
-  organizationID: string;
-
+  @ApiProperty({ description: 'First name of the user', example: 'John ' })
+  firstname: string;
+  @ApiProperty({ description: 'Last name of the user', example: 'Doe' })
+  lastname: string;
+  @ApiProperty({
+    description: 'Gender of the user',
+    enum: Gender,
+    example: 'male',
+  })
+gender: string;
+ 
   @ApiProperty({
     description: 'Phone number of the user',
     example: '+1234567890',
@@ -259,12 +227,7 @@ export class UserDTO {
     @ApiProperty({ description: 'use a user ref code for referral ', example: 'jo9e2' })
   useRefCode?: string;
 
-  @ApiProperty({
-    description: 'Roles assigned to the user',
-    type: [String], // Assuming roles are strings; adjust if using a specific enum type
-    example: ['admin', 'user'],
-  })
-  roles?: String[];
+
 
   @ApiProperty({
     description: 'Profile image URL',
@@ -284,6 +247,12 @@ export class UserDTO {
   })
   isSuperAdmin?: boolean;
 
+  @ApiProperty({
+    description: 'Date of birth of the user',
+    example: '1990-01-01T00:00:00.000Z',
+    type: Date,
+  })
+  dob?: Date;
   // Voter Location
   @ApiProperty({ example: 'California' })
   state?: string;
@@ -294,8 +263,8 @@ export class UserDTO {
   @ApiProperty({ example: 'Los Angeles County', required: false })
   localGovernmentArea?: string;
 
-  @ApiProperty({ example: '90001' })
-  postalCode?: string;
+  @ApiProperty({  example: 'single', enum:['single','married'], required: false })
+  maritalStatus?: string;
 
   @ApiProperty({
     description:
@@ -305,25 +274,13 @@ export class UserDTO {
   })
   socialMediaProfile?: Record<string, string>;
 
-  @ApiProperty({
-    description: 'User location details',
-    example: {
-      address: '123 Main St, Los Angeles, CA',
-      long: '-118.2437',
-      lag: '34.0522',
-    },
-  })
-  location?: LocationDTO;
 
   @ApiProperty({
-    description: 'Vehicle information',
-    example: {
-      name: 'Toyota Camry',
-      model: '2019',
-      number: 'XYZ-1234',
-    },
+    description: 'Residential address of the user',
+    example: '123 Main St, Springfield, USA',
+    required: false,
   })
-  vehicle?: VehicleDTO;
+  residentialAddress?: string;
 
   @ApiProperty({
     description: 'Bank account information',
@@ -340,23 +297,11 @@ export class UserDTO {
   @ApiProperty({
     description: 'User verification details',
     type: VerificationsDTO,
-    example: {
-      nin: '012345678900',
-      ninDocument: 'https://example.com/nin.jpg',
-      driverLicense: 'A123456789',
-      driverLicenseDocument: 'https://example.com/license.jpg',
-      utilityBillNumber: '987654321',
-      utilityBillDocument: 'https://example.com/utility.jpg',
-      statusNinDocument: 'pending',
-      statusUtilityBill: 'pending',
-      statusDriverLicense: 'pending',
-      rejectionReason: 'Invalid document',
-    },
+    example: VerificationsDTO,
   })
   verifications?: VerificationsDTO;
 
-  @ApiProperty({ description: 'referral code' })
-  refCode: string;
+
 
   @ApiProperty({ description: 'referral details' })
   referral: Refferal;
@@ -364,3 +309,5 @@ export class UserDTO {
   @ApiProperty({ description: 'referral by' })
   refBy: string;
 }
+
+

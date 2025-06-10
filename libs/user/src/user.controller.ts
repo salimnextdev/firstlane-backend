@@ -27,7 +27,7 @@ import { Action } from '@app/enum';
 import { UserModel } from '@app/schema';
 
 
-import { UpdateVerificationStatusDTO, UserDTO } from '@app/dto';
+import {  UserDTO } from '@app/dto';
 import { UserService } from './user.service';
 import { NotificationService } from '@app/service';
 
@@ -189,20 +189,7 @@ export class UserController {
   }
 
 
-  @Patch(':userId/status')
-  @ApiBody({
-    type: UpdateVerificationStatusDTO,
-    description: 'Updating existing users',
-  })
-    @ApiOperation({ summary: 'Admin Update user verification status' })
-    @ApiResponse({ status: 200, description: 'User verification status updated' })
-    async updateVerificationStatus(
-        @Param('userId') userId: string,
-        @Body() status: UpdateVerificationStatusDTO,
-        
-    ) {
-        return this.userService.updateVerificationStatus(status);
-    }
+
 
     @Get('notification/by-any/:key/:value')
     @ApiOperation({ summary: 'Find a user notification by any key-value pair' })
@@ -240,37 +227,7 @@ export class UserController {
       return this.userService.getAllUserRefList(id);
     }
     
-    //rating 
-    @Get('rating/:id')
-    @UseGuards(JwtAuthGuard)
-    @ApiParam({ name: '_id', description: 'The _id of the user', type: String })
-    @ApiOperation({ summary: 'Get user rating' })
-    async getUserRating(@Param('id') id:string) {
-      return this.userService.getUserRating(id);
-    }
     
-    
-    //get rating
-    @Get('rating')
-    @UseGuards(JwtAuthGuard)
-    @ApiOperation({ summary: 'Get all user rating' })
-    @ApiQuery({
-      name: 'limit',
-      required: false,
-      description: 'Number of users to return',
-      type: Number,
-    })
-    @ApiQuery({      name: 'state',
-      required: true,
-      description: 'state of the rider',
-      type: String,
-    })
-  
-    
-    async getAllUserRating(@Query() query: any) {
-      return this.userService.getRidersByRating(query);
-    }
-
     //markAllUserNotificationAsRead
     @Patch('notification/mark-all-as-read')
     @UseGuards(JwtAuthGuard)

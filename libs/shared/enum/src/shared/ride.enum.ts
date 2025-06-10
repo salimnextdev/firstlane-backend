@@ -26,17 +26,8 @@ export enum UserType {
   ADMIN = 'admin',
 }
 
-export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  OTHER = 'other',
-}
 
-export enum VerificationStatus {
-  PENDING = 'pending',
-  VERIFIED = 'verified',
-  REJECTED = 'rejected',
-}
+
 
 
 export enum NotificationType {

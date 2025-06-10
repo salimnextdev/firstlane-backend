@@ -37,7 +37,7 @@ async function bootstrap() {
   await app.startAllMicroservices();
 
   const configSwag = new DocumentBuilder()
-    .setTitle("Go veloox System")
+    .setTitle("Firstlane System")
     .setDescription(
       `
 Authentication tokens information:

@@ -13,14 +13,17 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard, JwtAuthGuard } from '@app/guard';
 import { AuthGuard } from '@nestjs/passport';
 import { randomUUID } from 'crypto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, PickType } from '@nestjs/swagger';
 import { BankAccountDTO, DeleteAccountDTO, ForgotPasswordDTO, LoginDTO } from '@app/dto';
 import { ChangePasswordDTO, RefreshTokenDTO, SetAuthenticatorDto, UserDTO, UserIDDTO, VerifyAuthenticationDto } from '@app/dto';
 
-  
+  class RegisterDTO extends PickType(
+    UserDTO,
+    ['title','useRefCode','firstname' , 'fullname' , 'lastname' , 'email' , 'password' ,  'gender' , 'phone' , 'residentialAddress']
+) {}
 
 @ApiBearerAuth('access-token')
-@ApiTags('authencation')
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -28,12 +31,12 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({
-    type:UserDTO,
+    type: RegisterDTO,
     description: 'User details for creating a new user',
   })
   @ApiResponse({ status: 201, description: 'User registered successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
-  register(@Body() data: UserDTO) {
+  register(@Body() data: RegisterDTO) {
     return this.authService.register(data);
   }
 
@@ -44,8 +47,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login successful.' })
   @ApiResponse({ status: 401, description: 'Invalid credentials.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  signIn(@Body() data: UserDTO) {
-    return this.authService.login(data.username, data.password);
+  signIn(@Body() data: LoginDTO) {
+    return this.authService.login(data.email, data.password);
   }
 
 
@@ -162,6 +165,7 @@ export class AuthController {
     return this.authService.ssoFacebook(req)
   }
 
+
   // @Get("x")
   // @UseGuards(AuthGuard("x"))
   // @ApiOperation({ summary: 'Login with X' })
@@ -203,6 +207,7 @@ export class AuthController {
   forgotPassword(@Request() req) {
     return this.authService.forgotPassword(req.body.token,req.body.code,req.body.newPassword)
   }
+
 
 
 }

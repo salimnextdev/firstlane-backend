@@ -22,7 +22,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Action, UserType } from '@app/enum';
 
-import { UpdateVerificationStatusDTO, UserDTO } from '@app/dto';
+import {  UserDTO } from '@app/dto';
 // import { OrganizationAbilityFactory } from './organization-ability.factory';
 import * as moment from 'moment';
 import { stat } from 'fs';
@@ -281,34 +281,7 @@ export class UserService {
     });
   }
 
-  async updateVerificationStatus(
-    data:UpdateVerificationStatusDTO
-  ): Promise<ObjectReturnType> {
-    
-    const updateFields: any = {
-      [`verifications.${data.verificationType}`]: data.status,
-     
-    }
-    if (data.status === 'rejected' && data.rejectionReason) {
-      updateFields[`verifications.rejectionReason${data.verificationType}`] = data.rejectionReason;
-    }
-
-    const user = await this.userModel.findByIdAndUpdate(
-      data.userID,
-      { $set: updateFields },
-      { new: true }, // Returns updated document
-    );
-
-    if (!user) {
-      throw new NotFoundException(`User with ID ${data.userID} not found`);
-    }
-
-    return serviceResponse({
-      message: `User verification ${status} successfully`,
-      status: true,
-    });
-  }
-
+ 
   //get user notification with pagination
   async getNotification(
     params: { key: string; value: string },
@@ -343,159 +316,6 @@ export class UserService {
       data,
     });
   }
-
-  //get a rider average rating and all rating from rides
-  async getUserRating(_id: string): Promise<ObjectReturnType> {
-    const data =await this.rideModel.aggregate([
-      {
-        $match: {
-          riderID: _id,
-          rating: { $exists: true, $ne: null }
-        }
-      },
-      {
-        $project: {
-          rideId: "$_id",
-          rating: "$rating.rating",
-          feedback: "$rating.feedback",
-          userID: "$rating.userID",
-          date: "$rating.date"
-        }
-      },
-      {
-        $addFields: {
-          // Convert userID to ObjectId if it's not already one
-          convertedUserID: { $toObjectId: "$userID" }
-        }
-      },
-      {
-        $lookup: {
-          from: 'usermodels',
-          localField: 'convertedUserID',
-          foreignField: '_id',
-          as: 'userInfo'
-          
-        }
-      },
-      {
-        $unwind: {
-          path: "$userInfo",
-          preserveNullAndEmptyArrays: true // Optional: set to false if only matched users should be shown
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          averageRating: { $avg: "$rating" },
-          ratings: {
-            $push: {
-              rideId: "$rideId",
-              rating: "$rating",
-              feedback: "$feedback",
-              userID: "$userID",
-              date: "$date",
-              userInfo: {
-                id: "$userInfo._id",
-                email: "$userInfo.email",
-                fullname: "$userInfo.fullname",
-                state: "$userInfo.state",
-                phone: "$userInfo.phone",
-                profileImage: "$userInfo.profileImage"
-              }
-            }
-          }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          averageRating: 1,
-          ratings: 1
-        }
-      }
-    ]);
-    
-    return serviceResponse({
-      message: 'Success',
-      status: true,
-      data,
-    });
-  }
-
-
- 
- // Get riders by highest average rating (from embedded ratings in rides)
- async getRidersByRating(query:{limit: number ,state:string}): Promise<ObjectReturnType> {
-  let { limit = 10,state } = query;
-  limit=Number(limit)
-  const data = await this.rideModel.aggregate([
-    {
-      $match: {
-        riderID: { $exists: true, $ne: null },
-        rating: { $exists: true, $ne: null },
-        state:state
-      }
-    },
-    {
-      $group: {
-        _id: "$riderID",
-        averageRating: { $avg: "$rating.rating" },
-        totalRatings: { $sum: 1 },
-        latestRide: { $max: "$createdAt" }
-      }
-    },
-    {
-      $sort: { averageRating: -1 } // Sort by highest rating first
-    },
-    {
-      $limit: limit
-    },
-    {
-      $addFields: {
-        // Convert riderID to ObjectId if it's not already one
-        convertedRiderID: { $toObjectId: "$_id" }
-      }
-    },
-    {
-      $lookup: {
-        from: 'usermodels',
-        localField: 'convertedRiderID', // This is the field in the rides collection
-        foreignField: '_id', // Join on the user's unique id field
-        as: 'riderInfo'
-      }
-    },
-    {
-      $unwind: {
-        path: "$riderInfo",
-        preserveNullAndEmptyArrays: true
-      }
-    },
-    {
-      $project: {
-        _id: 0,
-        riderId: "$_id",
-        averageRating: 1,
-        totalRatings: 1,
-        latestRide: 1,
-        riderInfo: {
-          _id: "$riderInfo._id",
-          fullname: "$riderInfo.fullname",
-          email: "$riderInfo.email",
-          profileImage: "$riderInfo.profileImage",
-          userType: "$riderInfo.userType",
-          // Include other rider fields you might need
-          vehicle: "$riderInfo.vehicle"
-        }
-      }
-    }
-  ]);
-  
-  return serviceResponse({
-    message: 'Success',
-    status: true,
-    data
-  });
-}
 
 
 // markAllUserNotificationAsRead

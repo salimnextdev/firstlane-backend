@@ -1,4 +1,4 @@
-import { PayStackUserDTO, UserDTO, WalletDTO } from '@app/dto';
+import {  UserDTO,  } from '@app/dto';
 import { RideStatus } from '@app/enum';
 import { RideDoc, RideModel, UserDoc, UserModel } from '@app/schema';
 import {
@@ -377,7 +377,7 @@ export class PaystackService {
 
   //Single-step account assignment
   async singleStepAccountAssignment(
-    userData: PayStackUserDTO,
+    userData: any,
     preferredBank?: string,
   ) {
     if (
@@ -431,18 +431,7 @@ export class PaystackService {
             status: 'active',
           };
 
-          // Find the index of the existing bank account with the same customerCode
-          const index = user.bankAccount.findIndex(
-            (acct) => acct.customerCode === newCustomerCode,
-          );
-
-          if (index !== -1) {
-            // Update the existing bank account
-            user.bankAccount[index] = newBankAccount;
-          } else {
-            // Add the new bank account
-            user.bankAccount.push(newBankAccount);
-          }
+          
 
           await user.save();
 
@@ -558,7 +547,7 @@ export class PaystackService {
   }
 
   //deposit test money to a dedicated account
-  async transferFundsToDedicatedAccount(wallet: WalletDTO) {
+  async transferFundsToDedicatedAccount(wallet: any) {
     try {
       const ride = await this.rideModel.findById(wallet.rideID);
       // console.log(ride)
