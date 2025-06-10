@@ -79,9 +79,11 @@
         "libs/ride/src/*"
       ],
       "@app/admin": [
+        "libs/admin/src",
         "libs/admin/src"
       ],
       "@app/admin/*": [
+        "libs/admin/src/*",
         "libs/admin/src/*"
       ],
       "@app/fee": [
@@ -143,6 +145,12 @@
       ],
       "@app/shared/json/*": [
         "libs/shared/json/src/*"
+      ],
+      "@app/kyc": [
+        "libs/kyc/src"
+      ],
+      "@app/kyc/*": [
+        "libs/kyc/src/*"
       ]
     }
   }

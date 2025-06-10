@@ -10,12 +10,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard, JwtAuthGuard } from '@app/guard';
+
 import { AuthGuard } from '@nestjs/passport';
 import { randomUUID } from 'crypto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, PickType } from '@nestjs/swagger';
 import { BankAccountDTO, DeleteAccountDTO, ForgotPasswordDTO, LoginDTO } from '@app/dto';
 import { ChangePasswordDTO, RefreshTokenDTO, SetAuthenticatorDto, UserDTO, UserIDDTO, VerifyAuthenticationDto } from '@app/dto';
+import { JwtAuthGuard, LocalAuthGuard } from '@app/guard';
 
   class RegisterDTO extends PickType(
     UserDTO,
@@ -40,7 +41,7 @@ export class AuthController {
     return this.authService.register(data);
   }
 
-  @UseGuards(LocalAuthGuard)
+  // @UseGuards(LocalAuthGuard)
   @Post('login')
   @ApiOperation({ summary: 'User login' })
   @ApiBody({ type: LoginDTO, description: 'User credentials for login' })

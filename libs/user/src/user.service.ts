@@ -20,7 +20,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
-import { Action, UserType } from '@app/enum';
+import { Action, UserType, KycLevel, VerificationStatus } from '@app/enum';
 
 import {  UserDTO } from '@app/dto';
 // import { OrganizationAbilityFactory } from './organization-ability.factory';
@@ -343,5 +343,7 @@ export class UserService {
       data: { count },
     });
   }
-  
+
+
+
 }

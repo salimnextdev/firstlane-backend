@@ -37,12 +37,12 @@ import { WalletModel, WalletDoc } from "@app/schema/shared/waller.schema";
 import { FeeCategory } from "@app/enum";
 import { SmsService } from "@app/service/shared/sms.service";
 import { FlutterwaveService } from "@app/service/shared/payment/flutterwave";
-
-
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly config: ConfigService,
     private readonly mailService: MailerService,
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
     @InjectModel(FeeModel.name) private feeModel: Model<FeeDoc>,
@@ -79,7 +79,6 @@ export class AuthService {
       });
 
       let referral = {
-       
         refBy: checkUserRefId,
         amount: fee?.fee,
         max: fee?.maxAmount,
@@ -123,7 +122,16 @@ export class AuthService {
   async login(email: string, password: string): Promise<any> {
     const user = await this.userModel
       .findOne({ email })
-      .select(["email", "username", "id", "password", "userType"]);
+      .select([
+        "email",
+        "_id",
+        "username",
+        "id",
+        "password",
+        "userType",
+        "status",
+        "emailStatus",
+      ]);
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
       console.log(isMatch, password);
@@ -131,15 +139,12 @@ export class AuthService {
         if (user.status === "disabled") {
           throw new UnauthorizedException("User is disabled");
         }
+
         if (user.emailStatus !== "verified") {
           throw new UnauthorizedException("Email not verified");
         }
-        const userData = {
-         sub: user._id,
-      username: user.username,
-      email: user.email,
-        };
-        await this.getLoginToken(userData);
+        
+        return this.getLoginToken(user);
       }
       throw new UnauthorizedException("Invalid Credentials");
     }
@@ -176,15 +181,17 @@ export class AuthService {
     };
   }
 
-   getLoginToken(user: Partial<UserDTO>) {
+  getLoginToken(user: any) {
     const payload = {
       sub: user._id,
       username: user.username,
       email: user.email,
     };
+    console.log(payload);
     const access_token = this.jwtService.sign(payload, { expiresIn: "1d" });
     const refresh_token = this.jwtService.sign(payload, {
       expiresIn: "30d",
+      secret: this.config.get("JWT_SECRET2"),
     });
     return {
       message: "Login successful",
@@ -277,12 +284,8 @@ export class AuthService {
     const user = await this.userModel.findOne({ email: req.user.email });
 
     if (user) {
-      const userData = {
-         sub: user._id,
-      username: user.username,
-      email: user.email,
-        };
-        await this.getLoginToken(userData);
+      
+      return this.getLoginToken(user);
     } else {
       const created = await this.userModel.create({
         ...req.user,
@@ -290,12 +293,8 @@ export class AuthService {
         password: "",
       });
 
-      const userData = {
-         sub: created._id,
-      username: created.username,
-      email: created.email,
-        };
-        await this.getLoginToken(userData);
+     
+      return this.getLoginToken(created);
     }
   }
 
@@ -303,12 +302,8 @@ export class AuthService {
     const user = await this.userModel.findOne({ email: req.user.email });
 
     if (user) {
-       const userData = {
-         sub: user._id,
-      username: user.username,
-      email: user.email,
-        };
-        await this.getLoginToken(userData);
+     
+      return this.getLoginToken(user);
     } else {
       const created = await this.userModel.create({
         ...req.user,
@@ -316,12 +311,8 @@ export class AuthService {
         password: "",
       });
 
-      const userData = {
-         sub: created._id,
-      username: created.username,
-      email: created.email,
-        };
-        await this.getLoginToken(userData);
+      
+      return this.getLoginToken(created);
     }
   }
 
@@ -341,6 +332,7 @@ export class AuthService {
     const code = await this.otpModel.findOne({
       code: body.code,
       type: body.type,
+      userID: body.userID,
     });
 
     isValid = code ? true : isValid;
@@ -355,17 +347,14 @@ export class AuthService {
       },
       { new: true }
     );
-   
+
     if (code) {
       await this.otpModel.findByIdAndDelete(code._id);
     }
 
-    const userData = {
-         sub: user._id,
-      username: user.username,
-      email: user.email,
-        };
-        await this.getLoginToken(userData);
+   
+
+    return this.getLoginToken(user);
   }
 
   async sendTwoFactorAuthenticationMail(body: any): Promise<any> {
@@ -536,7 +525,4 @@ export class AuthService {
       message: "Password successfully updated",
     };
   }
-
 }
-
-

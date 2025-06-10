@@ -1,15 +1,22 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { randomInt, randomUUID } from 'crypto';
-import { HydratedDocument } from 'mongoose';
-import * as uniqueValidator from 'mongoose-unique-validator';
-import * as bcrypt from 'bcrypt';
-import { Gender, IdType, KycLevel, MaritalStatus, Role, Title, VerificationStatus } from '@app/enum';
-import { UserType } from '@app/enum/shared/ride.enum';
-import { Refferal } from '@app/dto';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { randomInt, randomUUID } from "crypto";
+import { HydratedDocument } from "mongoose";
+import * as uniqueValidator from "mongoose-unique-validator";
+import * as bcrypt from "bcrypt";
+import {
+  Gender,
+  IdType,
+  KycLevel,
+  MaritalStatus,
+  Role,
+  Title,
+  VerificationStatus,
+} from "@app/enum";
+import { UserType } from "@app/enum/shared/ride.enum";
+import { Refferal } from "@app/dto";
 
 export type UserDoc = HydratedDocument<UserModel>;
 
-// @Schema({ timestamps: true })
 class BankAccount {
   @Prop({ required: true })
   bankName: string;
@@ -21,7 +28,6 @@ class BankAccount {
   accountName: string;
 }
 
-// @Schema({ timestamps: true })
 class NextOfKin {
   @Prop({ required: true, enum: Title })
   title: string;
@@ -45,7 +51,6 @@ class NextOfKin {
   residentialAddress: string;
 }
 
-// @Schema({ timestamps: true })
 class BankStatement {
   @Prop({ required: true })
   documentUrl: string;
@@ -53,14 +58,17 @@ class BankStatement {
   @Prop({ required: true })
   statementDate: string;
 
-  @Prop({ required: true, enum: VerificationStatus, default: VerificationStatus.PENDING })
+  @Prop({
+    required: true,
+    enum: VerificationStatus,
+    default: VerificationStatus.PENDING,
+  })
   status: string;
 
   @Prop({ default: Date.now })
   uploadedAt: Date;
 }
 
-// @Schema({ timestamps: true })
 class Verifications {
   @Prop({ required: true, enum: IdType })
   idType: string;
@@ -77,7 +85,11 @@ class Verifications {
   @Prop({ required: true })
   bvn: string;
 
-  @Prop({ required: true, enum: VerificationStatus, default: VerificationStatus.PENDING })
+  @Prop({
+    required: true,
+    enum: VerificationStatus,
+    default: VerificationStatus.PENDING,
+  })
   status: string;
 
   @Prop()
@@ -108,12 +120,11 @@ class Verifications {
   totalBankStatements?: number;
 }
 
-// @Schema({ timestamps: true })
 class Referral {
   @Prop({ required: true })
   refCode: string;
 
-  @Prop({ enum: ['active', 'inactive'] })
+  @Prop({ enum: ["active", "inactive"] })
   status?: string;
 
   @Prop({ required: true })
@@ -124,14 +135,15 @@ class Referral {
 }
 @Schema({ timestamps: true })
 export class UserModel {
-
   @Prop()
   id: string;
-
+  
+  @Prop()
+  title?: string;
   @Prop()
   playerId?: string;
 
-  @Prop({ type:String, enum: UserType, default: UserType.USER })
+  @Prop({ type: String, enum: UserType, default: UserType.USER })
   userType: string;
 
   @Prop()
@@ -160,7 +172,6 @@ export class UserModel {
 
   @Prop({ required: true })
   password: string;
-
 
   @Prop()
   profileImage?: string;
@@ -209,16 +220,16 @@ export const UserSchema = SchemaFactory.createForClass(UserModel);
 UserSchema.plugin(uniqueValidator);
 
 // **Hash Password Before Saving**
-UserSchema.pre<UserModel>('save', async function (next) {
+UserSchema.pre<UserModel>("save", async function (next) {
   if (this.password) {
     const salt = await bcrypt.genSalt();
-    this.password = await bcrypt.hash(this.password || '123456', salt);
+    this.password = await bcrypt.hash(this.password || "123456", salt);
   }
-  this.id = randomInt(99999) + randomUUID().replace(/\D/g, '').substring(0, 5);
+  this.id = randomInt(99999) + randomUUID().replace(/\D/g, "").substring(0, 5);
 
   this.username = this.username || this.email;
 
-    this.referral.refCode  =
+  this.referral.refCode =
     this.username.substring(0, 2) +
     randomInt(99) +
     randomUUID().substring(0, 2);

@@ -187,10 +187,6 @@ export class UserController {
   async countRecentUsers() {
     return this.userService.countRecentUsers();
   }
-
-
-
-
     @Get('notification/by-any/:key/:value')
     @ApiOperation({ summary: 'Find a user notification by any key-value pair' })
     @ApiParam({ name: 'key', description: 'The key to search by', type: String })

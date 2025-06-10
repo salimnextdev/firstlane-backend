@@ -3,6 +3,7 @@ export * from './shared/assign-role.dto';
 export * from './shared/auth.dto';
 export * from './shared/authenticator.dto';
 export * from './shared/otp.dto';
+export * from './shared/kyc.dto';
 // export * from './shared/ride.dto';
 // export * from './shared/fee.dto';
 // export * from './shared/chat.dto';

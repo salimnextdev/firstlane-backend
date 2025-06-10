@@ -127,7 +127,9 @@
       "^@app/shared/strategy(|/.*)$": "<rootDir>/libs/shared/strategy/src/$1",
       "^@app/shared/guard(|/.*)$": "<rootDir>/libs/shared/guard/src/$1",
       "^@app/shared/enum(|/.*)$": "<rootDir>/libs/shared/enum/src/$1",
-      "^@app/shared/decorator(|/.*)$": "<rootDir>/libs/shared/decorator/src/$1"
+      "^@app/shared/decorator(|/.*)$": "<rootDir>/libs/shared/decorator/src/$1",
+      "^@app/admin(|/.*)$": "<rootDir>/libs/admin/src/$1",
+      "^@app/kyc(|/.*)$": "<rootDir>/libs/kyc/src/$1"
     }
   }
 }

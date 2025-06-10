@@ -25,23 +25,24 @@ import { UserModel, UserDoc } from '@app/schema';
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const request = context.switchToHttp().getRequest();
       const token = this.extractTokenFromHeader(request);
-
-    
+      
       if (!token) {
         throw new UnauthorizedException();
       }
+      
       try {
         const payload = await this.jwtService.verifyAsync(
           token,
           { 
-            // secret: this.configService.get("JWT_SECRET")
+            secret: this.configService.get("JWT_SECRET")
           }
         );
        const user=await this.userModel.findById(payload.sub)
+     
         request['user'] = user;
         request['userID'] = user._id;
       } catch {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException("auth");
       }
       return true;
     }
