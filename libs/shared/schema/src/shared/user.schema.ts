@@ -214,6 +214,9 @@ export class UserModel {
 
   @Prop()
   refBy: string;
+
+  @Prop()
+  refCode: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserModel);
@@ -233,6 +236,8 @@ UserSchema.pre<UserModel>("save", async function (next) {
     this.username.substring(0, 2) +
     randomInt(99) +
     randomUUID().substring(0, 2);
+this.refCode= this.referral.refCode;
 
+  this.referral.status = "active";
   next();
 });
