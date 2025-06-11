@@ -2,7 +2,7 @@ import {
   RideStatus,
   PaymentStatus,
   RideType,
-} from '@app/enum/shared/ride.enum';
+} from '@app/enum/shared/user.enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomInt, randomUUID } from 'crypto';
 import { HydratedDocument } from 'mongoose';

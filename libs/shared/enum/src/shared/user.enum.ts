@@ -26,6 +26,16 @@ export enum UserType {
   ADMIN = 'admin',
 }
 
+export enum OtpType {
+  EMAIL_VERIFICATION = 'EmailVerification',
+  PASSWORD_RESET = 'PasswordReset',
+  TWO_FACTOR_AUTHENTICATION = '2FA',
+}
+
+export enum OtpChannel {
+EMAIL = 'email',
+SMS = 'sms',
+}
 
 
 

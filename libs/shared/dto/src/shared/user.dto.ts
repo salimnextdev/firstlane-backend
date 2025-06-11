@@ -1,5 +1,5 @@
 import { Gender, Role } from '@app/enum';
-import { UserType } from '@app/enum/shared/ride.enum';
+import { OtpType, UserType } from '@app/enum/shared/user.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { VerificationsDTO } from './kyc.dto';
 
@@ -54,13 +54,13 @@ export class SetAuthenticatorDto {
 }
 
 export class VerifyAuthenticationDto {
-  @ApiProperty({ description: 'user_id' })
+  @ApiProperty({ description: 'user_id',example: '12345' })
   userID: String;
   // @ApiProperty({ description: 'token',  })
   // token: String
-  @ApiProperty({ description: 'code' })
+  @ApiProperty({ description: 'code', example: '123456' })
   code: String;
-  @ApiProperty({ description: 'Type of OTP' })
+  @ApiProperty({ enum:OtpType, example: OtpType.TWO_FACTOR_AUTHENTICATION,  description: 'Type of OTP' })
   type: string;
 }
 

@@ -1,4 +1,4 @@
-import { Role } from "@app/enum";
+import { OtpType, Role } from "@app/enum";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class OTPDTO {
@@ -17,7 +17,7 @@ export class OTPDTO {
   @ApiProperty({ description: 'status', example: 'active', default:"active" })
   status: string;
 
-  @ApiProperty({ description: 'Type of OTP', example: 'EmailVerification', enum: ['EmailVerification', 'PasswordReset', '2FA'], default: 'verification' })
+  @ApiProperty({ description: 'Type of OTP', example: 'EmailVerification', enum: OtpType, default: 'verification' })
   type: string;
 
 }

@@ -12,7 +12,7 @@ import {
   Title,
   VerificationStatus,
 } from "@app/enum";
-import { UserType } from "@app/enum/shared/ride.enum";
+import { UserType } from "@app/enum/shared/user.enum";
 import { Refferal } from "@app/dto";
 
 export type UserDoc = HydratedDocument<UserModel>;

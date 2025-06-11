@@ -1,4 +1,4 @@
-import { PaymentStatus, RideStatus, RideType } from '@app/enum/shared/ride.enum';
+import { PaymentStatus, RideStatus, RideType } from '@app/enum/shared/user.enum';
 import { ApiProperty } from '@nestjs/swagger';
 class Location {
   @ApiProperty({ description: 'Address of the location', example: '123 Main St' })
