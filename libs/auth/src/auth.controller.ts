@@ -209,6 +209,22 @@ export class AuthController {
     return this.authService.forgotPassword(req.body.token,req.body.code,req.body.newPassword)
   }
 
+  //verify code
+  @Post('verify-code')
+  @ApiBody({ schema:{
+    type: 'object',
+    properties: {
+      type: { type: 'string',example:'PasswordReset' },
+      code: { type: 'string',example:'123456' },
+    },
+  } })
+  @ApiOperation({ summary: 'verify code' })
+  @ApiResponse({ status: 200, description: 'code successfully verified' })
+  verifyCode(@Request() req) {
+    return this.authService.verifyCode(req.body.type,req.body.code)
+  }
+  
+
 
 
 }

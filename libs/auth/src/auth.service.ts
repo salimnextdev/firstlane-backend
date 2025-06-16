@@ -481,6 +481,38 @@ export class AuthService {
     };
   }
 
+  async verifyCode(
+    type: string,
+    code: string,
+    
+  ): Promise<any> {
+    let isValid = false;
+    // if (token) {
+    //   const secret = await this.authenticatorModel.findOne({
+    //     userID: userID,
+    //   });
+
+    //   if (!secret) {
+    //     throw new NotFoundException('User has not set authenticator');
+    //   }
+
+    //   isValid = authenticator.check(token, secret.secret);
+    // }
+    const checkCode = await this.otpModel.findOneAndUpdate({
+      code: code,
+      type,
+    },{status: "used"});
+
+    isValid = checkCode ? true : isValid;
+
+    if (!isValid) {
+      throw new NotFoundException("Code not found or expired");
+    }
+  
+    return {
+      message: "Code verified successfully",
+    };
+  }
   async forgotPassword(
     token: string,
     code: string,
@@ -500,6 +532,7 @@ export class AuthService {
     // }
     const checkCode = await this.otpModel.findOne({
       code: code,
+      status: "used",
       type: "PasswordReset",
     });
 
@@ -511,6 +544,7 @@ export class AuthService {
 
     // Step 1: Find the user by their user ID
     const user = await this.userModel.findById(checkCode.userID);
+    await this.otpModel.findByIdAndDelete(checkCode._id);
     if (!user) {
       throw new NotFoundException("User not found");
     }
