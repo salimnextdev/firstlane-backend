@@ -9,6 +9,7 @@ import { AdminModule } from '@app/admin';
 import { KycModule } from '@app/kyc';
 import { InvestmentPlanModule, } from '@app/investment-plan';
 import { InvestmentModule } from '@app/investment';
+import { WalletModule } from '@app/wallet';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { InvestmentModule } from '@app/investment';
     AdminModule,
     KycModule,
        InvestmentModule,
-    InvestmentPlanModule
+    InvestmentPlanModule,
+    WalletModule
     
   ],
   providers: [],

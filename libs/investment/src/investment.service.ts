@@ -2,21 +2,33 @@ import { InvestmentDTO, UserDTO, UserInvestmentDTO } from "@app/dto";
 import {
   InvestmentDoc,
   InvestmentModel,
+  InvestmentPlanDoc,
+  InvestmentPlanModel,
   UserInvestmentDoc,
   UserInvestmentModel,
+  WalletDoc,
+  WalletModel,
 } from "@app/schema";
-import { getMetadata, ObjectReturnType, serviceResponse } from "@app/service";
+import { FlutterwaveService, getMetadata, NotificationService, ObjectReturnType, serviceResponse } from "@app/service";
 import { Injectable, NotAcceptableException, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
 @Injectable()
 export class InvestmentService {
   constructor(
+    private config:ConfigService,
     @InjectModel(InvestmentModel.name)
     private investmentModel: Model<InvestmentDoc>,
     @InjectModel(UserInvestmentModel.name)
-    private userInvestmentModel: Model<UserInvestmentDoc>
+    private userInvestmentModel: Model<UserInvestmentDoc>,
+    @InjectModel(InvestmentPlanModel.name)
+    private investmentPlanModel: Model<InvestmentPlanDoc>,
+    @InjectModel(WalletModel.name)
+    private walletModel: Model<WalletDoc>,
+    private flutterwaveService: FlutterwaveService,
+    private notificationService: NotificationService,
   ) {}
 
   async upset(
@@ -155,16 +167,30 @@ export class InvestmentService {
     userData: UserDTO
   ): Promise<ObjectReturnType> {
     try {
-      const investment = await this.investmentModel
+      const wallet = await this.flutterwaveService.getAvailableBalance(userData._id.toString());
+      if ((wallet?.data?.available_balance??0) < investmentData.amount) {
+        throw new Error('Insufficient balance');
+      }
+      const investment = await this.investmentPlanModel
         .findById(investmentData.investmentID)
         .exec();
       if (!investment) {
-        throw new NotFoundException("Investment not found");
+        throw new NotFoundException("Investment plan not found");
       }
       const userInvestment = await this.userInvestmentModel.create(
         investmentData
       );
-      //TODO add balance check
+      const userWallet = await this.walletModel.findOne({userID: userData._id.toString()});
+     
+      const res = await this.flutterwaveService.walletToWalletTransfer({
+        account_bank: "flutterwave",
+        account_number: this.config.get("FLUTTERMERCHANTID"),
+        amount: investmentData.amount,
+        narration:`Investment of ${investmentData.amount} in ${investment.name}`,
+        reference: `${userData._id}_${userInvestment._id}`,
+        debit_subaccount: userWallet.customerCode,
+
+      });
       return serviceResponse({
         data: userInvestment,
         message: "User investment created successfully",

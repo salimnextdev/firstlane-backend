@@ -7,8 +7,22 @@ export type InvestmentPlanDoc = InvestmentPlanModel & Document;
 
 @Schema({ timestamps: true })
 export class InvestmentPlanModel {
+  @Prop({})
+  id: string;
   @Prop({ min: 0 })
   minAmount: number;
+  @Prop({ min: 0 })
+  maxAmount: number;
+  @Prop({
+    description: "Name of the investment plan",
+    example: "Fixed Deposit",
+  })
+  name: string;
+  @Prop({
+    description: "Description of the investment plan",
+    example: "Fixed Deposit",
+  })
+  description: string;
 
   @Prop({ min: 0, max: 100 })
   interestRate: number;
@@ -40,6 +54,9 @@ InvestmentPlanSchema.pre<InvestmentPlanModel>("save", async function (
   next,
   error
 ) {
+  this.id =
+    randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
+
   if (!this.code)
     this.code =
       randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);

@@ -3,7 +3,22 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class InvestmentPlanDTO {
     _id?: string;
-   
+    @ApiProperty({
+        description: 'Name of the investment plan',
+        example: 'Fixed Deposit',
+    })
+   name:string;
+   @ApiProperty({
+        description: 'Description of the investment plan',
+        example: 'Fixed Deposit',
+    })
+   description:string;
+  
+    @ApiProperty({
+        description: 'Maximum Amount to invest',
+        minimum: 0,
+    })
+    maxAmount: number;
     
     @ApiProperty({ description: 'Minimium Amount to invest', minimum: 0 })
     minAmount: number;
@@ -24,6 +39,7 @@ export class InvestmentPlanDTO {
     status?: string;
     
     userIDs?: string[];
+
     userID?: string;
 
 }

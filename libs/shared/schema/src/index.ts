@@ -22,4 +22,5 @@ export * from './shared/country.schema';
 export * from './shared/investment/investment-plan.schema';
 export * from './shared/investment/investment.schema';
 export * from './shared/investment/user-investment.schema';
-
+export * from './shared/waller.schema';
+export * from './shared/transaction.schema';

@@ -7,6 +7,9 @@ export type InvestmentDoc = InvestmentModel & Document;
 
 @Schema({ timestamps: true })
 export class InvestmentModel {
+
+  @Prop({})
+  id:string;
   @Prop({})
   firstname: string;
 
@@ -48,6 +51,9 @@ InvestmentSchema.pre<InvestmentModel>("save", async function (
   next,
   error
 ) {
+  this.id =
+  randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
+
   if (!this.code)
     this.code =
       randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);

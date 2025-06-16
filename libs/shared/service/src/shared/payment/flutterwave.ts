@@ -2,8 +2,8 @@ import { UserModel, UserDoc, RideModel, RideDoc } from "@app/schema";
 import {
   TransactionModel,
   TransactionDoc,
-} from "@app/schema/shared/transaction.schema";
-import { WalletModel, WalletDoc } from "@app/schema/shared/waller.schema";
+} from "@app/schema";
+import { WalletModel, WalletDoc } from "@app/schema";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
@@ -15,6 +15,8 @@ import { Model } from "mongoose";
 export class FlutterwaveService {
   private readonly baseUrl: string;
   private readonly secretKey: string;
+  private readonly secretHash: string;
+
   private readonly headers: any;
   constructor(
     private configService: ConfigService,
@@ -26,12 +28,61 @@ export class FlutterwaveService {
   ) {
     this.baseUrl = "";
     this.secretKey = this.configService.get<string>("FLUTTERWAVE_SECRET_KEY");
+    this.secretHash = this.configService.get<string>("FLUTTERWAVEEncryptionKey");
     this.headers = {
       accept: "application/json",
       Authorization: `Bearer ${this.secretKey}`,
       "Content-Type": "application/json",
     };
   }
+
+  //webhook 
+  async handleWebhook(req: any): Promise<any> {
+    try {
+   
+    
+    const signature = req.headers["verif-hash"];
+    if (!signature || (signature !== this.secretHash)) {
+        // This request isn't from Flutterwave; discard
+        throw new Error("Failed to process webhook");
+    }
+    return req.body 
+    
+      return { status: "success", message: "Webhook processed successfully" };
+    } catch (error) {
+      console.error("Error processing webhook:", error);
+      throw new Error("Failed to process webhook");
+    }
+  }
+//test deposit
+  async testDeposit(data: {
+    account_reference: string;
+    amount: number;
+
+  }): Promise<any> {
+    const { account_reference, amount } = data;
+    try {
+      const options = {
+        method: "POST",
+        url: `https://api.flutterwave.com/v3/payout-subaccounts/${account_reference}/fund-account`,
+        headers: this.headers,
+        data: {
+         
+          amount,
+          currency: "NGN",
+        },
+      };
+      const response = await axios.request(options);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error performing wallet to wallet transfer:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }
+
 
   //create wallet for users
   async createVirtualAccount(data: {
@@ -106,7 +157,7 @@ export class FlutterwaveService {
           currency: "NGN",
           debit_currency: "NGN",
           narration,
-          reference:reference+"A"+ randomInt(99999) + randomUUID().replace(/\D/g, '').substring(0, 5),
+          reference:reference,
           debit_subaccount,
         },
       };
@@ -149,7 +200,7 @@ export class FlutterwaveService {
           amount,
           currency: "NGN",
           narration,
-          reference:reference+"A"+ randomInt(99999) + randomUUID().replace(/\D/g, '').substring(0, 5),
+          reference:reference,
           debit_subaccount,
           callback_url: "https://www.flutterwave.com/ng/",
           debit_currency: "NGN",

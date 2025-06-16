@@ -22,6 +22,8 @@
     "@app/investment-plan/(.*)": "<rootDir>/../libs/investment-plan/src/$1",
     "@app/investment-plan": "<rootDir>/../libs/investment-plan/src",
     "@app/investment/(.*)": "<rootDir>/../libs/investment/src/$1",
-    "@app/investment": "<rootDir>/../libs/investment/src"
+    "@app/investment": "<rootDir>/../libs/investment/src",
+    "@app/wallet/(.*)": "<rootDir>/../libs/wallet/src/$1",
+    "@app/wallet": "<rootDir>/../libs/wallet/src"
   }
 }

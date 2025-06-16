@@ -123,9 +123,11 @@
         "libs/dispute-type/src/*"
       ],
       "@app/wallet": [
+        "libs/wallet/src",
         "libs/wallet/src"
       ],
       "@app/wallet/*": [
+        "libs/wallet/src/*",
         "libs/wallet/src/*"
       ],
       "@app/state": [

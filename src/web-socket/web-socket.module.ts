@@ -1,9 +1,9 @@
 import { NotificationGateway } from '@app/service';
-import { RideSocketGateway } from '@app/service';
+import { WebSocketGatewayService } from '@app/service';
 import { Module } from '@nestjs/common';
 
 @Module({
-    imports: [NotificationGateway,RideSocketGateway], 
+    imports: [NotificationGateway,WebSocketGatewayService], 
   providers: [],
   controllers: [],
   exports: [],
