@@ -18,6 +18,10 @@
     "@app/admin/(.*)": "<rootDir>/../libs/admin/src/$1",
     "@app/admin": "<rootDir>/../libs/admin/src",
     "@app/kyc/(.*)": "<rootDir>/../libs/kyc/src/$1",
-    "@app/kyc": "<rootDir>/../libs/kyc/src"
+    "@app/kyc": "<rootDir>/../libs/kyc/src",
+    "@app/investment-plan/(.*)": "<rootDir>/../libs/investment-plan/src/$1",
+    "@app/investment-plan": "<rootDir>/../libs/investment-plan/src",
+    "@app/investment/(.*)": "<rootDir>/../libs/investment/src/$1",
+    "@app/investment": "<rootDir>/../libs/investment/src"
   }
 }

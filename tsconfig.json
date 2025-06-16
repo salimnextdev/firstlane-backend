@@ -151,6 +151,18 @@
       ],
       "@app/kyc/*": [
         "libs/kyc/src/*"
+      ],
+      "@app/investment-plan": [
+        "libs/investment-plan/src"
+      ],
+      "@app/investment-plan/*": [
+        "libs/investment-plan/src/*"
+      ],
+      "@app/investment": [
+        "libs/investment/src"
+      ],
+      "@app/investment/*": [
+        "libs/investment/src/*"
       ]
     }
   }

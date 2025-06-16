@@ -1,7 +1,7 @@
 
 
-import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '@app/guard';
 
@@ -42,9 +42,22 @@ constructor(private readonly adminService: AdminService) {}
 //   get all users with KYC for kyc
   @Get('kyc-users')
   @ApiOperation({ summary: 'Get all users with KYC information (Admin)' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number for pagination',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Number of users per page',
+    type: Number,
+  })
+  
   @UseGuards(JwtAuthGuard)
-  async getAllKycUsers() {
-    return this.adminService.getAllKycUsers();
+  async getAllKycUsers( @Query() query: any) {
+    return this.adminService.getAllKycUsers(query);
   }
   
 

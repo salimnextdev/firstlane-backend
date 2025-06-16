@@ -19,3 +19,7 @@ export * from './shared/dispute-type.schema';
 export * from './shared/state.schema';
 export * from './shared/country.schema';
 
+export * from './shared/investment/investment-plan.schema';
+export * from './shared/investment/investment.schema';
+export * from './shared/investment/user-investment.schema';
+

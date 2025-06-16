@@ -19,17 +19,13 @@ import {
   ApiOperation,
   ApiParam,
   ApiQuery,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 
-import { Action } from '@app/enum';
-import { UserModel } from '@app/schema';
 
 
 import {  UserDTO } from '@app/dto';
 import { UserService } from './user.service';
-import { NotificationService } from '@app/service';
 
 @ApiTags('users')
 @ApiBearerAuth('access-token')
@@ -103,16 +99,16 @@ export class UserController {
     description: 'The value to search for',
     type: String,
   })
-  @ApiQuery({
-    name: 'limit',
+    @ApiQuery({
+    name: 'page',
     required: false,
-    description: 'Number of users to return',
+    description: 'Page number for pagination',
     type: Number,
   })
   @ApiQuery({
-    name: 'skip',
+    name: 'limit',
     required: false,
-    description: 'Number of users to skip for pagination',
+    description: 'Number of users per page',
     type: Number,
   })
   async findbyId(
@@ -127,16 +123,16 @@ export class UserController {
   // @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get all users' })
   @UseGuards(JwtAuthGuard)
-  @ApiQuery({
-    name: 'limit',
+    @ApiQuery({
+    name: 'page',
     required: false,
-    description: 'Number of users to return',
+    description: 'Page number for pagination',
     type: Number,
   })
   @ApiQuery({
-    name: 'skip',
+    name: 'limit',
     required: false,
-    description: 'Number of users to skip for pagination',
+    description: 'Number of users per page',
     type: Number,
   })
   async findAll(@Query() query: any) {
@@ -160,16 +156,16 @@ export class UserController {
 
 
   @Get('period')
-  @ApiQuery({
-    name: 'limit',
+    @ApiQuery({
+    name: 'page',
     required: false,
-    description: 'Number of users to return',
+    description: 'Page number for pagination',
     type: Number,
   })
   @ApiQuery({
-    name: 'skip',
+    name: 'limit',
     required: false,
-    description: 'Number of users to skip for pagination',
+    description: 'Number of users per page',
     type: Number,
   })
   @ApiQuery({

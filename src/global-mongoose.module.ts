@@ -25,6 +25,12 @@ import {
   CountrySchema,
   StateModel,
   StateSchema,
+  InvestmentPlanModel,
+  InvestmentPlanSchema,
+  InvestmentModel,
+  InvestmentSchema,
+  UserInvestmentModel,
+  UserInvestmentSchema,
 } from '@app/schema';
 import { RideModel, RideSchema } from '@app/schema/shared/ride.schema';
 import { TransactionModel, TransactionSchema } from '@app/schema/shared/transaction.schema';
@@ -58,7 +64,16 @@ const DBLINK =
       }),
     }),
     MongooseModule.forRoot(DBLINK),
+MongooseModule.forFeature([
+      { name: InvestmentPlanModel.name, schema: InvestmentPlanSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: InvestmentModel.name, schema: InvestmentSchema },
+    ]),
 
+    MongooseModule.forFeature([
+      { name: UserInvestmentModel.name, schema: UserInvestmentSchema },
+    ]),
     MongooseModule.forFeature([{ name: UserModel.name, schema: UserSchema }]),
     MongooseModule.forFeature([
       { name: AssignRoleModel.name, schema: AssignRoleSchema },

@@ -105,6 +105,24 @@
       "compilerOptions": {
         "tsConfigPath": "libs/kyc/tsconfig.lib.json"
       }
+    },
+    "investment-plan": {
+      "type": "library",
+      "root": "libs/investment-plan",
+      "entryFile": "index",
+      "sourceRoot": "libs/investment-plan/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/investment-plan/tsconfig.lib.json"
+      }
+    },
+    "investment": {
+      "type": "library",
+      "root": "libs/investment",
+      "entryFile": "index",
+      "sourceRoot": "libs/investment/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/investment/tsconfig.lib.json"
+      }
     }
   }
 }

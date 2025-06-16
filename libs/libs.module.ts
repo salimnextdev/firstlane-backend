@@ -7,7 +7,8 @@ import { UploadsModule } from './uploads/src';
 import { UserModule } from '@app/user';
 import { AdminModule } from '@app/admin';
 import { KycModule } from '@app/kyc';
-
+import { InvestmentPlanModule, } from '@app/investment-plan';
+import { InvestmentModule } from '@app/investment';
 
 @Module({
   imports: [
@@ -16,6 +17,8 @@ import { KycModule } from '@app/kyc';
     UploadsModule,
     AdminModule,
     KycModule,
+       InvestmentModule,
+    InvestmentPlanModule
     
   ],
   providers: [],
