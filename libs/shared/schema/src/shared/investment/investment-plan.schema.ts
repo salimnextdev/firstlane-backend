@@ -36,7 +36,7 @@ export class InvestmentPlanModel {
   @Prop({})
   code: string;
   @Prop({})
-  duration: string;
+  duration: string[];
 
   @Prop({ default: InvestmentStatus.PENDING, enum: InvestmentStatus })
   status: string;

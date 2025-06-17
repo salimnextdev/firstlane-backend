@@ -1,7 +1,7 @@
 import { InvestmentPlanDTO, UserDTO } from "@app/dto";
 import { InvestmentPlanDoc, InvestmentPlanModel } from "@app/schema";
 import { getMetadata, ObjectReturnType, serviceResponse } from "@app/service";
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotAcceptableException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
@@ -16,15 +16,19 @@ export class InvestmentPlanService {
     createInvestmentPlanDto: InvestmentPlanDTO,
     userData: UserDTO
   ): Promise<ObjectReturnType> {
-    const createdPlan = await this.investmentPlanModel.create(
-      createInvestmentPlanDto
-    );
-    return serviceResponse({
-      data: await createdPlan.save(),
-      message: "Investment plan created successfully",
-
-      status: true,
-    });
+    try {
+      const createdPlan = await this.investmentPlanModel.create(
+        createInvestmentPlanDto
+      );
+      return serviceResponse({
+        data: await createdPlan.save(),
+        message: "Investment plan created successfully",
+  
+        status: true,
+      });
+    } catch (error) {
+      throw new NotAcceptableException(error?.response?.data?.message || error.message);
+    }
   }
 
   async findAll(query: any): Promise<ObjectReturnType> {
@@ -58,7 +62,8 @@ export class InvestmentPlanService {
         status: true,
       });
     } catch (error) {
-        
+      throw new NotAcceptableException(error?.response?.data?.message || error.message);
+   
     }
   }
 
@@ -67,7 +72,8 @@ export class InvestmentPlanService {
         params: { key: string; value: string },
         query: any
     ): Promise<ObjectReturnType> {
-        const { key, value } = params;
+        try {
+          const { key, value } = params;
         const { limit = 10, page = 1 } = query;
         const skip = (page -1)* limit;
     
@@ -87,6 +93,10 @@ export class InvestmentPlanService {
             querys: { [key]: value },
         }),
         });
+        } catch (error) {
+          throw new NotAcceptableException(error?.response?.data?.message || error.message);
+   
+        }
     }
 
     //edit
@@ -113,10 +123,8 @@ export class InvestmentPlanService {
         status: true,
       });
     } catch (error) {
-      return serviceResponse({
-        message: error.message,
-        status: false,
-      });
+      throw new NotAcceptableException(error?.response?.data?.message || error.message);
+   
     }
   }
 
@@ -138,10 +146,8 @@ export class InvestmentPlanService {
         status: true,
       });
     } catch (error) {
-      return serviceResponse({
-        message: error.message,
-        status: false,
-      });
+      throw new NotAcceptableException(error?.response?.data?.message || error.message);
+   
     }
 
   }

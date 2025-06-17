@@ -9,8 +9,18 @@ import {
   WalletDoc,
   WalletModel,
 } from "@app/schema";
-import { FlutterwaveService, getMetadata, NotificationService, ObjectReturnType, serviceResponse } from "@app/service";
-import { Injectable, NotAcceptableException, NotFoundException } from "@nestjs/common";
+import {
+  FlutterwaveService,
+  getMetadata,
+  NotificationService,
+  ObjectReturnType,
+  serviceResponse,
+} from "@app/service";
+import {
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -18,7 +28,7 @@ import { Model } from "mongoose";
 @Injectable()
 export class InvestmentService {
   constructor(
-    private config:ConfigService,
+    private config: ConfigService,
     @InjectModel(InvestmentModel.name)
     private investmentModel: Model<InvestmentDoc>,
     @InjectModel(UserInvestmentModel.name)
@@ -28,7 +38,7 @@ export class InvestmentService {
     @InjectModel(WalletModel.name)
     private walletModel: Model<WalletDoc>,
     private flutterwaveService: FlutterwaveService,
-    private notificationService: NotificationService,
+    private notificationService: NotificationService
   ) {}
 
   async upset(
@@ -167,37 +177,51 @@ export class InvestmentService {
     userData: UserDTO
   ): Promise<ObjectReturnType> {
     try {
-      const wallet = await this.flutterwaveService.getAvailableBalance(userData._id.toString());
-      if ((wallet?.data?.available_balance??0) < investmentData.amount) {
-        throw new Error('Insufficient balance');
-      }
       const investment = await this.investmentPlanModel
         .findById(investmentData.investmentID)
         .exec();
       if (!investment) {
         throw new NotFoundException("Investment plan not found");
       }
-      const userInvestment = await this.userInvestmentModel.create(
+      if (
+        investmentData.amount < investment.minAmount ||
+        investmentData.amount > investment.maxAmount
+      ) {
+        throw new NotAcceptableException(
+          `Investment amount is not within range ${investment.minAmount} - ${investment.maxAmount}`
+        );
+      }
+
+      const wallet = await this.flutterwaveService.getAvailableBalance(
+        userData._id.toString()
+      );
+      if ((wallet?.data?.available_balance ?? 0) < investmentData.amount) {
+        throw new Error("Insufficient balance");
+      }
+      const userInvestment = new this.userInvestmentModel(
         investmentData
       );
-      const userWallet = await this.walletModel.findOne({userID: userData._id.toString()});
-     
+      const userWallet = await this.walletModel.findOne({
+        userID: userData._id.toString(),
+      });
+
       const res = await this.flutterwaveService.walletToWalletTransfer({
         account_bank: "flutterwave",
         account_number: this.config.get("FLUTTERMERCHANTID"),
         amount: investmentData.amount,
-        narration:`Investment of ${investmentData.amount} in ${investment.name}`,
+        narration: `Investment of ${investmentData.amount} in ${investment.name}`,
         reference: `${userData._id}_${userInvestment._id}`,
         debit_subaccount: userWallet.customerCode,
-
       });
+     await userInvestment.save()
+      console.log(res)
       return serviceResponse({
         data: userInvestment,
         message: "User investment created successfully",
         status: true,
       });
     } catch (error) {
-          throw new NotAcceptableException(error.message);
+      throw new NotAcceptableException(error?.response?.data?.message|| error.message);
     }
   }
 }

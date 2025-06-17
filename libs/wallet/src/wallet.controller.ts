@@ -77,7 +77,7 @@ export class WalletController {
   }
   //testDeposit
   @Post("test-deposit")
-  @UseGuards(JwtAuthGuard)
+
   @ApiOperation({ summary: "Test deposit to a user's wallet" })
   @ApiBody({
     schema: {

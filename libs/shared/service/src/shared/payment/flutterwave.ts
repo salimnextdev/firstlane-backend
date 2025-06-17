@@ -39,7 +39,7 @@ export class FlutterwaveService {
   //webhook 
   async handleWebhook(req: any): Promise<any> {
     try {
-   
+   console.log( req.body)
     
     const signature = req.headers["verif-hash"];
     if (!signature || (signature !== this.secretHash)) {
@@ -91,6 +91,7 @@ export class FlutterwaveService {
     mobilenumber: string;
   }): Promise<any> {
     const { account_name, email = "", mobilenumber } = data;
+    console.log(data)
     try {
       const options = {
         method: "POST",

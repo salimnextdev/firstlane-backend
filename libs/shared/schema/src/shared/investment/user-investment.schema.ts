@@ -42,7 +42,7 @@ export class UserInvestmentModel {
   @Prop({ default: 0, min: 0 })
   interestEarned: number;
 
-  @Prop({ unique: true })
+  @Prop({ })
   investmentCode: string;
 }
 

@@ -93,7 +93,7 @@ export class WalletService {
             "Error performing wallet to wallet transfer:",
             error.response?.data || error.message
           );
-          throw error;
+          throw new NotAcceptableException(error.response?.data.message || error.message);
         }
       }
       async createVirtualAccount(userData: {
