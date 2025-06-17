@@ -25,7 +25,7 @@ import {
 } from "@nestjs/swagger";
 
 @ApiTags("Wallets")
-@ApiBearerAuth('access-token')
+@ApiBearerAuth("access-token")
 @Controller("wallet")
 export class WalletController {
   constructor(private walletService: WalletService) {}
@@ -77,7 +77,6 @@ export class WalletController {
   }
   //testDeposit
   @Post("test-deposit")
-
   @ApiOperation({ summary: "Test deposit to a user's wallet" })
   @ApiBody({
     schema: {
@@ -90,15 +89,15 @@ export class WalletController {
   })
   async testDeposit(
     @Request() req,
-    @Body() body: {
+    @Body()
+    body: {
       amount: number;
-      account_reference:string
-    }){
-      return await this.walletService.testDeposit(body);
+      account_reference: string;
     }
-    a
-  
-  
+  ) {
+    return await this.walletService.testDeposit(body);
+  }
+  a;
 
   // fetchTransactions
   @Get("fetch-transactions")
@@ -109,11 +108,39 @@ export class WalletController {
     required: false,
     example: "PSA8D3C48391A6054680",
   })
+  @ApiQuery({
+    name: "from",
+    description: "from date",
+    required: false,
+    example: "2021-01-01",
+  })
+  @ApiQuery({
+    name: "to",
+    description: "to date",
+    required: false,
+    example: "2021-01-01",
+  })
+  @ApiQuery({
+    name: "perPage",
+    description: "number of transactions per page",
+    required: false,
+    example: 10,
+  })
+  @ApiQuery({
+    name: "page",
+    description: "page number",
+    required: false,
+    example: 1,
+  })
   @ApiOperation({ summary: "Fetch transactions on a payout subaccount" })
   async fetchTransactions(@Request() req, @Query("userID") userID: string) {
-    return await this.walletService.fetchTransactions(
-      userID || req.user._id.toString()
-    );
+    return await this.walletService.fetchTransactions({
+      userID: userID || req.user._id.toString(),
+      from: req.query.from,
+      to: req.query.to,
+      perPage: req.query.perPage,
+      page: req.query.page,
+    });
   }
 
   // Get all banks

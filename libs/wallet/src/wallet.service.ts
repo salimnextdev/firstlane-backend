@@ -181,14 +181,28 @@ export class WalletService {
   }
   // fetchTransactions
   async fetchTransactions(data: {
-    subaccountId: string;
+    userID: string;
     from: string;
     to: string;
     perPage?: number;
     page?: number;
-  }): Promise<any> {
+  }): Promise<ObjectReturnType> {
     try {
-      const res = await this.flutterwaveService.fetchTransactions(data);
+      const wallet = await this.walletModel.findOne({ userID: data.userID });
+      if (!wallet) {
+        return serviceResponse({
+          status: false,
+          message: "Wallet not found",
+        });
+      }
+      const res = await this.flutterwaveService.fetchTransactions({
+        subaccountId: wallet.customerCode,
+        from: data.from,
+        to: data.to,
+
+        fetch_limit: data.perPage,
+        page: data.page,
+      });
       return serviceResponse({
         status: true,
         message: res.message,
@@ -196,7 +210,9 @@ export class WalletService {
       });
     } catch (error) {
       this.logger.error("Error fetching transactions:", error);
-      throw new NotAcceptableException(error?.message);
+      throw new NotAcceptableException(
+        error?.response?.data?.message || error?.message
+      );
     }
   }
   // get all banks
