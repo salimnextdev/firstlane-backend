@@ -39,8 +39,7 @@ export class FlutterwaveService {
   //webhook 
   async handleWebhook(req: any): Promise<any> {
     try {
-   console.log( req.body)
-    
+   
     const signature = req.headers["verif-hash"];
     if (!signature || (signature !== this.secretHash)) {
         // This request isn't from Flutterwave; discard

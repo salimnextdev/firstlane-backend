@@ -173,7 +173,7 @@ export class InvestmentService {
 
   //user investment
   async userInvest(
-    investmentData: UserInvestmentDTO,
+    investmentData: Partial<UserInvestmentDTO>,
     userData: UserDTO
   ): Promise<ObjectReturnType> {
     try {
@@ -182,6 +182,9 @@ export class InvestmentService {
         .exec();
       if (!investment) {
         throw new NotFoundException("Investment plan not found");
+      }
+      if(investment.userIDs.includes(userData._id.toString())){
+        throw new NotAcceptableException("User already invested in this plan");
       }
       if (
         investmentData.amount < investment.minAmount ||
@@ -213,6 +216,8 @@ export class InvestmentService {
         reference: `${userData._id}_${userInvestment._id}`,
         debit_subaccount: userWallet.customerCode,
       });
+      investment.userIDs.push(userData._id.toString()) 
+      await investment.save()
      await userInvestment.save()
       console.log(res)
       return serviceResponse({

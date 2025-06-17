@@ -22,6 +22,7 @@ import {
   ApiQuery,
   ApiTags,
   PartialType,
+  PickType,
 } from "@nestjs/swagger";
 import { InvestmentDTO, UserInvestmentDTO } from "@app/dto";
 import { InvestmentService } from "./investment.service";
@@ -30,7 +31,10 @@ class UpdateInvestmentDTO extends PartialType(InvestmentDTO) {
   @ApiProperty({ type: String })
   _id: string;
 }
-
+class UserInvestmentToPlan extends PickType(
+  UserInvestmentDTO,
+  ['amount','investmentID']
+) {}
 @ApiTags("investments")
 @ApiBearerAuth("access-token")
 @Controller("investments")
@@ -135,11 +139,11 @@ export class InvestmentController {
   @Post("user-investment")
   @ApiOperation({ summary: "Create a new user investment" })
   @ApiBody({
-    type: UserInvestmentDTO,
+    type: UserInvestmentToPlan,
     description: "Creating a new user investment Details",
   })
   @UseGuards(JwtAuthGuard)
-  async userInvest(@Body() investment: UserInvestmentDTO, @Request() req: any) {
+  async userInvest(@Body() investment: UserInvestmentToPlan, @Request() req: any) {
     return this.investmentService.userInvest(investment, req.user);
   }
 }

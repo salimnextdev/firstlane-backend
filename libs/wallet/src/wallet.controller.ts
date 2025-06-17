@@ -25,7 +25,7 @@ import {
 } from "@nestjs/swagger";
 
 @ApiTags("Wallets")
-@ApiBearerAuth("access_token")
+@ApiBearerAuth('access-token')
 @Controller("wallet")
 export class WalletController {
   constructor(private walletService: WalletService) {}

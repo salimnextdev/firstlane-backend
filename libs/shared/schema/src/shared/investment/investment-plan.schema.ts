@@ -11,7 +11,7 @@ export class InvestmentPlanModel {
   id: string;
   @Prop({ min: 0 })
   minAmount: number;
-  @Prop({ min: 0 })
+  @Prop({ min: 1000000000000000 })
   maxAmount: number;
   @Prop({
     description: "Name of the investment plan",
