@@ -146,4 +146,17 @@ export class InvestmentController {
   async userInvest(@Body() investment: UserInvestmentToPlan, @Request() req: any) {
     return this.investmentService.userInvest(investment, req.user);
   }
+  //get user investments
+  @Get("user-investment")
+  @ApiOperation({ summary: "Get all user investments" })
+  @ApiQuery({
+    name: "userID",
+    required: false,
+    description: "userID",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getUserInvestments(@Request() req: any,@Query("userID") userID: string) {
+    return this.investmentService.getUserInvestments(userID || req.user._id.toString());
+  }
 }

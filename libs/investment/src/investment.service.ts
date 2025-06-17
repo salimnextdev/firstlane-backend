@@ -229,4 +229,20 @@ export class InvestmentService {
       throw new NotAcceptableException(error?.response?.data?.message|| error.message);
     }
   }
+
+  //get user investments
+  async getUserInvestments(userID: string): Promise<ObjectReturnType> {
+    try {
+      const investments = await this.userInvestmentModel.find({
+        userID,
+      });
+      return serviceResponse({
+        data: investments,
+        message: "User investments retrieved successfully",
+        status: true,
+      });
+    } catch (error) {
+      throw new NotAcceptableException( error.message);
+    }
+  }
 }
