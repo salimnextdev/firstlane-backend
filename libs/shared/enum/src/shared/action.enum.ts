@@ -18,6 +18,28 @@ export enum InvestmentType {
   RETIREMENT = 'retirement',
 }
 
+export enum RepaymentInterval{  
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  QUARTERLY = 'quarterly',
+  ANNUALLY = 'annually',
+  
+
+}
+
+export enum RepaymentIntervalIDays{  
+
+"thirty" = "30",
+  "sixty" = "60",
+  "ninety" = "90",
+  "one-eighty" = "180",
+  "three-sixty-five" = "365",
+  
+  
+
+
+}
 
 export enum InvestmentStatus {
   PENDING = 'pending',

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 import { randomInt, randomUUID } from "crypto";
-import { UserInvestmentStatus } from "@app/enum";
+import { RepaymentIntervalIDays, UserInvestmentStatus } from "@app/enum";
 
 export type UserInvestmentDoc = UserInvestmentModel & Document;
 
@@ -44,6 +44,10 @@ export class UserInvestmentModel {
 
   @Prop({ })
   investmentCode: string;
+
+  
+ @Prop({ enum:RepaymentIntervalIDays, default: RepaymentIntervalIDays.thirty})
+  repaymentInterval:string
 }
 
 export const UserInvestmentSchema = SchemaFactory.createForClass(UserInvestmentModel);

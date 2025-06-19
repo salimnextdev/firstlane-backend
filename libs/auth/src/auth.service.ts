@@ -518,7 +518,7 @@ export class AuthService {
     code: string,
     newPassword: string
   ): Promise<any> {
-    let isValid = false;
+    // let isValid = false;
     // if (token) {
     //   const secret = await this.authenticatorModel.findOne({
     //     userID: userID,
@@ -536,9 +536,9 @@ export class AuthService {
       type: "PasswordReset",
     });
 
-    isValid = checkCode ? true : isValid;
+    // isValid = checkCode ? true : isValid;
 
-    if (!isValid) {
+    if (!checkCode) {
       throw new NotFoundException("Code not found or expired");
     }
 

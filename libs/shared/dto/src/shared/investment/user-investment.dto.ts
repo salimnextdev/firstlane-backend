@@ -1,4 +1,4 @@
-import { UserInvestmentStatus } from "@app/enum";
+import { RepaymentIntervalIDays, UserInvestmentStatus } from "@app/enum";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UserInvestmentDTO {
@@ -67,4 +67,10 @@ export class UserInvestmentDTO {
     description: "A unique code for the user's investment",
   })
   investmentCode?: string;
+
+  @ApiProperty({    example: RepaymentIntervalIDays.thirty,
+    enum:RepaymentIntervalIDays,
+    description:"The interval at which repayments are made in days"
+  })
+  repaymentInterval?: string;
 }
