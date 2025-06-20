@@ -146,8 +146,13 @@ export class InvestmentService {
     }
   }
 
-  async delete(ids: string[], userData: UserDTO): Promise<ObjectReturnType> {
+  async delete(ids: string[],investmentID:string, userData: UserDTO): Promise<ObjectReturnType> {
     try {
+      await this.userInvestmentModel.updateMany({
+        investmentID: { $in: ids },
+      }, {
+        investmentID,
+      })
       const result = await this.investmentModel.deleteMany({
         _id: { $in: ids },
       });

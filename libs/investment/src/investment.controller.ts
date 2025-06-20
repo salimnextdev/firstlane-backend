@@ -33,7 +33,7 @@ class UpdateInvestmentDTO extends PartialType(InvestmentDTO) {
 }
 class UserInvestmentToPlan extends PickType(
   UserInvestmentDTO,
-  ['amount','investmentID']
+  ['amount','investmentID','repaymentInterval',]
 ) {}
 @ApiTags("investments")
 @ApiBearerAuth("access-token")
@@ -127,12 +127,17 @@ export class InvestmentController {
     return this.investmentService.findAll(query);
   }
 
-  @Delete("")
-  // @UseGuards(JwtAuthGuard)
+  @Delete("transfer-delete/:investmentID")
+  @UseGuards(JwtAuthGuard)
+  @ApiParam({
+    name: "investmentID",
+    description: "The investmentID to search for",
+    type: String,
+  })
   @ApiOperation({ summary: "Delete investments by their IDs" })
   @ApiBody({ type: [String], description: "Array of investment IDs to delete" })
-  async delete(@Body() ids: string[], @Request() req: any) {
-    return this.investmentService.delete(ids, req.user);
+  async delete(@Body() ids: string[], @Param("investmentID") investmentID: string, @Request() req: any) {
+    return this.investmentService.delete(ids,investmentID, req.user);
   }
 
   //user investment
