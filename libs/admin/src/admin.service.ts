@@ -52,13 +52,15 @@ export class AdminService {
         throw new BadRequestException("No KYC information found for this user");
       }
 
-      // Update verification status
-      user.verifications.status = status;
-      if (notes) {
-        user.verifications.notes = notes;
-      }
-
-      await user.save();
+      const updatedUser= await this.userModel.findByIdAndUpdate(userId, {
+        "verifications.status": status,
+        "verifications.notes": notes??"",
+        "verifications.verifiedAt": new Date(),
+        "verifications.isKycComplete": status === "verified" ? true : false,
+        
+      },{new:true});
+     
+     
 
       this.notificationActivity.notificationActivity({
         action: "Verification Status Updated",
@@ -72,7 +74,7 @@ export class AdminService {
       return serviceResponse({
         message: `KYC ${status} successfully`,
         status: true,
-        data: user.verifications,
+        data: updatedUser.verifications,
       });
     } catch (error) {
       throw new BadRequestException(error.message);
