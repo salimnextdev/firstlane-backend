@@ -26,6 +26,20 @@ class BankAccount {
 
   @Prop({ required: true })
   accountName: string;
+  @Prop({  })
+  bankCode: string;
+  @Prop({ })
+  accountType: string;
+
+  @Prop({  })
+  ACHrouting: string;
+  @Prop({  })
+ wireRouting: string;
+  @Prop({  })
+  swiftCode: string;
+  @Prop({  })
+  currency: string;
+  
 }
 
 class NextOfKin {
@@ -190,6 +204,9 @@ export class UserModel {
 
   @Prop()
   country?: string;
+
+  @Prop()
+  gender?: string;
 
   @Prop()
   localGovernmentArea?: string;

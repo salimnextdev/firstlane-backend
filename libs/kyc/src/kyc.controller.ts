@@ -27,7 +27,7 @@ import { JwtAuthGuard } from "@app/guard";
   // {} 
    class KYCLevel2DTO extends PickType(
     VerificationsDTO,
-    ['idNumber','idType','issueDate','expiryDate','bvn']
+    ['idNumber','idType','documentUrl','issueDate','expiryDate','bvn']
   ) {}
 
   class KYCLevel3DTO extends PickType(

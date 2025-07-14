@@ -21,6 +21,19 @@ export class BankAccountDTO {
   accountNumber: string;
   @ApiProperty({ description: 'Account name' })
   accountName: string;
+  @ApiProperty({ description: 'Bank code' })
+  bankCode: string;
+  @ApiProperty({ description: 'Account type' })
+  accountType: string;
+  @ApiProperty({ description: 'ACH routing number' })
+  ACHrouting: string;
+  @ApiProperty({ description: 'Wire routing number' })
+  wireRouting: string;
+  @ApiProperty({ description: 'Swift code' })
+  swiftCode: string;
+  @ApiProperty({ description: 'Currency' })
+  currency: string;
+  
 }
 
 export class ChangePasswordDTO {

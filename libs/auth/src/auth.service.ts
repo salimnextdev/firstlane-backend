@@ -78,7 +78,7 @@ export class AuthService {
         category: FeeCategory.REFFERALPRICE,
       });
 
-      let referral = {
+      const referral = {
         refBy: checkUserRefId,
         amount: fee?.fee,
         max: fee?.maxAmount,
