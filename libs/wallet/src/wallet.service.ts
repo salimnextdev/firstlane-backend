@@ -107,13 +107,16 @@ export class WalletService {
   }
   //test deposite
   async testDeposit(data: {
-    account_reference: string;
+    userID: string;
     amount: number;
   }): Promise<ObjectReturnType> {
-    const { account_reference, amount } = data;
+    const { userID, amount } = data;
+    const wallet = await this.walletModel.findOne({userID})
+
+
     try {
       const res = await this.flutterwaveService.testDeposit({
-        account_reference,
+      account_reference:  wallet.customerCode,
         amount,
       });
       return serviceResponse({

@@ -25,8 +25,9 @@ import {
 } from "@nestjs/swagger";
 
 @ApiTags("Wallets")
-@ApiBearerAuth("access-token")
+@ApiBearerAuth('access-token')
 @Controller("wallet")
+@UseGuards(JwtAuthGuard)
 export class WalletController {
   constructor(private walletService: WalletService) {}
 
@@ -83,7 +84,7 @@ export class WalletController {
       type: "object",
       properties: {
         amount: { type: "number", example: 100 },
-        account_reference: { type: "string", example: "ACCT123" },
+      
       },
     },
   })
@@ -92,10 +93,10 @@ export class WalletController {
     @Body()
     body: {
       amount: number;
-      account_reference: string;
+     
     }
   ) {
-    return await this.walletService.testDeposit(body);
+    return await this.walletService.testDeposit({...body,userID:req.user._id.toString()});
   }
   a;
 
