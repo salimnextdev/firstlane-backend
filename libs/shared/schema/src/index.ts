@@ -12,6 +12,11 @@ export * from './shared/chat.schema';
 export * from './shared/dispute.schema';
 export * from './shared/ad.schema';
 export * from './shared/promo.schema';
+export * from './shared/reference/purpose.schema';
+export * from './shared/reference/collateral.schema';
+export * from './shared/reference/duration.schema';
+export * from './shared/reference/inverval.schema';
+export * from './shared/loan/loan.schema';
 
 
 export * from './shared/dispute-type.schema';
@@ -24,3 +29,6 @@ export * from './shared/investment/investment.schema';
 export * from './shared/investment/user-investment.schema';
 export * from './shared/waller.schema';
 export * from './shared/transaction.schema';
+
+
+

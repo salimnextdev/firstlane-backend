@@ -165,6 +165,12 @@
       ],
       "@app/investment/*": [
         "libs/investment/src/*"
+      ],
+      "@app/reference": [
+        "libs/reference/src"
+      ],
+      "@app/reference/*": [
+        "libs/reference/src/*"
       ]
     }
   }

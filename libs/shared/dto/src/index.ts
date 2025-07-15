@@ -7,6 +7,13 @@ export * from './shared/kyc.dto';
 export * from './shared/investment/investment-plan.dto';
 export * from './shared/investment/investment.dto';
 export * from './shared/investment/user-investment.dto';
+
+export * from './shared/reference/purpose.dto';
+export * from './shared/reference/collateral.dto';
+export * from './shared/reference/duration.dto';
+export * from './shared/reference/inverval.dto';
+export * from './shared/loan/loan.dto';
+
 // export * from './shared/ride.dto';
 // export * from './shared/fee.dto';
 // export * from './shared/chat.dto';

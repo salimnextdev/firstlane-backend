@@ -141,6 +141,25 @@ export class AuthController {
   removeBankAccount(@Request() req,@Param("accountNumber") accountNumber:string) {
     return this.authService.removeBankAccount(req.user._id,accountNumber);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get-bank-account')
+  @ApiOperation({ summary: 'Get user bank account details' })
+  @ApiResponse({ status: 200, description: 'Bank account details retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Bank account not found' })
+  getUserBankAccount(@Request() req) {
+    return this.authService.getUserBanks(req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('edit-bank-account')
+  @ApiOperation({ summary: 'Edit user bank account details' })
+  @ApiBody({ type: BankAccountDTO, description: 'Bank account details' })
+  @ApiResponse({ status: 200, description: 'Bank account updated successfully' })
+  @ApiResponse({ status: 404, description: 'Bank account not found' })
+  editUserBankAccount(@Request() req) {
+    return this.authService.editUserBanks(req.user._id, req.body);
+  }
   
   @Get('google')
   @UseGuards(AuthGuard('google'))

@@ -31,6 +31,16 @@ import {
   InvestmentSchema,
   UserInvestmentModel,
   UserInvestmentSchema,
+  LoanModel,
+  LoanSchema,
+  CollateralModel,
+  CollateralSchema,
+  DurationModel,
+  DurationSchema,
+  IntervalModel,
+  IntervalSchema,
+  PurposeModel,
+  PurposeSchema,
 } from '@app/schema';
 import { RideModel, RideSchema } from '@app/schema/shared/ride.schema';
 import { TransactionModel, TransactionSchema } from '@app/schema/shared/transaction.schema';
@@ -100,6 +110,15 @@ MongooseModule.forFeature([
     MongooseModule.forFeature([
       { name: DisputeTypeModel.name, schema: DisputeTypeSchema },
     ]),
+
+  MongooseModule.forFeature([{ name: LoanModel.name, schema: LoanSchema }]),
+    MongooseModule.forFeature([{ name: PurposeModel.name, schema: PurposeSchema }]),
+    MongooseModule.forFeature([{ name: CollateralModel.name, schema: CollateralSchema }]),
+    MongooseModule.forFeature([{ name: DurationModel.name, schema: DurationSchema }]),
+    MongooseModule.forFeature([{ name: IntervalModel.name, schema: IntervalSchema }]),
+    
+
+    
   ],
 
   exports: [MongooseModule],

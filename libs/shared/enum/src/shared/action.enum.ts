@@ -49,6 +49,24 @@ export enum InvestmentStatus {
   
 }
 
+export enum LoanStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  APPROVED = 'approved',
+  PREAPPROVE = 'pre-approve',
+  REJECTED = 'rejected',
+  PAID = 'paid',
+  OVERDUE = 'overdue',
+  UNDERWRITING = 'underwriting',
+  DISBURSED = 'disbursed',
+}
+export enum LoanType {
+  PERSONAL = 'personal',
+  BUSINESS = 'business',
+  EMPLOYEE = 'employee',
+  ASSETFINANCE = 'asset-finance',
+}
+
 export enum UserInvestmentStatus {
   PENDING = 'pending',
   ACTIVE = 'active',
@@ -56,5 +74,12 @@ export enum UserInvestmentStatus {
   CANCELLED = 'cancelled',
   
 }
+export enum AppTypeEnum {
+  LOAN = 'loan',
+  INVESTMENT = 'investment',
+  
+}
+
+
 
 

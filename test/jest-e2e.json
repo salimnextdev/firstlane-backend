@@ -24,6 +24,8 @@
     "@app/investment/(.*)": "<rootDir>/../libs/investment/src/$1",
     "@app/investment": "<rootDir>/../libs/investment/src",
     "@app/wallet/(.*)": "<rootDir>/../libs/wallet/src/$1",
-    "@app/wallet": "<rootDir>/../libs/wallet/src"
+    "@app/wallet": "<rootDir>/../libs/wallet/src",
+    "@app/reference/(.*)": "<rootDir>/../libs/reference/src/$1",
+    "@app/reference": "<rootDir>/../libs/reference/src"
   }
 }

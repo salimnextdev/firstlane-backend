@@ -32,7 +32,7 @@ import {
   PaystackService,
   SendMailService,
 } from "@app/service";
-import { OTPDTO, UserDTO } from "@app/dto";
+import { BankAccountDTO, OTPDTO, UserDTO } from "@app/dto";
 import { WalletModel, WalletDoc } from "@app/schema/shared/waller.schema";
 import { FeeCategory } from "@app/enum";
 import { SmsService } from "@app/service/shared/sms.service";
@@ -254,6 +254,44 @@ export class AuthService {
       data: user.bankAccount,
     };
   }
+
+  async getUserBanks (userID: string) {
+    const user = await this.userModel.findById(userID);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+    if (!user.bankAccount) {
+      throw new NotFoundException("No bank account found");
+    }
+    return {
+      message: "Bank account found",
+      data: user.bankAccount,
+    };
+  }
+
+  async editUserBanks (userID: string, bankAccount: BankAccountDTO) {
+    const user = await this.userModel.findById(userID);
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+    if (!user.bankAccount) {
+      throw new NotFoundException("No bank account found");
+    }
+    const index = user.bankAccount.findIndex(
+      (account) => account.accountNumber === bankAccount.accountNumber
+    );
+    if (index === -1) {
+      throw new NotFoundException("Bank account not found");
+    }
+    user.bankAccount[index] = bankAccount;
+    await user.save();
+    return {
+      message: "Bank account updated",
+      data: user.bankAccount,
+    };
+  }
+
+
 
   async refreshToken(token: string) {
     console.log(token);

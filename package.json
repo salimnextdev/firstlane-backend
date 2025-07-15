@@ -132,7 +132,8 @@
       "^@app/kyc(|/.*)$": "<rootDir>/libs/kyc/src/$1",
       "^@app/investment-plan(|/.*)$": "<rootDir>/libs/investment-plan/src/$1",
       "^@app/investment(|/.*)$": "<rootDir>/libs/investment/src/$1",
-      "^@app/wallet(|/.*)$": "<rootDir>/libs/wallet/src/$1"
+      "^@app/wallet(|/.*)$": "<rootDir>/libs/wallet/src/$1",
+      "^@app/reference(|/.*)$": "<rootDir>/libs/reference/src/$1"
     }
   }
 }

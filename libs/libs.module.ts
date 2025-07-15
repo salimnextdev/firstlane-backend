@@ -10,6 +10,7 @@ import { KycModule } from '@app/kyc';
 import { InvestmentPlanModule, } from '@app/investment-plan';
 import { InvestmentModule } from '@app/investment';
 import { WalletModule } from '@app/wallet';
+import { ReferenceModule } from '@app/reference';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { WalletModule } from '@app/wallet';
     KycModule,
        InvestmentModule,
     InvestmentPlanModule,
-    WalletModule
+    WalletModule,
+    ReferenceModule
     
   ],
   providers: [],

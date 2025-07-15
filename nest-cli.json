@@ -132,6 +132,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/wallet/tsconfig.lib.json"
       }
+    },
+    "reference": {
+      "type": "library",
+      "root": "libs/reference",
+      "entryFile": "index",
+      "sourceRoot": "libs/reference/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/reference/tsconfig.lib.json"
+      }
     }
   }
 }

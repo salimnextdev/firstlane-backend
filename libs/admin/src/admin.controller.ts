@@ -4,6 +4,7 @@ import { Body, Controller, Get, Param, Patch, Query, Req, UseGuards } from '@nes
 import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '@app/guard';
+import { LoanStatus } from '@app/enum';
 
 @Controller('admin')
 @ApiTags("admin")
@@ -60,5 +61,31 @@ constructor(private readonly adminService: AdminService) {}
     return this.adminService.getAllKycUsers(query);
   }
   
+  //change loan status
+  @Patch('loan-status/:loanId')
+  @ApiOperation({ summary: 'Update loan status (Admin)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        status: { type: 'string', example: 'approved', enum: Object.values(LoanStatus) },
+        notes: { type: 'string', example:"Image not clear" },
+      },
+    },
+  })
+  @UseGuards(JwtAuthGuard)
+  async updateLoanStatus(
+    @Param('loanId') loanId: string,
+    @Body() body: { status: LoanStatus; notes?: string },
+    @Req() req: any,
+  ) {
+    return this.adminService.changeLoanStatus(
+      loanId,
+      body.status,
+      req.user,
+      body.notes,
+    );
+  }
+
 
 }

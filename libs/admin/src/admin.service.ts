@@ -1,12 +1,14 @@
 import { UserDTO } from "@app/dto";
-import { KycLevel, VerificationStatus } from "@app/enum";
+import { KycLevel, LoanStatus, VerificationStatus } from "@app/enum";
 import {
   UserModel,
   UserDoc,
-  RideModel,
+  
   RideDoc,
   ActivityLogModel,
   ActivityLogDoc,
+  LoanDoc,
+  LoanModel,
 } from "@app/schema";
 import {
   getMetadata,
@@ -28,7 +30,7 @@ export class AdminService {
   private readonly logger = new Logger(AdminService.name);
   constructor(
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
-    @InjectModel(RideModel.name) private rideModel: Model<RideDoc>,
+    @InjectModel(LoanModel.name) private loanModel: Model<LoanDoc>,
     @InjectModel(ActivityLogModel.name)
     private activityLogModel: Model<ActivityLogDoc>,
     // private organizationAbilityFactory: OrganizationAbilityFactory,
@@ -112,6 +114,47 @@ export class AdminService {
             "verifications.isKycComplete": true,
           },
         }),
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  //change loan status 
+  async changeLoanStatus(
+    loanId: string,
+    status: LoanStatus,
+    userData: UserDTO,
+    notes?: string
+  ): Promise<ObjectReturnType> {
+    try {
+      const loan = await this.loanModel.findById(loanId);
+      if (!loan) {
+        throw new NotFoundException("Loan not found");
+      }
+
+      const updatedLoan = await this.loanModel.findByIdAndUpdate(loanId, {
+        status,
+        notes: notes ?? "", 
+        adminID:userData.id,
+      },{new:true});
+      // if(status === LoanStatus.APPROVED){
+      //   //send notification to user
+      //   this.notificationActivity.notificationActivity({
+      //     action: "Loan Status Updated",
+      //     entityType: "Loan",
+      //     entityID: loan._id.toString(),
+      //     userID: loan.userID,
+      //     details: `Loan ${status}`,
+      //     playerIds: [
+      //       // user?.playerId ?? ""
+      //     ],
+      //   });
+      // }
+      return serviceResponse({
+        message: "Loan status updated successfully",
+        status: true,
+        data: updatedLoan,
       });
     } catch (error) {
       throw new BadRequestException(error.message);
