@@ -32,7 +32,7 @@ export class LoanService {
     const plans = await this.loanModel
       .find()
       .skip(skip)
-      .limit(limit)
+      .limit(limit).populate("userID")
       .sort({ createdAt: -1 })
       .exec();
     return serviceResponse({
@@ -48,7 +48,7 @@ export class LoanService {
   }
   async findOne(id: string): Promise<ObjectReturnType> {
     try {
-      const plan = await this.loanModel.findById(id).exec();
+      const plan = await this.loanModel.findById(id).populate("userID").exec();
 
       return serviceResponse({
         data: plan,
@@ -71,6 +71,7 @@ export class LoanService {
       .find({ [key]: value })
       .skip(skip)
       .limit(limit)
+      .populate("userID")
       .sort({ createdAt: -1 })
       .exec();
     return serviceResponse({
