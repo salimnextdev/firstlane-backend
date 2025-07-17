@@ -112,7 +112,7 @@ export class WalletService {
   }): Promise<ObjectReturnType> {
     const { userID, amount } = data;
     const wallet = await this.walletModel.findOne({userID})
-
+console.log(wallet,userID)
 
     try {
       const res = await this.flutterwaveService.testDeposit({
@@ -147,7 +147,7 @@ export class WalletService {
         data: res.data,
       });
     } catch (error) {
-      this.logger.error("Error creating virtual account:", error);
+      this.logger.error("Error creating virtual account:", error.response?.data.message || error.message);
       throw new NotAcceptableException(error?.message);
     }
   }

@@ -3,7 +3,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class LoanDTO {
   @ApiProperty({
-    example: "amountRequested",
+    example: 1000,
   })
   amountRequested: number;
 
@@ -50,7 +50,7 @@ export class LoanDTO {
   employerGrade: string;
 
   @ApiProperty({
-    example: "monthlyIncome",
+    example: 10000,
   })
   monthlyIncome: number;
 
@@ -70,7 +70,7 @@ export class LoanDTO {
   lga: string;
 
   @ApiProperty({
-    example: "declarationAccepted",
+    example: true,
   })
   declarationAccepted: boolean;
 
@@ -91,7 +91,7 @@ export class LoanDTO {
   @ApiProperty({ enum: LoanStatus, example: LoanStatus.PENDING })
   status: string;
   @ApiProperty({
-    example: "userID",
+    example: "6878e109730140f93d7cac1e",
   })
   userID:string
 }
