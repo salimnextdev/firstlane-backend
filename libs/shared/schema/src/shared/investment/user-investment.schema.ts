@@ -46,7 +46,7 @@ export class UserInvestmentModel {
   investmentCode: string;
 
   
- @Prop({ enum:RepaymentIntervalIDays, default: RepaymentIntervalIDays.thirty})
+ @Prop({ })
   repaymentInterval:string
 }
 

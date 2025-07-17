@@ -68,8 +68,8 @@ export class UserInvestmentDTO {
   })
   investmentCode?: string;
 
-  @ApiProperty({    example: RepaymentIntervalIDays.thirty,
-    enum:RepaymentIntervalIDays,
+  @ApiProperty({  
+   
     description:"The interval at which repayments are made in days"
   })
   repaymentInterval?: string;
