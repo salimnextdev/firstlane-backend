@@ -11,7 +11,7 @@ export class SupportDTO {
   userID: string;
 
   @ApiProperty({ description: "admin ID who attend the ticket" })
-  admin: string;
+  adminID: string;
 
   @ApiProperty({ description: "Subject of the support ticket" })
   subject: string;

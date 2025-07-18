@@ -16,6 +16,9 @@ export class SupportService {
     createSupportDto: SupportDTO,
     userData: UserDTO
   ): Promise<ObjectReturnType> {
+    userData.userType === 'admin'
+      ? (createSupportDto.adminID = userData._id)
+      : (createSupportDto.userID = userData._id);
     const created = await this.supportModel.create({...createSupportDto,supportID:createSupportDto?.supportID});
     return serviceResponse({
       data: await created.save(),
