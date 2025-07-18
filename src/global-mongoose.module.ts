@@ -41,6 +41,8 @@ import {
   IntervalSchema,
   PurposeModel,
   PurposeSchema,
+  SupportModel,
+  SupportSchema,
 } from '@app/schema';
 import { RideModel, RideSchema } from '@app/schema/shared/ride.schema';
 import { TransactionModel, TransactionSchema } from '@app/schema/shared/transaction.schema';
@@ -107,6 +109,7 @@ MongooseModule.forFeature([
     MongooseModule.forFeature([{ name: DisputeModel.name, schema: DisputeSchema }]),
     MongooseModule.forFeature([{ name: StateModel.name, schema: StateSchema }]),
     MongooseModule.forFeature([{ name: CountryModel.name, schema: CountrySchema }]),
+    MongooseModule.forFeature([{ name: SupportModel.name, schema: SupportSchema }]),
     MongooseModule.forFeature([
       { name: DisputeTypeModel.name, schema: DisputeTypeSchema },
     ]),

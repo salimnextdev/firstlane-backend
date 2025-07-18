@@ -14,7 +14,7 @@ export * from './shared/reference/duration.dto';
 export * from './shared/reference/inverval.dto';
 export * from './shared/loan/loan.dto';
 
-// export * from './shared/ride.dto';
+export * from './shared/support.dto';
 // export * from './shared/fee.dto';
 // export * from './shared/chat.dto';
 
