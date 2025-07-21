@@ -188,9 +188,9 @@ export class InvestmentService {
       if (!investment) {
         throw new NotFoundException("Investment plan not found");
       }
-      if(investment.userIDs.includes(userData._id.toString())){
-        throw new NotAcceptableException("User already invested in this plan");
-      }
+      // if(investment.userIDs.includes(userData._id.toString())){
+      //   throw new NotAcceptableException("User already invested in this plan");
+      // }
       if (
         investmentData.amount < investment.minAmount ||
         investmentData.amount > investment.maxAmount
