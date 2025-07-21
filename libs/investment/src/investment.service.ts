@@ -207,7 +207,7 @@ export class InvestmentService {
         throw new Error("Insufficient balance");
       }
       const userInvestment = new this.userInvestmentModel(
-        investmentData
+        {...investmentData,userID:userData._id.toString()}
       );
       const userWallet = await this.walletModel.findOne({
         userID: userData._id.toString(),

@@ -63,10 +63,9 @@ export class SupportService {
     const { limit = 10, page = 1, supportID } = query;
     const skip = (page - 1) * limit;
 
-    const filter = userData.userType === 'admin' ? {adminID: userData._id, supportID: supportID } : { userID: userData._id, supportID: supportID };
-
+   
     const supports = await this.supportModel
-      .find(filter)
+      .find({supportID:supportID})
       .skip(skip)
       .limit(limit)
       .populate("userID")
@@ -79,7 +78,7 @@ export class SupportService {
       metadata: await getMetadata({
         model: this.supportModel,
         query,
-        querys: filter,
+        querys: {supportID:supportID},
       }),
     });
 
