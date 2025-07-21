@@ -173,9 +173,9 @@ export class AdminService {
     try {
       let investments;
       if (userID) {
-        investments = await this.userInvestmentModel.find({userID});
+        investments = await this.userInvestmentModel.find({userID}).populate("userID investmentID");
       } else {
-        investments = await this.userInvestmentModel.find({});
+        investments = await this.userInvestmentModel.find({}).populate("userID investmentID");
       }
 
       return serviceResponse({
