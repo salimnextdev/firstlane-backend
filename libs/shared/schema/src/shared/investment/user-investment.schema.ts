@@ -14,7 +14,7 @@ export class UserInvestmentModel {
   @Prop({  ref: 'UserModel' })
   userID: string;
 
-  @Prop({  ref: 'InvestmentModel' })
+  @Prop({  ref: 'InvestmentPlanModel' })
   investmentID: string;
 
   @Prop({  min: 0 })
