@@ -3,12 +3,13 @@ import { KycLevel, LoanStatus, VerificationStatus } from "@app/enum";
 import {
   UserModel,
   UserDoc,
-  
   RideDoc,
   ActivityLogModel,
   ActivityLogDoc,
   LoanDoc,
   LoanModel,
+  UserInvestmentDoc,
+  UserInvestmentModel,
 } from "@app/schema";
 import {
   getMetadata,
@@ -30,6 +31,8 @@ export class AdminService {
   private readonly logger = new Logger(AdminService.name);
   constructor(
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
+    @InjectModel(UserInvestmentModel.name)
+    private userInvestmentModel: Model<UserInvestmentDoc>,
     @InjectModel(LoanModel.name) private loanModel: Model<LoanDoc>,
     @InjectModel(ActivityLogModel.name)
     private activityLogModel: Model<ActivityLogDoc>,
@@ -54,15 +57,16 @@ export class AdminService {
         throw new BadRequestException("No KYC information found for this user");
       }
 
-      const updatedUser= await this.userModel.findByIdAndUpdate(userId, {
-        "verifications.status": status,
-        "verifications.notes": notes??"",
-        "verifications.verifiedAt": new Date(),
-        "verifications.isKycComplete": status === "verified" ? true : false,
-        
-      },{new:true});
-     
-     
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        userId,
+        {
+          "verifications.status": status,
+          "verifications.notes": notes ?? "",
+          "verifications.verifiedAt": new Date(),
+          "verifications.isKycComplete": status === "verified" ? true : false,
+        },
+        { new: true }
+      );
 
       this.notificationActivity.notificationActivity({
         action: "Verification Status Updated",
@@ -86,7 +90,7 @@ export class AdminService {
   //get all users with KYC for kyc
   async getAllKycUsers(query: any): Promise<ObjectReturnType> {
     const { limit = 10, page = 1 } = query;
-    const skip = (page -1)* limit;
+    const skip = (page - 1) * limit;
     try {
       const users = await this.userModel
         .find({
@@ -107,7 +111,7 @@ export class AdminService {
         message: "KYC users retrieved successfully",
         status: true,
         data: users,
-        metadata:await getMetadata({
+        metadata: await getMetadata({
           model: this.userModel,
           query,
           querys: {
@@ -120,7 +124,7 @@ export class AdminService {
     }
   }
 
-  //change loan status 
+  //change loan status
   async changeLoanStatus(
     loanId: string,
     status: LoanStatus,
@@ -133,11 +137,15 @@ export class AdminService {
         throw new NotFoundException("Loan not found");
       }
 
-      const updatedLoan = await this.loanModel.findByIdAndUpdate(loanId, {
-        status,
-        notes: notes ?? "", 
-        adminID:userData.id,
-      },{new:true});
+      const updatedLoan = await this.loanModel.findByIdAndUpdate(
+        loanId,
+        {
+          status,
+          notes: notes ?? "",
+          adminID: userData.id,
+        },
+        { new: true }
+      );
       // if(status === LoanStatus.APPROVED){
       //   //send notification to user
       //   this.notificationActivity.notificationActivity({
@@ -155,6 +163,25 @@ export class AdminService {
         message: "Loan status updated successfully",
         status: true,
         data: updatedLoan,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async getUserInvestments(userID: string): Promise<ObjectReturnType> {
+    try {
+      let investments;
+      if (userID) {
+        investments = await this.userInvestmentModel.find({userID});
+      } else {
+        investments = await this.userInvestmentModel.find({});
+      }
+
+      return serviceResponse({
+        data: investments,
+        message: "User investments retrieved successfully",
+        status: true,
       });
     } catch (error) {
       throw new BadRequestException(error.message);

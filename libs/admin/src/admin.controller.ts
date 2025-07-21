@@ -87,5 +87,17 @@ constructor(private readonly adminService: AdminService) {}
     );
   }
 
-
+//get user investments
+  @Get("user-investment")
+  @ApiOperation({ summary: "Get all users investments" })
+  @ApiQuery({
+    name: "userID",
+    required: false,
+    description: "userID optional",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getUserInvestments(@Req() req: any,@Query("userID") userID: string) {
+    return this.adminService.getUserInvestments(userID );
+  }
 }
