@@ -278,7 +278,16 @@ export class InvestmentService {
       if (!investment) {
         throw new NotFoundException("Investment not found");
       }
-      const nw=investment.toObject()
+
+      const wallet = await this.flutterwaveService.getAvailableBalance(
+        userData._id.toString()
+      );
+      if ((wallet?.data?.available_balance ?? 0) < investment.amount) {
+        throw new Error("Insufficient balance");
+      }
+      const userWallet = await this.walletModel.findOne({
+        userID: userData._id.toString(),
+      });
      
       const newInvestment = new this.userInvestmentModel({
         ...investment.toObject(),
@@ -286,6 +295,19 @@ export class InvestmentService {
         _id: undefined, 
         investmentCode: undefined, 
       });
+      const investmentPlan = await this.investmentPlanModel
+        .findById(investment.investmentID)
+        .exec();
+const res = await this.flutterwaveService.walletToWalletTransfer({
+        account_bank: "flutterwave",
+        account_number: this.config.get("FLUTTERMERCHANTID"),
+        amount: investment.amount,
+        narration: `Investment of ${investment.amount} in ${investmentPlan.name}`,
+        reference: `${userData._id}_${newInvestment._id}`,
+        debit_subaccount: userWallet.customerCode,
+      });
+      investmentPlan.userIDs.push(userData._id.toString()) 
+      
       await newInvestment.save();
       return serviceResponse({
         data: newInvestment,
