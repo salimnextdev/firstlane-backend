@@ -169,14 +169,14 @@ export class AdminService {
     }
   }
 
-  async getUserInvestments(userID: string,query:any): Promise<ObjectReturnType> {
+  async getUserInvestments(id: string,query:any): Promise<ObjectReturnType> {
     const { limit = 10, page = 1 } = query;
     const skip = (page - 1) * limit;
 
     try {
       let investments;
-      if (userID) {
-        investments = await this.userInvestmentModel.find({userID}).populate("userID investmentID");
+      if (id) {
+        investments = await this.userInvestmentModel.findById(id).populate("userID investmentID");
       } else {
         investments = await this.userInvestmentModel.find({}).skip(skip)
       .limit(limit)
