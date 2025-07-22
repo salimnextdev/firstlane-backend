@@ -1,6 +1,6 @@
 
 
-import { Body, Controller, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '@app/guard';
@@ -96,8 +96,20 @@ constructor(private readonly adminService: AdminService) {}
     description: "userID optional",
     type: String,
   })
+   @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Page number for pagination",
+    type: Number,
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of investments per page",
+    type: Number,
+  })
   @UseGuards(JwtAuthGuard)
-  async getUserInvestments(@Req() req: any,@Query("userID") userID: string) {
-    return this.adminService.getUserInvestments(userID );
+  async getUserInvestments(@Req() req: any,@Query("userID") userID: string,@Query() query: any) {
+    return this.adminService.getUserInvestments(userID,query );
   }
 }
