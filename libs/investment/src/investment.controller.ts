@@ -164,4 +164,31 @@ export class InvestmentController {
   async getUserInvestments(@Request() req: any,@Query("userID") userID: string) {
     return this.investmentService.getUserInvestments(userID || req.user._id.toString());
   }
+
+  @Get("user-investment/:code")
+  @ApiOperation({ summary: "Get user investment by code" })
+  @ApiParam({
+    name: "code",
+    required: true,
+    description: "Investment code",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getbyInvestmentCode(@Param("code") code: string) {
+    return this.investmentService.getbyInvestmentCode(code);
+  }
+
+  @Post("user-investment/copy/:code")
+  @ApiOperation({ summary: "Copy user investment by code" })
+  @ApiParam({
+    name: "code",
+    required: true,
+    description: "Investment code",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async copyInvestment(@Param("code") code: string, @Request() req: any) {
+    return this.investmentService.copyInvestment(code, req.user);
+  }
+
 }

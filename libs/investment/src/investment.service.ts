@@ -250,4 +250,51 @@ export class InvestmentService {
       throw new NotAcceptableException( error.message);
     }
   }
+
+ async getbyInvestmentCode(code:string): Promise<ObjectReturnType> {
+    try {
+      const investment = await this.userInvestmentModel.findOne({
+        investmentCode: code,
+      }).populate("userID investmentID");
+      if (!investment) {
+        throw new NotFoundException("Investment not found");
+      }
+      return serviceResponse({
+        data: investment,
+        message: "Investment retrieved successfully",
+        status: true,
+      });
+    } catch (error) {
+      throw new NotAcceptableException(error.message);
+    }
+
+  }
+
+ async copyInvestment(code:string, userData: UserDTO): Promise<ObjectReturnType> {
+    try {
+      const investment = await this.userInvestmentModel.findOne({
+        investmentCode: code,
+      }).populate("userID investmentID");
+      if (!investment) {
+        throw new NotFoundException("Investment not found");
+      }
+      const nw=investment.toObject()
+     
+      const newInvestment = new this.userInvestmentModel({
+        ...investment.toObject(),
+        userID: userData._id.toString(),
+        _id: undefined, 
+        investmentCode: undefined, 
+      });
+      await newInvestment.save();
+      return serviceResponse({
+        data: newInvestment,
+        message: "Investment copied successfully",
+        status: true,
+      });
+    } catch (error) {
+      throw new NotAcceptableException(error.message);
+    }
+
+  }
 }

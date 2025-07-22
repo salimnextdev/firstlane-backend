@@ -56,6 +56,6 @@ export const UserInvestmentSchema = SchemaFactory.createForClass(UserInvestmentM
 UserInvestmentSchema.pre('save', async function(next) {
   
     this.id = randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
-  
+   this.investmentCode = randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
   next();
 });
