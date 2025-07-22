@@ -240,7 +240,7 @@ export class InvestmentService {
     try {
       const investments = await this.userInvestmentModel.find({
         userID,
-      }).populate(" investmentID");
+      }).populate("investmentID");
       return serviceResponse({
         data: investments,
         message: "User investments retrieved successfully",
