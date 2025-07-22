@@ -240,7 +240,7 @@ export class InvestmentService {
     try {
       const investments = await this.userInvestmentModel.find({
         userID,
-      });
+      }).populate(" investmentID");
       return serviceResponse({
         data: investments,
         message: "User investments retrieved successfully",
@@ -274,7 +274,7 @@ export class InvestmentService {
     try {
       const investment = await this.userInvestmentModel.findOne({
         investmentCode: code,
-      }).populate("userID investmentID");
+      })
       if (!investment) {
         throw new NotFoundException("Investment not found");
       }
