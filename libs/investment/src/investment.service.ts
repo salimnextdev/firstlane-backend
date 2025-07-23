@@ -254,7 +254,7 @@ export class InvestmentService {
  async getbyInvestmentCode(code:string): Promise<ObjectReturnType> {
     try {
       const investment = await this.investmentModel.findOne({
-        investmentCode: code,
+        code: code,
       })
       if (!investment) {
         throw new NotFoundException("Investment not found");
@@ -273,7 +273,7 @@ export class InvestmentService {
  async copyInvestment(code:string, userData: UserDTO): Promise<ObjectReturnType> {
     try {
       const investment = await this.investmentModel.findOne({
-        investmentCode: code,
+        code: code,
       })
       if (!investment) {
         throw new NotFoundException("Investment not found");
