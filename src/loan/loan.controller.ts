@@ -106,5 +106,28 @@ export class LoanController {
   async delete(@Body() ids: string[],  @Req() req: any) {
     return this.loanService.delete(ids, req.user);
   }
+
+//findByMany
+  @Post("by-many")
+  @ApiOperation({ summary: "Find loans by multiple criteria" })
+  @ApiBody({
+    type: LoanDTO,
+    description: "Criteria to search for loans",
+  })
+  @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Page number for pagination",
+    type: Number,
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of loans per page",
+    type: Number,
+  })
+  async findByMany(@Body() data: LoanDTO, @Query() query: any) {
+    return this.loanService.findByMany(data, query);
+  }
   
 }

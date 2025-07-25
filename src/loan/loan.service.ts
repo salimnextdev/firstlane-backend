@@ -85,6 +85,33 @@ export class LoanService {
       }),
     });
   }
+  // findByMany
+  async findByMany(
+    data: LoanDTO,
+    query: any
+  ): Promise<ObjectReturnType> {
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
+
+   
+    const plans = await this.loanModel
+      .find(data)
+      .skip(skip)
+      .limit(limit)
+      .populate("userID")
+      .sort({ createdAt: -1 })
+      .exec();
+    return serviceResponse({
+      data: plans,
+      message: "Loan plans retrieved successfully",
+      status: true,
+      metadata: await getMetadata({
+        model: this.loanModel,
+        query,
+        querys: data,
+      }),
+    });
+  }
 
   //edit
   async update(
