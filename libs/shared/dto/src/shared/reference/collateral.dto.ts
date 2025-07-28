@@ -9,4 +9,8 @@ export class CollateralDTO {
   name: string;
   @ApiProperty({ enum: AppTypeEnum,example:AppTypeEnum.LOAN})
   type: string;
+   @ApiProperty({
+   example:5005
+  })
+  value: number;
 }

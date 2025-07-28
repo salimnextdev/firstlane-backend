@@ -9,9 +9,11 @@ export class CollateralModel {
 
   @Prop()
   name: string;
-
+@Prop()
+  value: number;
   @Prop({ enum:AppTypeEnum })
   type: string;
+
 
 }
 
