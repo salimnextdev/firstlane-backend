@@ -13,4 +13,9 @@ export class CollateralDTO {
    example:5005
   })
   value: number;
+
+   @ApiProperty({
+   example:""
+  })
+  userID:string
 }

@@ -15,6 +15,8 @@ export class CollateralModel {
   type: string;
 
 
+  @Prop({ref:"UserModel"})
+  userID: string;
 }
 
 export const CollateralSchema = SchemaFactory.createForClass(CollateralModel);
