@@ -16,6 +16,7 @@ export * from './shared/reference/purpose.schema';
 export * from './shared/reference/collateral.schema';
 export * from './shared/reference/duration.schema';
 export * from './shared/reference/inverval.schema';
+export * from './shared/reference/coupon.schema';
 export * from './shared/loan/loan.schema';
 
 

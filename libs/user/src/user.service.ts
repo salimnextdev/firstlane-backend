@@ -370,4 +370,46 @@ export class UserService {
       data: { count },
     });
   }
+
+  // change userstatus
+  async changeUserStatus(
+    userID: string,
+    status: string,
+    userData: UserDTO
+  ): Promise<ObjectReturnType> {
+    try {
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        userID,
+        { status },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return serviceResponse({
+          message: "User not found",
+          status: false,
+        });
+      }
+
+      this.notificationActivity.notificationActivity({
+        action: "update",
+        entityType: "User",
+        entityID: updatedUser._id.toString(),
+        userID: updatedUser?._id.toString(),
+        details: `${updatedUser?.fullname} changed user status to ${status}`,
+        playerIds: [updatedUser?.playerId ?? ""],
+      });
+
+      return serviceResponse({
+        message: "User status updated successfully",
+        status: true,
+        data: updatedUser,
+      });
+    } catch (error) {
+      return serviceResponse({
+        message: error.message,
+        status: false,
+      });
+    }
+  }
 }

@@ -17,6 +17,7 @@ import { LibsModule } from 'libs/libs.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoanModule } from './loan/loan.module';
 import { SupportModule } from './support/support.module';
+import { CouponModule } from './coupon/coupon.module';
 @Module({
   imports: [ 
     CaslModule,
@@ -56,7 +57,8 @@ import { SupportModule } from './support/support.module';
     LibsModule,
     WebSocketModule,
     LoanModule,
-    SupportModule],
+    SupportModule,
+    CouponModule],
   controllers: [],
   providers: [],
 })

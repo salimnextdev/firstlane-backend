@@ -26,6 +26,7 @@ import {
 
 import {  UserDTO } from '@app/dto';
 import { UserService } from './user.service';
+import { UserStatus } from '@app/enum';
 
 @ApiTags('users')
 @ApiBearerAuth('access-token')
@@ -233,6 +234,19 @@ export class UserController {
     @ApiOperation({ summary: 'Get unread notification count for user' })
     async getUnreadNotificationCount(@Req() req: any) {
       return this.userService.getUnreadNotificationCount(req.user._id);
+    }
+
+    @Patch('change-status/:userID/:status')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Change user status' })
+    @ApiParam({  name: 'userID', description: 'The ID of the user to update', type: String })
+    @ApiParam({ enum:UserStatus, example:UserStatus.BLOCKED, name: 'status', description: 'The new status for the user', type: String })
+    async changeUserStatus(
+      @Param('userID') userID: string,
+      @Param('status') status: string,
+      @Req() req: any,
+    ) {
+      return this.userService.changeUserStatus(userID, status, req.user);
     }
     
 }

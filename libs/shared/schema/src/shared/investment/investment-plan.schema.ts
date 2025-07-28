@@ -57,7 +57,7 @@ InvestmentPlanSchema.pre<InvestmentPlanModel>("save", async function (
   this.id =
     randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
 
-  if (!this.code)
+
     this.code =
       randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
 

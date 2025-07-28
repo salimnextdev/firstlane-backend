@@ -1,6 +1,7 @@
 export enum Role {
     User = 'user',
     Admin = 'admin',
+    INVESTMENT='investment'
   }
 
   export enum OrganizationRole {

@@ -12,7 +12,7 @@ import {
   Title,
   VerificationStatus,
 } from "@app/enum";
-import { UserType } from "@app/enum/shared/user.enum";
+import { UserStatus, UserType } from "@app/enum/shared/user.enum";
 import { Refferal } from "@app/dto";
 
 export type UserDoc = HydratedDocument<UserModel>;
@@ -156,6 +156,7 @@ export class UserModel {
   title?: string;
   @Prop()
   playerId?: string;
+  roles: string[];
 
   @Prop({ type: String, enum: UserType, default: UserType.USER })
   userType: string;
@@ -163,7 +164,7 @@ export class UserModel {
   @Prop()
   username?: string;
 
-  @Prop()
+  @Prop({enum:UserStatus, default:UserStatus.ACTIVE})
   status?: string;
 
   @Prop()

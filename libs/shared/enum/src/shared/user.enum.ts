@@ -24,6 +24,16 @@ export enum UserType {
   USER = 'user',
   Rider = 'rider',
   ADMIN = 'admin',
+  STAFF= 'staff',
+  SUPER_ADMIN = 'super_admin',
+}
+
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  BLOCKED = 'blocked',
+  DEACTIVATED= 'deactivated',
 }
 
 export enum OtpType {

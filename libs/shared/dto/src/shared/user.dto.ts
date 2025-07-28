@@ -1,5 +1,5 @@
 import { Gender, Role } from '@app/enum';
-import { OtpType, UserType } from '@app/enum/shared/user.enum';
+import { OtpType, UserStatus, UserType } from '@app/enum/shared/user.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { VerificationsDTO } from './kyc.dto';
 
@@ -122,9 +122,11 @@ export class UserDTO {
   @ApiProperty({ description: 'Username of the user', example: 'john_doe' })
   username?: string;
 
+  @ApiProperty({ description: 'status', example: UserStatus.ACTIVE, enum: UserStatus })
   status?: string;
 
- 
+  @ApiProperty({ description: 'user roles', example: ['investment',"loan"] })
+ roles: string[];
 
   emailStatus?: string;
 

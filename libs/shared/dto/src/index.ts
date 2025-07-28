@@ -12,6 +12,7 @@ export * from './shared/reference/purpose.dto';
 export * from './shared/reference/collateral.dto';
 export * from './shared/reference/duration.dto';
 export * from './shared/reference/inverval.dto';
+export * from './shared/reference/coupon.dto';
 export * from './shared/loan/loan.dto';
 
 export * from './shared/support.dto';
