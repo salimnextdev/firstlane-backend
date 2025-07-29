@@ -13,4 +13,10 @@ export class CouponDTO {
   type: string;
   @ApiProperty({ example: 1 })
   max: string;
+ @ApiProperty({ example: 8000 })
+    value: number;
+ @ApiProperty({ example: "NGN" })
+    currency: string
+
+  
 }

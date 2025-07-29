@@ -11,6 +11,10 @@ export class CouponModel {
   userIDs: string[];
   @Prop({})
   code: string;
+   @Prop({})
+  value: number;
+   @Prop({default:"NGN"})
+  currency: string;
   @Prop({ enum: AppTypeEnum, default: AppTypeEnum.INVESTMENT })
   type: string;
   @Prop({ default: 1 })
