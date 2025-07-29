@@ -33,7 +33,7 @@ export class CouponService {
       .find()
       .skip(skip)
       .limit(limit)
-      .populate("userID")
+      .populate("userIDs")
       .sort({ createdAt: -1 })
       .exec();
     return serviceResponse({
@@ -49,7 +49,7 @@ export class CouponService {
   }
   async findOne(id: string): Promise<ObjectReturnType> {
     try {
-      const plan = await this.couponModel.findById(id).populate("userID").exec();
+      const plan = await this.couponModel.findById(id).populate("userIDs").exec();
 
       return serviceResponse({
         data: plan,
@@ -72,7 +72,7 @@ export class CouponService {
       .find({ [key]: value })
       .skip(skip)
       .limit(limit)
-      .populate("userID")
+      .populate("userIDs")
       .sort({ createdAt: -1 })
       .exec();
     return serviceResponse({
