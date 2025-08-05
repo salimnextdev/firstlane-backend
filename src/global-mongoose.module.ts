@@ -45,6 +45,12 @@ import {
   SupportSchema,
   CouponModel,
   CouponSchema,
+  CurrencyModel,
+  CurrencySchema,
+  FxModel,
+  FxRateModel,
+  FxRateSchema,
+  FxSchema,
 } from '@app/schema';
 import { RideModel, RideSchema } from '@app/schema/shared/ride.schema';
 import { TransactionModel, TransactionSchema } from '@app/schema/shared/transaction.schema';
@@ -123,7 +129,9 @@ MongooseModule.forFeature([
     MongooseModule.forFeature([{ name: DurationModel.name, schema: DurationSchema }]),
     MongooseModule.forFeature([{ name: IntervalModel.name, schema: IntervalSchema }]),
     
-
+    MongooseModule.forFeature([{ name: CurrencyModel.name, schema: CurrencySchema }]),
+    MongooseModule.forFeature([{ name: FxModel.name, schema: FxSchema }]),
+    MongooseModule.forFeature([{ name: FxRateModel.name, schema: FxRateSchema }]),
     
   ],
 

@@ -32,5 +32,10 @@ export * from './shared/investment/user-investment.schema';
 export * from './shared/waller.schema';
 export * from './shared/transaction.schema';
 
+export * from './shared/fx/currency.schema';
+export * from './shared/fx/fx.schema';
+export * from './shared/fx/fxrate.schema';
+
+
 
 

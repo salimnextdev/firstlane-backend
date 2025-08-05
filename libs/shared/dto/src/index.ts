@@ -29,3 +29,7 @@ export * from './shared/support.dto';
 // export * from './shared/state.dto';
 // export * from './shared/country.dto';
 
+
+export * from './shared/fx/currency.dto';
+export * from './shared/fx/fx.dto';
+export * from './shared/fx/fxrate.dto';
