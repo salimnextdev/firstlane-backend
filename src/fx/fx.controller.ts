@@ -106,5 +106,32 @@ export class FxController {
   async delete(@Body() ids: string[],  @Req() req: any) {
     return this.fxService.delete(ids, req.user);
   }
+  @Patch(":fxID/status")
+  @ApiOperation({ summary: "Change status of existing fx" })
+  @ApiParam({
+    name: "fxID",
+    description: "The fxID to search for",
+    type: String,
+  })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        status: {
+          type: "string",
+          enum: ['pending', 'completed', 'failed', 'cancelled', 'suspicious'],
+          description: "New status for the fx",
+        },
+      },
+    },
+  })
+  @UseGuards(JwtAuthGuard)
+  async changeStatus(
+    @Param("fxID") fxID: string,
+    @Body("status") status: string,
+    @Req() req: any
+  ) {
+    return this.fxService.changeStatus(fxID, status, req.user);
+  }
   
 }

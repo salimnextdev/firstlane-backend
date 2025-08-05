@@ -143,5 +143,35 @@ export class FxService {
       });
     }
   }
+  //change status
+  async changeStatus(
+    id: string,
+    status: string,
+    userData: UserDTO
+  ): Promise<ObjectReturnType> {
+    try {
+      const updated = await this.fxModel
+        .findByIdAndUpdate(id, { status }, { new: true })
+        .exec();
+
+      if (!updated) {
+        return serviceResponse({
+          message: "Fx plan not found",
+          status: false,
+        });
+      }
+
+      return serviceResponse({
+        data: updated,
+        message: "Fx plan status updated successfully",
+        status: true,
+      });
+    } catch (error) {
+      return serviceResponse({
+        message: error.message,
+        status: false,
+      });
+    }
+  }
 
 }
