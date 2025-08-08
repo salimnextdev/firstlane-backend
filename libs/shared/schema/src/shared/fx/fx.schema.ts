@@ -28,8 +28,8 @@ export class FxModel {
   @Prop({ type: BaseCurrencySchema, required: true })
   toCurrency: BaseCurrency;
 
-  @Prop({ type: FxRateModel, required: true })
-  fxRate: FxRateModel;
+  @Prop({ type: String, ref:"FxRateModel", required: true })
+  fxRateID: string;
 
   @Prop({ enum: ['buy', 'sell'], default: 'buy' })
   type: string;

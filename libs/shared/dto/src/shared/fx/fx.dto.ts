@@ -23,8 +23,8 @@ export class FxDTO {
   toCurrency: BaseCurrency;
 
 
-    @ApiProperty({ type:FxRateDTO, description: 'Base currency code' })
-  fxRate: FxRateDTO;             
+    @ApiProperty({  description: 'Fxrate _id' })
+  fxRateID: string;             
 
   @ApiProperty({ description: 'type', enum: ['buy', 'sell'], default: 'buy' })
   type: string;
