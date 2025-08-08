@@ -26,6 +26,9 @@ export class FxDTO {
     @ApiProperty({ type:FxRateDTO, description: 'Base currency code' })
   fxRate: FxRateDTO;             
 
+  @ApiProperty({ description: 'type', enum: ['buy', 'sell'], default: 'buy' })
+  type: string;
+
   
   @ApiProperty({ description: 'Status of the transaction', enum: ['pending', 'completed', 'failed', 'cancelled','suspicious'], default: 'pending' })
   status: string;

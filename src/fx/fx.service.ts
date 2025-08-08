@@ -33,7 +33,7 @@ export class FxService {
       .find()
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 }).populate("userID")
+      .sort({ createdAt: -1 }).populate("userID").populate("fromCurrency.currencyID").populate("toCurrency.currencyID")
       .exec();
     return serviceResponse({
       data: plans,
@@ -48,7 +48,7 @@ export class FxService {
   }
   async findOne(id: string): Promise<ObjectReturnType> {
     try {
-      const plan = await this.fxModel.findById(id).populate("userID").exec();
+      const plan = await this.fxModel.findById(id).populate("userID").populate("fromCurrency.currencyID").populate("toCurrency.currencyID").exec();
 
       return serviceResponse({
         data: plan,
@@ -71,7 +71,7 @@ export class FxService {
       .find({ [key]: value })
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 }).populate("userID")
+      .sort({ createdAt: -1 }).populate("userID").populate("fromCurrency.currencyID").populate("toCurrency.currencyID")
       .exec();
     return serviceResponse({
       data: plans,

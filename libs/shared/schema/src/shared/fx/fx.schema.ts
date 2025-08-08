@@ -6,8 +6,8 @@ import { randomInt, randomUUID } from 'crypto';
 
 @Schema()
 class BaseCurrency {
-  @Prop({ type: Types.ObjectId, ref: 'Currency' })
-  currencyID: Types.ObjectId;
+  @Prop({ type: String, ref: 'Currency' })
+  currencyID: string;
 
   @Prop({ required: true })
   value: number;
@@ -30,6 +30,9 @@ export class FxModel {
 
   @Prop({ type: FxRateModel, required: true })
   fxRate: FxRateModel;
+
+  @Prop({ enum: ['buy', 'sell'], default: 'buy' })
+  type: string;
 
   @Prop({ enum: ['pending', 'completed', 'failed', 'cancelled', 'suspicious'], default: 'pending' })
   status: string;
