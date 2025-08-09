@@ -35,8 +35,8 @@ export class FxRateService {
       .limit(limit)
       .sort({ createdAt: -1 })
       .populate("baseCurrency.currencyID")
-      .populate("userID")
-      .populate("fxRateID")
+      // .populate("userID")
+      // .populate("fxRateID")
       .populate("targetCurrency.currencyID")
       .exec();
     return serviceResponse({
@@ -53,7 +53,7 @@ export class FxRateService {
   async findOne(id: string): Promise<ObjectReturnType> {
     try {
       const plan = await this.fxRateModel.findById(id).populate("baseCurrency.currencyID")
-      .populate("userID")
+      // .populate("userID")
       .populate("FxRateID")
       .populate("targetCurrency.currencyID").exec();
 
@@ -80,7 +80,7 @@ export class FxRateService {
       .limit(limit)
       .sort({ createdAt: -1 })
         .populate("baseCurrency.currencyID")
-        .populate("userID")
+        // .populate("userID")
         .populate("FxRateID")
       .populate("targetCurrency.currencyID")
       .exec();

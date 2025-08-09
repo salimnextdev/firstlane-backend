@@ -6,7 +6,7 @@ import { randomInt, randomUUID } from 'crypto';
 
 @Schema()
 class BaseCurrency {
-  @Prop({ type: String, ref: 'Currency' })
+  @Prop({ type: String, ref: 'CurrencyModel' })
   currencyID: string;
 
   @Prop({ required: true })
