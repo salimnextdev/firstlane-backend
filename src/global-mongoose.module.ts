@@ -52,6 +52,7 @@ import {
   FxRateSchema,
   FxSchema,
 } from '@app/schema';
+import { BankAccountModel, BankAccountSchema } from '@app/schema/shared/bank.schema';
 import { RideModel, RideSchema } from '@app/schema/shared/ride.schema';
 import { TransactionModel, TransactionSchema } from '@app/schema/shared/transaction.schema';
 import { WalletModel, WalletSchema } from '@app/schema/shared/waller.schema';
@@ -119,6 +120,7 @@ MongooseModule.forFeature([
     MongooseModule.forFeature([{ name: CountryModel.name, schema: CountrySchema }]),
     MongooseModule.forFeature([{ name: SupportModel.name, schema: SupportSchema }]),
     MongooseModule.forFeature([{ name: CouponModel.name, schema: CouponSchema }]),
+        MongooseModule.forFeature([{ name: BankAccountModel.name, schema: BankAccountSchema }]),
     MongooseModule.forFeature([
       { name: DisputeTypeModel.name, schema: DisputeTypeSchema },
     ]),

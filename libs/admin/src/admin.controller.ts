@@ -112,4 +112,75 @@ constructor(private readonly adminService: AdminService) {}
   async getUserInvestments(@Req() req: any,@Query("userID") userID: string,@Query() query: any) {
     return this.adminService.getUserInvestments(userID,query );
   }
+  @Get("stats")
+  @ApiOperation({ summary: "Get admin dashboard statistics" })
+  @UseGuards(JwtAuthGuard)
+  async getAdminStats() {
+    return this.adminService.getAdminStats();
+  }
+
+  @Get("financial-stats")
+  @ApiOperation({ summary: "Get admin financial statistics" })
+  @UseGuards(JwtAuthGuard)
+  async getAdminFinancialStats() {
+    return this.adminService.getAdminFinancialStats();
+  }
+
+
+  @Get("fx-volumes-simple")
+  @ApiOperation({ summary: "Get FX volumes by currency (simple)" })
+  @ApiQuery({
+    name: "userID",
+    required: false,
+    description: "User ID to filter by",
+    type: String,
+  })
+  @ApiQuery({
+    name: "status",
+    required: false,
+    description: "Comma-separated list of statuses (e.g., completed,pending)",
+    type: String,
+  })
+  @ApiQuery({
+    name: "dateFrom",
+    required: false,
+    description: "Start date for filtering (YYYY-MM-DD)",
+    type: String,
+  })
+  @ApiQuery({
+    name: "dateTo",
+    required: false,
+    description: "End date for filtering (YYYY-MM-DD)",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getFxVolumesByCurrencySimple(
+    @Query('userID') userID?: string,
+    @Query('status') status?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+  ) {
+    const filters: {
+      userID?: string;
+      status?: string[];
+      dateFrom?: Date;
+      dateTo?: Date;
+    } = {};
+
+    if (userID) {
+      filters.userID = userID;
+    }
+    if (status) {
+      filters.status = status.split(',');
+    }
+    if (dateFrom) {
+      filters.dateFrom = new Date(dateFrom);
+    }
+    if (dateTo) {
+      filters.dateTo = new Date(dateTo);
+    }
+
+    return this.adminService.getFxVolumesByCurrencySimple(filters);
+  }
+
 }

@@ -1,6 +1,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { FxRateDTO } from './fxrate.dto';
+import { BankAccountDTO } from '../user.dto';
 
 class BaseCurrency{
   @ApiProperty({ description: 'Unique identifier for the currency', required: false })
@@ -32,4 +33,7 @@ export class FxDTO {
   
   @ApiProperty({ description: 'Status of the transaction', enum: ['pending', 'completed', 'failed', 'cancelled','suspicious'], default: 'pending' })
   status: string;
+
+  @ApiProperty({ type: BankAccountDTO, description: 'Bank account details' })
+  bank: BankAccountDTO;
 }

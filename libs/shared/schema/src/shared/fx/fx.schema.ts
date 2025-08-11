@@ -12,6 +12,31 @@ class BaseCurrency {
   @Prop({ required: true })
   value: number;
 }
+@Schema()
+class BankAccount {
+  @Prop({ required: true })
+  bankName: string;
+
+  @Prop({ required: true })
+  accountNumber: string;
+
+  @Prop({ required: true })
+  accountName: string;
+  @Prop({  })
+  bankCode: string;
+  @Prop({ })
+  accountType: string;
+
+  @Prop({  })
+  ACHrouting: string;
+  @Prop({  })
+ wireRouting: string;
+  @Prop({  })
+  swiftCode: string;
+  @Prop({  })
+  currency: string;
+  
+}
 const BaseCurrencySchema = SchemaFactory.createForClass(BaseCurrency);
 
 @Schema({ timestamps: true })
@@ -36,6 +61,9 @@ export class FxModel {
 
   @Prop({ enum: ['pending', 'completed', 'failed', 'cancelled', 'suspicious'], default: 'pending' })
   status: string;
+
+  @Prop({type:BankAccount,})
+  bank:BankAccount
 }
 
 export const FxSchema = SchemaFactory.createForClass(FxModel);

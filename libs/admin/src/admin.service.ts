@@ -1,5 +1,10 @@
 import { UserDTO } from "@app/dto";
-import { KycLevel, LoanStatus, VerificationStatus } from "@app/enum";
+import {
+  KycLevel,
+  LoanStatus,
+  UserInvestmentStatus,
+  VerificationStatus,
+} from "@app/enum";
 import {
   UserModel,
   UserDoc,
@@ -10,6 +15,10 @@ import {
   LoanModel,
   UserInvestmentDoc,
   UserInvestmentModel,
+  FxModel,
+  FxDoc,
+  CurrencyDoc,
+  CurrencyModel,
 } from "@app/schema";
 import {
   getMetadata,
@@ -34,6 +43,8 @@ export class AdminService {
     @InjectModel(UserInvestmentModel.name)
     private userInvestmentModel: Model<UserInvestmentDoc>,
     @InjectModel(LoanModel.name) private loanModel: Model<LoanDoc>,
+    @InjectModel(FxModel.name) private fxModel: Model<FxDoc>,
+    @InjectModel(CurrencyModel.name) private currencyModel: Model<CurrencyDoc>,
     @InjectModel(ActivityLogModel.name)
     private activityLogModel: Model<ActivityLogDoc>,
     // private organizationAbilityFactory: OrganizationAbilityFactory,
@@ -169,18 +180,23 @@ export class AdminService {
     }
   }
 
-  async getUserInvestments(id: string,query:any): Promise<ObjectReturnType> {
+  async getUserInvestments(id: string, query: any): Promise<ObjectReturnType> {
     const { limit = 10, page = 1 } = query;
     const skip = (page - 1) * limit;
 
     try {
       let investments;
       if (id) {
-        investments = await this.userInvestmentModel.findById(id).populate("userID investmentID");
+        investments = await this.userInvestmentModel
+          .findById(id)
+          .populate("userID investmentID");
       } else {
-        investments = await this.userInvestmentModel.find({}).skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 }).populate("userID investmentID");
+        investments = await this.userInvestmentModel
+          .find({})
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 })
+          .populate("userID investmentID");
       }
 
       return serviceResponse({
@@ -188,13 +204,171 @@ export class AdminService {
         message: "User investments retrieved successfully",
         status: true,
         metadata: await getMetadata({
-        model: this.userInvestmentModel,
-        query,
-        querys: {},
-      }),
+          model: this.userInvestmentModel,
+          query,
+          querys: {},
+        }),
       });
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
+
+  // get total loans issued
+  // get total active investments
+  // total fx volume
+  async getAdminStats(): Promise<ObjectReturnType> {
+    try {
+      const totalUsers = await this.userModel.countDocuments();
+      const totalLoans = await this.loanModel.countDocuments();
+      const totalActiveInvestments = await this.userInvestmentModel.countDocuments(
+        {
+          status: "active",
+        }
+      );
+      const totalFxVolume = await this.fxModel.countDocuments({
+        status: "completed",
+      });
+
+      return serviceResponse({
+        message: "Admin stats retrieved successfully",
+        status: true,
+        data: {
+          totalUsers,
+          totalLoans,
+          totalActiveInvestments,
+          totalFxVolume: totalFxVolume[0]?.total || 0,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // get total amount of loans issued
+  // get total amount of active investments
+  // total amount of fx volume
+  async getAdminFinancialStats(): Promise<ObjectReturnType> {
+    try {
+      // Total loans issued (assuming issued means approved/active)
+      const totalLoansIssuedAgg = await this.loanModel.aggregate([
+        { $match: { status: LoanStatus.APPROVED } }, // adjust condition to match your "issued" definition
+        { $group: { _id: null, total: { $sum: "$amountRequested" } } },
+      ]);
+      const totalLoansIssued = totalLoansIssuedAgg[0]?.total || 0;
+
+      // Total active investments
+      const totalActiveInvestmentsAgg = await this.userInvestmentModel.aggregate(
+        [
+          { $match: { status: UserInvestmentStatus.ACTIVE } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]
+      );
+
+      const totalActiveInvestments = totalActiveInvestmentsAgg[0]?.total || 0;
+      // Total completed investments
+      const totalCompletedInvestmentsAgg = await this.userInvestmentModel.aggregate(
+        [
+          { $match: { status: UserInvestmentStatus.COMPLETED } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]
+      );
+      const totalCompletedInvestments =
+        totalCompletedInvestmentsAgg[0]?.total || 0;
+      // Total pendind investments
+      const totalPendingInvestmentsAgg = await this.userInvestmentModel.aggregate(
+        [
+          { $match: { status: UserInvestmentStatus.PENDING } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]
+      );
+      const totalPendingInvestments = totalPendingInvestmentsAgg[0]?.total || 0;
+      // Total FX volume (summing fromCurrency.value)
+      const fxVolumesByCurrency = await this.getFxVolumesByCurrencySimple({
+        status: ["completed"],
+      });
+
+      return {
+        message: "Admin financial stats retrieved successfully",
+        status: true,
+        data: {
+          totalLoansIssued,
+          totalPendingInvestments,
+          totalCompletedInvestments,
+          totalActiveInvestments,
+          fxVolumesByCurrency,
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+
+
+  // Alternative simpler approach using separate queries
+  async getFxVolumesByCurrencySimple(filters?: {
+    userID?: string;
+    status?: string[];
+    dateFrom?: Date;
+    dateTo?: Date;
+  }) {
+    // Build match conditions
+    const matchConditions: any = {};
+    
+    if (filters?.userID) {
+      matchConditions.userID = filters.userID;
+    }
+    
+    if (filters?.status) {
+      matchConditions.status = { $in: filters.status };
+    }
+    
+    if (filters?.dateFrom || filters?.dateTo) {
+      matchConditions.createdAt = {};
+      if (filters.dateFrom) {
+        matchConditions.createdAt.$gte = filters.dateFrom;
+      }
+      if (filters.dateTo) {
+        matchConditions.createdAt.$lte = filters.dateTo;
+      }
+    }
+
+    // Get all currencies for lookup
+    const currencies = await this.currencyModel.find({}).exec();
+    const currencyMap = currencies.reduce((map, curr) => {
+      map[curr._id.toString()] = curr.code;
+      return map;
+    }, {});
+
+    // Get transactions
+    const transactions = await this.fxModel.find(matchConditions).exec();
+
+    const fxVolumes = { buy: {}, sell: {} };
+
+    transactions.forEach(tx => {
+      const fromCurrencyCode = currencyMap[tx.fromCurrency.currencyID];
+      const toCurrencyCode = currencyMap[tx.toCurrency.currencyID];
+      
+      // Add from currency volume
+      if (fromCurrencyCode) {
+        if (!fxVolumes[tx.type][fromCurrencyCode]) {
+          fxVolumes[tx.type][fromCurrencyCode] = 0;
+        }
+        fxVolumes[tx.type][fromCurrencyCode] += tx.fromCurrency.value;
+      }
+      
+      // Add to currency volume
+      if (toCurrencyCode) {
+        if (!fxVolumes[tx.type][toCurrencyCode]) {
+          fxVolumes[tx.type][toCurrencyCode] = 0;
+        }
+        fxVolumes[tx.type][toCurrencyCode] += tx.toCurrency.value;
+      }
+    });
+
+    return { fxVolumes };
+  }
+
+
 }

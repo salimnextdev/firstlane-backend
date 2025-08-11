@@ -18,7 +18,7 @@ export * from './shared/reference/duration.schema';
 export * from './shared/reference/inverval.schema';
 export * from './shared/reference/coupon.schema';
 export * from './shared/loan/loan.schema';
-
+export * from './shared/bank.schema';
 
 export * from './shared/support.schema';
 export * from './shared/dispute-type.schema';
