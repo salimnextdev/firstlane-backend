@@ -32,7 +32,12 @@ export class BankAccountDTO {
   @ApiProperty({ description: 'Swift code' })
   swiftCode: string;
   @ApiProperty({ description: 'Currency' })
+  currencyID: string;
+  @ApiProperty({ description: 'Currency' })
   currency: string;
+@ApiProperty({ description: 'Optional' })
+  userID?:string
+
   
 }
 

@@ -19,13 +19,13 @@ export type BankAccountDoc = HydratedDocument<BankAccountModel>;
 
 @Schema({ timestamps: true })
 export class BankAccountModel {
-  @Prop({ required: true })
+  @Prop({  })
   bankName: string;
 
-  @Prop({ required: true })
+  @Prop({  })
   accountNumber: string;
 
-  @Prop({ required: true })
+  @Prop({  })
   accountName: string;
   @Prop({  })
   bankCode: string;
@@ -43,7 +43,7 @@ export class BankAccountModel {
   @Prop({  })
   id: string;
 
-  @Prop({ required: true, ref: "UserModel" })
+  @Prop({  ref: "UserModel" })
   userID: string;
 }
 
