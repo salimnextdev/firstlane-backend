@@ -320,4 +320,17 @@ console.log(wallet,userID)
   }
 
   // getTransferById
+  async getTransferById(transferId: string): Promise<ObjectReturnType> {
+    try {
+      const res = await this.flutterwaveService.getTransferById(transferId);
+      return serviceResponse({
+        status: true,
+        message: res.message,
+        data: res.data,
+      });
+    } catch (error) {
+      this.logger.error("Error fetching transfer by ID:", error);
+      throw new NotAcceptableException(error?.message);
+    }
+  }
 }

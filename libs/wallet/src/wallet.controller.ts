@@ -196,5 +196,11 @@ export class WalletController {
   ) {
     return await this.walletService.withdrawFunds({ ...body, userID: req.user._id.toString() });
   }
-
+// getTransferById
+  @Get("transaction/:transferId")
+  @ApiOperation({ summary: "Get transaction by ID" })
+  @ApiParam({ name: "transferId", description: "Transfer ID", example: "FLW_REF_12345" })
+  async getTransferById(@Param("transferId") transferId: string) {
+    return await this.walletService.getTransferById(transferId);
+  }
 }
