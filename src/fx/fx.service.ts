@@ -178,5 +178,32 @@ export class FxService {
       });
     }
   }
+ // findByMany
+  async findByMany(
+    data: FxDTO,
+    query: any
+  ): Promise<ObjectReturnType> {
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
 
+   
+    const plans = await this.fxModel
+      .find(data)
+      .skip(skip)
+      .limit(limit)
+      .populate("userID","name email fullname firstname lastname phone userType")
+      .populate("fxRateID").populate("fromCurrency.currencyID").populate("toCurrency.currencyID")
+      .sort({ createdAt: -1 })
+      .exec();
+    return serviceResponse({
+      data: plans,
+      message: "Loan plans retrieved successfully",
+      status: true,
+      metadata: await getMetadata({
+        model: this.fxModel,
+        query,
+        querys: data,
+      }),
+    });
+  }
 }

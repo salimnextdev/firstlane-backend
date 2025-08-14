@@ -42,6 +42,8 @@ export class InvestmentModel {
 
   @Prop({ ref: "UserModel" })
   userId: string;
+  @Prop({ })
+  durations:string[]
 }
 
 export const InvestmentSchema = SchemaFactory.createForClass(

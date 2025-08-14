@@ -214,100 +214,220 @@ export class AdminService {
     }
   }
 
-  // get total loans issued
-  // get total active investments
-  // total fx volume
-  async getAdminStats(): Promise<ObjectReturnType> {
-    try {
-      const totalUsers = await this.userModel.countDocuments();
-      const totalLoans = await this.loanModel.countDocuments();
-      const totalActiveInvestments = await this.userInvestmentModel.countDocuments(
-        {
-          status: "active",
+ 
+ async getAdminStats(): Promise<ObjectReturnType> {
+  try {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    // Current totals
+    const totalUsers = await this.userModel.countDocuments();
+    const totalLoans = await this.loanModel.countDocuments();
+    const totalActiveInvestments = await this.userInvestmentModel.countDocuments({
+      status: "active",
+    });
+    const totalFxVolume = await this.fxModel.countDocuments({
+      status: "completed",
+    });
+
+    // Last month totals (created before start of current month)
+    const lastMonthUsers = await this.userModel.countDocuments({
+      createdAt: { $lt: startOfCurrentMonth }
+    });
+    const lastMonthLoans = await this.loanModel.countDocuments({
+      createdAt: { $lt: startOfCurrentMonth }
+    });
+    const lastMonthActiveInvestments = await this.userInvestmentModel.countDocuments({
+      status: "active",
+      createdAt: { $lt: startOfCurrentMonth }
+    });
+    const lastMonthFxVolume = await this.fxModel.countDocuments({
+      status: "completed",
+      createdAt: { $lt: startOfCurrentMonth }
+    });
+
+    // Calculate percentage changes
+    const calculatePercentageChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100 * 100) / 100;
+    };
+
+    const usersChange = calculatePercentageChange(totalUsers, lastMonthUsers);
+    const loansChange = calculatePercentageChange(totalLoans, lastMonthLoans);
+    const activeInvestmentsChange = calculatePercentageChange(totalActiveInvestments, lastMonthActiveInvestments);
+    const fxVolumeChange = calculatePercentageChange(totalFxVolume, lastMonthFxVolume);
+
+    return serviceResponse({
+      message: "Admin stats retrieved successfully",
+      status: true,
+      data: {
+        totalUsers,
+        totalLoans,
+        totalActiveInvestments,
+        totalFxVolume,
+        monthlyChanges: {
+          users: usersChange,
+          loans: loansChange,
+          activeInvestments: activeInvestmentsChange,
+          fxVolume: fxVolumeChange
         }
-      );
-      const totalFxVolume = await this.fxModel.countDocuments({
-        status: "completed",
-      });
-
-      return serviceResponse({
-        message: "Admin stats retrieved successfully",
-        status: true,
-        data: {
-          totalUsers,
-          totalLoans,
-          totalActiveInvestments,
-          totalFxVolume: totalFxVolume[0]?.total || 0,
-        },
-      });
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+      },
+    });
+  } catch (error) {
+    throw new BadRequestException(error.message);
   }
+}
 
-  // get total amount of loans issued
-  // get total amount of active investments
-  // total amount of fx volume
-  async getAdminFinancialStats(): Promise<ObjectReturnType> {
-    try {
-      // Total loans issued (assuming issued means approved/active)
-      const totalLoansIssuedAgg = await this.loanModel.aggregate([
-        { $match: { status: LoanStatus.APPROVED } }, // adjust condition to match your "issued" definition
-        { $group: { _id: null, total: { $sum: "$amountRequested" } } },
-      ]);
-      const totalLoansIssued = totalLoansIssuedAgg[0]?.total || 0;
+async getAdminFinancialStats(): Promise<ObjectReturnType> {
+  try {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-      // Total active investments
-      const totalActiveInvestmentsAgg = await this.userInvestmentModel.aggregate(
-        [
-          { $match: { status: UserInvestmentStatus.ACTIVE } },
-          { $group: { _id: null, total: { $sum: "$amount" } } },
-        ]
-      );
+    // Current period aggregations
+    const totalLoansIssuedAgg = await this.loanModel.aggregate([
+      { $match: { status: LoanStatus.APPROVED } },
+      { $group: { _id: null, total: { $sum: "$amountRequested" } } },
+    ]);
+    const totalLoansIssued = totalLoansIssuedAgg[0]?.total || 0;
 
-      const totalActiveInvestments = totalActiveInvestmentsAgg[0]?.total || 0;
-      // Total completed investments
-      const totalCompletedInvestmentsAgg = await this.userInvestmentModel.aggregate(
-        [
-          { $match: { status: UserInvestmentStatus.COMPLETED } },
-          { $group: { _id: null, total: { $sum: "$amount" } } },
-        ]
-      );
-      const totalCompletedInvestments =
-        totalCompletedInvestmentsAgg[0]?.total || 0;
-      // Total pendind investments
-      const totalPendingInvestmentsAgg = await this.userInvestmentModel.aggregate(
-        [
-          { $match: { status: UserInvestmentStatus.PENDING } },
-          { $group: { _id: null, total: { $sum: "$amount" } } },
-        ]
-      );
-      const totalPendingInvestments = totalPendingInvestmentsAgg[0]?.total || 0;
-      // Total FX volume (summing fromCurrency.value)
-      const fxVolumesByCurrency = await this.getFxVolumesByCurrencySimple({
-        status: ["completed"],
+    const totalActiveInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      { $match: { status: UserInvestmentStatus.ACTIVE } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalActiveInvestments = totalActiveInvestmentsAgg[0]?.total || 0;
+
+    const totalCompletedInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      { $match: { status: UserInvestmentStatus.COMPLETED } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalCompletedInvestments = totalCompletedInvestmentsAgg[0]?.total || 0;
+
+    const totalPendingInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      { $match: { status: UserInvestmentStatus.PENDING } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const totalPendingInvestments = totalPendingInvestmentsAgg[0]?.total || 0;
+
+    // Last month aggregations (created before start of current month)
+    const lastMonthLoansIssuedAgg = await this.loanModel.aggregate([
+      { 
+        $match: { 
+          status: LoanStatus.APPROVED,
+          createdAt: { $lt: startOfCurrentMonth }
+        } 
+      },
+      { $group: { _id: null, total: { $sum: "$amountRequested" } } },
+    ]);
+    const lastMonthLoansIssued = lastMonthLoansIssuedAgg[0]?.total || 0;
+
+    const lastMonthActiveInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      { 
+        $match: { 
+          status: UserInvestmentStatus.ACTIVE,
+          createdAt: { $lt: startOfCurrentMonth }
+        } 
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const lastMonthActiveInvestments = lastMonthActiveInvestmentsAgg[0]?.total || 0;
+
+    const lastMonthCompletedInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      { 
+        $match: { 
+          status: UserInvestmentStatus.COMPLETED,
+          createdAt: { $lt: startOfCurrentMonth }
+        } 
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const lastMonthCompletedInvestments = lastMonthCompletedInvestmentsAgg[0]?.total || 0;
+
+    const lastMonthPendingInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      { 
+        $match: { 
+          status: UserInvestmentStatus.PENDING,
+          createdAt: { $lt: startOfCurrentMonth }
+        } 
+      },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]);
+    const lastMonthPendingInvestments = lastMonthPendingInvestmentsAgg[0]?.total || 0;
+
+    // Calculate percentage changes
+    const calculatePercentageChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100 * 100) / 100;
+    };
+
+    const loansIssuedChange = calculatePercentageChange(totalLoansIssued, lastMonthLoansIssued);
+    const activeInvestmentsChange = calculatePercentageChange(totalActiveInvestments, lastMonthActiveInvestments);
+    const completedInvestmentsChange = calculatePercentageChange(totalCompletedInvestments, lastMonthCompletedInvestments);
+    const pendingInvestmentsChange = calculatePercentageChange(totalPendingInvestments, lastMonthPendingInvestments);
+
+    // Get FX volumes for current and last month
+    const currentFxVolumes = await this.getFxVolumesByCurrencySimple({
+      status: ["completed"],
+    });
+
+    const lastMonthFxVolumes = await this.getFxVolumesByCurrencySimple({
+      status: ["completed"],
+      dateTo: endOfLastMonth
+    });
+
+    // Calculate FX volume changes by currency
+    const calculateFxVolumeChanges = (current: any, previous: any) => {
+      const changes = { buy: {}, sell: {} };
+      
+      ['buy', 'sell'].forEach(type => {
+        const currentVolumes = current.fxVolumes[type] || {};
+        const previousVolumes = previous.fxVolumes[type] || {};
+        
+        // Get all unique currencies
+        const allCurrencies = new Set([
+          ...Object.keys(currentVolumes),
+          ...Object.keys(previousVolumes)
+        ]);
+        
+        allCurrencies.forEach(currency => {
+          const currentVol = currentVolumes[currency] || 0;
+          const previousVol = previousVolumes[currency] || 0;
+          changes[type][currency] = calculatePercentageChange(currentVol, previousVol);
+        });
       });
+      
+      return changes;
+    };
 
-      return {
-        message: "Admin financial stats retrieved successfully",
-        status: true,
-        data: {
-          totalLoansIssued,
-          totalPendingInvestments,
-          totalCompletedInvestments,
-          totalActiveInvestments,
-          fxVolumesByCurrency,
-        },
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+    const fxVolumeChanges = calculateFxVolumeChanges(currentFxVolumes, lastMonthFxVolumes);
+
+    return {
+      message: "Admin financial stats retrieved successfully",
+      status: true,
+      data: {
+        totalLoansIssued,
+        totalPendingInvestments,
+        totalCompletedInvestments,
+        totalActiveInvestments,
+        fxVolumesByCurrency: currentFxVolumes.fxVolumes,
+        monthlyChanges: {
+          loansIssued: loansIssuedChange,
+          pendingInvestments: pendingInvestmentsChange,
+          completedInvestments: completedInvestmentsChange,
+          activeInvestments: activeInvestmentsChange,
+          fxVolumesByCurrency: fxVolumeChanges
+        }
+      },
+    };
+  } catch (error) {
+    throw new BadRequestException(error.message);
   }
+}
 
-
-
-  // Alternative simpler approach using separate queries
-  async getFxVolumesByCurrencySimple(filters?: {
+async getFxVolumesByCurrencySimple(filters?: {
     userID?: string;
     status?: string[];
     dateFrom?: Date;
@@ -369,6 +489,5 @@ export class AdminService {
 
     return { fxVolumes };
   }
-
 
 }

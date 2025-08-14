@@ -133,5 +133,11 @@ export class FxController {
   ) {
     return this.fxService.changeStatus(fxID, status, req.user);
   }
-  
+  @Get("find-by-many")
+  @ApiOperation({ summary: "Find fxs by multiple criteria" })
+  @ApiBody({ type: FxDTO, description: "Criteria to filter fxs" })
+  @UseGuards(JwtAuthGuard)
+  async findByMany(@Body() data: FxDTO, @Query() query: any) {
+    return this.fxService.findByMany(data, query);
+  }
 }

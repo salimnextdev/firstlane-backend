@@ -165,4 +165,36 @@ export class WalletController {
       bankCode
     );
   }
+
+
+  
+  // withdrawFunds
+  @Post("withdraw-funds")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Withdraw funds from a user's wallet" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        account_bank: { type: "string", example: "044" },
+        account_number: { type: "string", example: "0690000031" },
+        amount: { type: "number", example: 1000 },
+        narration: { type: "string", example: "Withdrawal" },
+        otp: { type: "string", example: "561465" },
+      },
+    },
+  })
+  async withdrawFunds(
+    @Request() req,
+    @Body() body: {
+      account_bank: string;
+      account_number: string;
+      amount: number;
+      narration?: string;
+      otp:string
+    }
+  ) {
+    return await this.walletService.withdrawFunds({ ...body, userID: req.user._id.toString() });
+  }
+
 }

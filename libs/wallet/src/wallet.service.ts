@@ -14,8 +14,9 @@ import {
   WebSocketGatewayService,
 } from "@app/service";
 import { FlutterwaveService } from "@app/service/shared/payment/flutterwave";
-import { Injectable, Logger, NotAcceptableException } from "@nestjs/common";
+import { Injectable, Logger, NotAcceptableException, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { randomInt, randomUUID } from "crypto";
 import { Model } from "mongoose";
 const transferCompleted = {
   event: "transfer.completed",
@@ -272,4 +273,51 @@ console.log(wallet,userID)
       throw new NotAcceptableException(error?.message);
     }
   }
+
+   async withdrawFunds(data: {
+    account_bank: string;
+    account_number: string;
+    amount: number;
+    narration?: string;
+    userID: string;
+    otp: string;
+  }): Promise<any> {
+    try {
+      // const otpA = await this.otpModel.findOne({
+      //   code: data.otp,
+      //   type: "Withdrawal",
+      //   userID: data.userID,
+      // });
+      // if (!otpA) {
+      //   throw new NotFoundException("OTP not found");
+      // }
+      const user = await this.userModel.findById(data.userID);
+      const wallet = await this.walletModel.findOne({
+        userID: user._id.toString(),
+      });
+      if (!wallet) {
+        throw new NotFoundException("User not found");
+      }
+
+      const res = await this.flutterwaveService.withdrawFunds({
+        ...data,
+        reference:
+          user.id +
+          `_withdrawal-` +
+          randomInt(99999) +
+          randomUUID().replace(/\D/g, "").substring(0, 2),
+        debit_subaccount: wallet.customerCode,
+      });
+      return serviceResponse({
+        status: true,
+        message: res.message,
+        data: res.data,
+      });
+    } catch (error) {
+      this.logger.error("Error withdrawing funds:", error);
+      throw new NotAcceptableException(error?.message);
+    }
+  }
+
+  // 
 }

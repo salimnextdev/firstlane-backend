@@ -35,5 +35,6 @@ export class InvestmentDTO {
     @ApiProperty({ description: 'Status of the investment plan', default: InvestmentStatus.PENDING, enum: InvestmentStatus })
     status?: string;
     
-    
+    @ApiProperty({ example:["30 days","180 days"], description: 'duration in days'  })
+    durations?: string[];
 }

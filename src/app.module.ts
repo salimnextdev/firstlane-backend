@@ -19,6 +19,7 @@ import { LoanModule } from './loan/loan.module';
 import { SupportModule } from './support/support.module';
 import { CouponModule } from './coupon/coupon.module';
 import { FxModule } from './fx/fx.module';
+import { AppController } from './app.controller';
 @Module({
   imports: [ 
     CaslModule,
@@ -61,7 +62,7 @@ import { FxModule } from './fx/fx.module';
     SupportModule,
     CouponModule,
     FxModule],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule  {

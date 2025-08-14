@@ -162,7 +162,7 @@ export class KycService {
     try {
       const user = await this.userModel
         .findById(userId)
-        .select("verifications");
+        // .select("verifications");
       if (!user) {
         throw new NotFoundException("User not found");
       }
