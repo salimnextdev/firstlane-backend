@@ -1,3 +1,4 @@
+import { OtpType } from '@app/enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomInt, randomUUID } from 'crypto';
 import { HydratedDocument,models,model } from 'mongoose';
@@ -24,7 +25,7 @@ export class OTPModel {
   @Prop({ref:"UserModel"})
   userID: string
 
-  @Prop({enum:["EmailVerification","PasswordReset","2FA","DeliveryPin"],default:"verification"})
+  @Prop({enum:OtpType,default:OtpType.EMAIL_VERIFICATION})
     type: string;
   
 }

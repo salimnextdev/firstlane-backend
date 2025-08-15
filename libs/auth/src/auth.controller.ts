@@ -14,7 +14,7 @@ import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { randomUUID } from 'crypto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags, PickType } from '@nestjs/swagger';
-import { BankAccountDTO, DeleteAccountDTO, ForgotPasswordDTO, LoginDTO } from '@app/dto';
+import { BankAccountDTO, DeleteAccountDTO, ForgotPasswordDTO, LoginDTO, OTPDTO } from '@app/dto';
 import { ChangePasswordDTO, RefreshTokenDTO, SetAuthenticatorDto, UserDTO, UserIDDTO, VerifyAuthenticationDto } from '@app/dto';
 import { JwtAuthGuard, LocalAuthGuard } from '@app/guard';
 
@@ -62,7 +62,7 @@ export class AuthController {
   }
 
   @Post('send-code-to-sms')
-  @ApiBody({ type: UserIDDTO , description: 'User ID for sending the code', }) 
+  @ApiBody({ type: OTPDTO , description: 'User ID for sending the code', }) 
   @ApiOperation({ summary: 'Send two-factor authentication code via email' })
   @ApiResponse({ status: 200, description: 'Code sent successfully.' })
   sendTwoFactorAuthenticationSms(@Request() req:Request) {

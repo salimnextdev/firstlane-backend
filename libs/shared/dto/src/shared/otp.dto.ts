@@ -14,10 +14,10 @@ export class OTPDTO {
   @ApiProperty({ description: 'Duration of otp in minutes', example: '30' })
   duration: string;
 
-  @ApiProperty({ description: 'status', example: 'active', default:"active" })
+  @ApiProperty({ description: 'status', example: 'active', })
   status: string;
 
-  @ApiProperty({ description: 'Type of OTP', example: 'EmailVerification', enum: OtpType, default: 'verification' })
+  @ApiProperty({ description: 'Type of OTP', example: OtpType.PASSWORD_RESET, enum: OtpType,  })
   type: string;
 
 }
