@@ -66,9 +66,11 @@ dotenv.config();
 
 const { MONGODB_URL, environment } = process.env;
 const DBLINK =
-  environment === 'production'
-    ? MONGODB_URL
-    : 'mongodb://localhost:27017/firstlane';
+  // environment === 
+  // 'production'
+    // ? MONGODB_URL
+    // :
+     'mongodb://localhost:27017/firstlane';
 
 @Global()
 @Module({

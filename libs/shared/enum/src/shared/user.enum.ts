@@ -40,7 +40,7 @@ export enum OtpType {
   EMAIL_VERIFICATION = 'EmailVerification',
   PASSWORD_RESET = 'PasswordReset',
   TWO_FACTOR_AUTHENTICATION = '2FA',
-  WIDTHDRAWAL = 'Widthdrawal',
+  WIDTHDRAWAL = 'Withdrawal',
 }
 
 export enum OtpChannel {

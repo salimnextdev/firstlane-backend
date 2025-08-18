@@ -73,14 +73,18 @@ console.log(response.data)
   switch (type) {
     case 'EmailVerification':
       return `Your verification code is ${code}. Use this to verify your email address. This code expires in ${duration} minutes.`;
+    
     case 'PasswordReset':
       return `Reset your password using this code: ${code}. Do not share this with anyone. The code is valid for ${duration} minutes.`;
     case '2FA':
       return `Your 2FA login code is ${code}. Enter this to complete your secure sign-in. It will expire in ${duration} minutes.`;
     case 'DeliveryPin':
       return `Your delivery PIN is ${code}. Share this with the delivery agent to confirm receipt. It will expire in ${duration} minutes.`;
-    default:
-      throw new Error('Invalid message type');
+   case 'Withdrawal':
+    return `Your withdrawal confirmation code is ${code}. Use this to authorize your transaction. It will expire in ${duration} minutes.`;
+
+  default:
+    throw new Error('Invalid message type');
   }
 }
 }
