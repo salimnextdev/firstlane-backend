@@ -89,33 +89,44 @@ export class FlutterwaveService {
     email: string;
     mobilenumber: string;
   }): Promise<any> {
-    const { account_name, email = "", mobilenumber } = data;
-    console.log(data)
-    try {
-      const options = {
-        method: "POST",
-        url: "https://api.flutterwave.com/v3/payout-subaccounts",
+    let { account_name, email = "", mobilenumber } = data;
+     email = email.toLowerCase();
+     try {
+      //check if user exists in fultterwave
+      const response = await axios.request({
+        method: "GET",
+        url: `https://api.flutterwave.com/v3/payout-subaccounts?email=${email}`,
         headers: this.headers,
-        data: {
-          account_name,
-          email,
-          mobilenumber,
-          country: "NG",
-        },
-      };
-      const response = await axios.request(options);
-      const responseType = response.data as typeof CreateSubaccount;
+      });
+      let responseType = response.data.data[0];
+      console.log(responseType);
+      if (responseType) {
+      } else {
+        const options = {
+          method: "POST",
+          url: "https://api.flutterwave.com/v3/payout-subaccounts",
+          headers: this.headers,
+          data: {
+            account_name,
+            email,
+            mobilenumber,
+            country: "NG",
+          },
+        };
+        const response = await axios.request(options);
+        responseType = response.data.data as typeof CreateSubaccount.data;
+      }
 
       const user = await this.userModel.findOne({ email });
 
       await this.walletModel.create({
-        accountNumber: responseType.data.nuban,
+        accountNumber: responseType.nuban,
         accountName: account_name,
         userID: user?._id.toString(),
-        barter_id: responseType.data.barter_id,
-        bankCode: responseType.data.bank_code,
-        bankName: responseType.data.bank_name,
-        customerCode: responseType.data.account_reference,
+        barter_id: responseType.barter_id,
+        bankCode: responseType.bank_code,
+        bankName: responseType.bank_name,
+        customerCode: responseType.account_reference,
         currency: "NGN",
       });
       return responseType;
