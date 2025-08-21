@@ -248,5 +248,22 @@ export class UserController {
     ) {
       return this.userService.changeUserStatus(userID, status, req.user);
     }
-    
+
+    @Get('financial-snapshot/:userID')
+@UseGuards(JwtAuthGuard)
+@ApiOperation({ summary: 'Get user investment, loan balance, and accrued interest snapshot with % changes' })
+@ApiParam({ name: 'userID', description: 'The ID of the user', type: String })
+async getUserFinancialSnapshot(@Param('userID') userID: string) {
+  return this.userService.getUserFinancialSnapshot(userID);
+}
+
+
+@Get('loan-stats/:userID')
+@UseGuards(JwtAuthGuard)
+@ApiOperation({ summary: 'Get total loan collected, repaid, and due with % monthly changes' })
+@ApiParam({ name: 'userID', description: 'The ID of the user', type: String })
+async getUserLoanStats(@Param('userID') userID: string) {
+  return this.userService.getUserLoanStats(userID);
+}
+
 }

@@ -5,6 +5,12 @@ import {
   UserDoc,
   RideModel,
   RideDoc,
+  FxModel,
+  FxDoc,
+  LoanDoc,
+  LoanModel,
+  UserInvestmentModel,
+  UserInvestmentDoc,
 } from "@app/schema";
 import {
   getMetadata,
@@ -21,7 +27,7 @@ import {
 import { InjectModel } from "@nestjs/mongoose";
 
 import { Model } from "mongoose";
-import { Action, UserType, KycLevel, VerificationStatus } from "@app/enum";
+import { Action, UserType, KycLevel, VerificationStatus, UserInvestmentStatus, LoanStatus } from "@app/enum";
 
 import { UserDTO } from "@app/dto";
 // import { OrganizationAbilityFactory } from './organization-ability.factory';
@@ -33,6 +39,9 @@ export class UserService {
   constructor(
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
     @InjectModel(RideModel.name) private rideModel: Model<RideDoc>,
+    @InjectModel(LoanModel.name) private loanModel: Model<LoanDoc>,
+    @InjectModel(FxModel.name) private fxModel: Model<FxDoc>,
+     @InjectModel(UserInvestmentModel.name) private userInvestmentModel: Model<UserInvestmentDoc>,
     @InjectModel(ActivityLogModel.name)
     private activityLogModel: Model<ActivityLogDoc>,
     // private organizationAbilityFactory: OrganizationAbilityFactory,
@@ -412,4 +421,201 @@ export class UserService {
       });
     }
   }
+
+  async getUserFinancialSnapshot(userID: string): Promise<ObjectReturnType> {
+  try {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+    const calculatePercentageChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100 * 100) / 100;
+    };
+
+    // ---------- CURRENT PERIOD ----------
+    const currentLoansAgg = await this.loanModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: LoanStatus.APPROVED
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRequested: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRepaid" }
+        }
+      }
+    ]);
+
+    const currentInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: UserInvestmentStatus.ACTIVE
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalInvested: { $sum: "$amount" },
+          totalAccruedInterest: { $sum: "$interestAccrued" }
+        }
+      }
+    ]);
+
+    const currentLoanRequested = currentLoansAgg[0]?.totalRequested || 0;
+    const currentLoanRepaid = currentLoansAgg[0]?.totalRepaid || 0;
+    const currentLoanBalance = currentLoanRequested - currentLoanRepaid;
+
+    const currentInvestmentBalance = currentInvestmentsAgg[0]?.totalInvested || 0;
+    const currentAccruedInterest = currentInvestmentsAgg[0]?.totalAccruedInterest || 0;
+
+    // ---------- LAST MONTH ----------
+    const lastMonthLoansAgg = await this.loanModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: LoanStatus.APPROVED,
+          createdAt: { $lt: startOfCurrentMonth }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRequested: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRepaid" }
+        }
+      }
+    ]);
+
+    const lastMonthInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: UserInvestmentStatus.ACTIVE,
+          createdAt: { $lt: startOfCurrentMonth }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalInvested: { $sum: "$amount" },
+          totalAccruedInterest: { $sum: "$interestAccrued" }
+        }
+      }
+    ]);
+
+    const lastLoanRequested = lastMonthLoansAgg[0]?.totalRequested || 0;
+    const lastLoanRepaid = lastMonthLoansAgg[0]?.totalRepaid || 0;
+    const lastLoanBalance = lastLoanRequested - lastLoanRepaid;
+
+    const lastInvestmentBalance = lastMonthInvestmentsAgg[0]?.totalInvested || 0;
+    const lastAccruedInterest = lastMonthInvestmentsAgg[0]?.totalAccruedInterest || 0;
+
+    // ---------- CHANGES ----------
+    const loanBalanceChange = calculatePercentageChange(currentLoanBalance, lastLoanBalance);
+    const investmentBalanceChange = calculatePercentageChange(currentInvestmentBalance, lastInvestmentBalance);
+    const accruedInterestChange = calculatePercentageChange(currentAccruedInterest, lastAccruedInterest);
+
+    return serviceResponse({
+      message: "User financial snapshot retrieved successfully",
+      status: true,
+      data: {
+        loanBalance: currentLoanBalance,
+        investmentBalance: currentInvestmentBalance,
+        accruedInterest: currentAccruedInterest,
+        monthlyChanges: {
+          loanBalance: loanBalanceChange,
+          investmentBalance: investmentBalanceChange,
+          accruedInterest: accruedInterestChange
+        }
+      }
+    });
+  } catch (error) {
+    throw new BadRequestException(error.message);
+  }
+}
+
+async getUserLoanStats(userID: string): Promise<ObjectReturnType> {
+  try {
+    const now = new Date();
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const calculatePercentageChange = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 100 * 100) / 100;
+    };
+
+    // ---------- CURRENT ----------
+    const currentLoanAgg = await this.loanModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: LoanStatus.APPROVED
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCollected: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRepaid" }
+        }
+      }
+    ]);
+
+    const currentCollected = currentLoanAgg[0]?.totalCollected || 0;
+    const currentRepaid = currentLoanAgg[0]?.totalRepaid || 0;
+    const currentDue = currentCollected - currentRepaid;
+
+    // ---------- LAST MONTH ----------
+    const lastMonthLoanAgg = await this.loanModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: LoanStatus.APPROVED,
+          createdAt: { $lt: startOfCurrentMonth }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCollected: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRepaid" }
+        }
+      }
+    ]);
+
+    const lastCollected = lastMonthLoanAgg[0]?.totalCollected || 0;
+    const lastRepaid = lastMonthLoanAgg[0]?.totalRepaid || 0;
+    const lastDue = lastCollected - lastRepaid;
+
+    // ---------- CHANGES ----------
+    const collectedChange = calculatePercentageChange(currentCollected, lastCollected);
+    const repaidChange = calculatePercentageChange(currentRepaid, lastRepaid);
+    const dueChange = calculatePercentageChange(currentDue, lastDue);
+
+    return serviceResponse({
+      message: "User loan stats retrieved successfully",
+      status: true,
+      data: {
+        totalLoanCollected: currentCollected,
+        totalLoanRepaid: currentRepaid,
+        totalLoanDue: currentDue,
+        monthlyChanges: {
+          collected: collectedChange,
+          repaid: repaidChange,
+          due: dueChange
+        }
+      }
+    });
+
+  } catch (error) {
+    throw new BadRequestException(error.message);
+  }
+}
+
+
 }
