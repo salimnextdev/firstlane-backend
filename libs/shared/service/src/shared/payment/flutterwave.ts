@@ -101,6 +101,8 @@ export class FlutterwaveService {
       let responseType = response.data.data[0];
       console.log(responseType);
       if (responseType) {
+
+
       } else {
         const options = {
           method: "POST",
@@ -131,10 +133,10 @@ export class FlutterwaveService {
       });
       return responseType;
     } catch (error) {
-      console.error(
-        "Error creating virtual account:",
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   "Error creating virtual account:",
+      //   error.response?.data.message || error.message
+      // );
       throw error;
     }
   }

@@ -48,7 +48,7 @@ export class WalletController {
       type: "object",
       properties: {
         account_name: { type: "string", example: "John Doe" },
-        email: { type: "string", example: "john@example.com" },
+        email: { type: "string", example: "john@example2.com" },
         mobilenumber: { type: "string", example: "08012345678" },
       },
     },
