@@ -283,14 +283,14 @@ console.log(wallet,userID)
     otp: string;
   }): Promise<any> {
     try {
-      // const otpA = await this.otpModel.findOne({
-      //   code: data.otp,
-      //   type: "Withdrawal",
-      //   userID: data.userID,
-      // });
-      // if (!otpA) {
-      //   throw new NotFoundException("OTP not found");
-      // }
+      const otpA = await this.otpModel.findOne({
+        code: data.otp,
+        type: "Withdrawal",
+        userID: data.userID,
+      });
+      if (!otpA) {
+        throw new NotFoundException("OTP not found");
+      }
       const user = await this.userModel.findById(data.userID);
       const wallet = await this.walletModel.findOne({
         userID: user._id.toString(),
