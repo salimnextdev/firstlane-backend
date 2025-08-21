@@ -6,6 +6,8 @@ import {
   UserModel,
   UserInvestmentModel,
   UserInvestmentDoc,
+  OTPDoc,
+  OTPModel,
 } from "@app/schema";
 import {
   NotificationService,
@@ -51,6 +53,7 @@ export class WalletService {
 
     @InjectModel(WalletModel.name) private walletModel: Model<WalletDoc>,
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
+    @InjectModel(OTPModel.name) private otpModel: Model<OTPDoc>,
     @InjectModel(UserInvestmentModel.name)
     private userInvestmentModel: Model<UserInvestmentDoc>
   ) {}
