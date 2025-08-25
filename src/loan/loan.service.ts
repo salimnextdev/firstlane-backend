@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LoanModel, LoanDoc } from '@app/schema';
+import { LoanModel, LoanDoc, UserModel, UserDoc } from '@app/schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LoanDTO, UserDTO } from '@app/dto';
@@ -9,14 +9,25 @@ import { ObjectReturnType, serviceResponse, getMetadata } from '@app/service';
 export class LoanService {
  constructor(
     @InjectModel(LoanModel.name)
-    private loanModel: Model<LoanDoc>,){
+    private loanModel: Model<LoanDoc>,
+    @InjectModel(UserModel.name)
+      private userModel: Model<UserDoc>,
+  ){
 
  }
   async upset(
     createLoanDto: LoanDTO,
     userData: UserDTO
   ): Promise<ObjectReturnType> {
-    const created = await this.loanModel.create(createLoanDto);
+     let refBy
+      if(createLoanDto.refCode){
+        const user= await this.userModel.findOne({refCode:createLoanDto.refCode})
+        refBy=user._id.toString()
+      }
+    
+    const created = await this.loanModel.create({...createLoanDto,refBy});
+
+    
     return serviceResponse({
       data: await created.save(),
       message: "Loan plan created successfully",

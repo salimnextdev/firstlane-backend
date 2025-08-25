@@ -13,6 +13,11 @@ export class UserInvestmentDTO {
     description: "The ID of the investment plan",
   })
   investmentID: string;
+     @ApiProperty({
+    example: "JHU098",
+    description: "Staff referral code",
+  })
+    refCode?:string
 
   @ApiProperty({
     example: 1000,

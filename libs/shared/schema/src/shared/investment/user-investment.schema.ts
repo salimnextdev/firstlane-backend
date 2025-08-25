@@ -45,7 +45,8 @@ export class UserInvestmentModel {
   @Prop({ })
   investmentCode: string;
 
-  
+  @Prop({ ref:"UserModel"})
+  refBy?:string
  @Prop({ })
   repaymentInterval:string
 }

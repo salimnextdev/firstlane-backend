@@ -4,8 +4,10 @@ import {
   InvestmentModel,
   InvestmentPlanDoc,
   InvestmentPlanModel,
+  UserDoc,
   UserInvestmentDoc,
   UserInvestmentModel,
+  UserModel,
   WalletDoc,
   WalletModel,
 } from "@app/schema";
@@ -37,6 +39,8 @@ export class InvestmentService {
     private investmentPlanModel: Model<InvestmentPlanDoc>,
     @InjectModel(WalletModel.name)
     private walletModel: Model<WalletDoc>,
+     @InjectModel(UserModel.name)
+    private userModel: Model<UserDoc>,
     private flutterwaveService: FlutterwaveService,
     private notificationService: NotificationService
   ) {}
@@ -206,12 +210,18 @@ export class InvestmentService {
       if ((wallet?.data?.available_balance ?? 0) < investmentData.amount) {
         throw new Error("Insufficient balance");
       }
+       let refBy
+      if(investmentData.refCode){
+        const user= await this.userModel.findOne({refCode:investmentData.refCode})
+        refBy=user._id.toString()
+      }
       const userInvestment = new this.userInvestmentModel(
-        {...investmentData,userID:userData._id.toString()}
+        {...investmentData,userID:userData._id.toString(),refBy:refBy}
       );
       const userWallet = await this.walletModel.findOne({
         userID: userData._id.toString(),
       });
+     
 
       const res = await this.flutterwaveService.walletToWalletTransfer({
         account_bank: "flutterwave",
@@ -278,6 +288,9 @@ export class InvestmentService {
       if (!investment) {
         throw new NotFoundException("Investment not found");
       }
+      if(investment.isUsed){
+        throw new NotAcceptableException("Investment already used");
+      }
 
       const wallet = await this.flutterwaveService.getAvailableBalance(
         userData._id.toString()
@@ -288,12 +301,17 @@ export class InvestmentService {
       const userWallet = await this.walletModel.findOne({
         userID: userData._id.toString(),
       });
-     
+      let refBy
+      if(investment.refBy){
+        const user= await this.userModel.findOne({refCode:investment.refBy})
+        refBy=user._id.toString()
+      }
       const newInvestment = new this.userInvestmentModel({
         ...investment.toObject(),
         userID: userData._id.toString(),
         _id: undefined, 
         investmentCode: undefined, 
+        refBy
       });
       
 const res = await this.flutterwaveService.walletToWalletTransfer({

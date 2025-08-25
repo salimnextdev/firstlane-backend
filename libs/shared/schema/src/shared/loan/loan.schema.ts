@@ -66,6 +66,12 @@ export class LoanModel {
   vendorInvoice:string
 @Prop({ enum:LoanStatus,default:LoanStatus.PENDING })
   status:string
+
+  @Prop({ref:"CollateralModel"})
+  collateralID: string;
+
+  @Prop({ ref:"UserModel"})
+  refBy?:string
 }
 
 export const LoanSchema = SchemaFactory.createForClass(LoanModel);

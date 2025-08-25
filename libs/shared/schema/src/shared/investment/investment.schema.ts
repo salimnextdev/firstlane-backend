@@ -8,11 +8,14 @@ export type InvestmentDoc = InvestmentModel & Document;
 @Schema({ timestamps: true })
 export class InvestmentModel {
 
+  @Prop({default:false})
+  isUsed:boolean;
   @Prop({})
   id:string;
   @Prop({})
   firstname: string;
-
+ @Prop({ ref:"UserModel"})
+  refBy?:string
   @Prop({})
   lastname: string;
 
@@ -44,6 +47,9 @@ export class InvestmentModel {
   userId: string;
   @Prop({ })
   durations:string[]
+
+ @Prop({ })
+  duration:string
 }
 
 export const InvestmentSchema = SchemaFactory.createForClass(

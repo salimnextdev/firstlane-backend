@@ -94,6 +94,17 @@ export class LoanDTO {
     example: "6878e109730140f93d7cac1e",
   })
   userID:string
+
+  @ApiProperty({
+    example: "6878e109730140f93d7cac1e",
+  })
+  collateralID: string;
+
+   @ApiProperty({
+      example: "JHU098",
+      description: "Staff referral code",
+    })
+      refCode?:string
 }
 
 

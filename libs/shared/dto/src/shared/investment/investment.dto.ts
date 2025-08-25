@@ -37,4 +37,11 @@ export class InvestmentDTO {
     
     @ApiProperty({ example:["30 days","180 days"], description: 'duration in days'  })
     durations?: string[];
+@ApiProperty({ example:'30 days', description: 'duration in days'  })
+    duration?: string;
+     @ApiProperty({
+    example: "JHU098",
+    description: "Staff referral code",
+  })
+    refCode?:string
 }

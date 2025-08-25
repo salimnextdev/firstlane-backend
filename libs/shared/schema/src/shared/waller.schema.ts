@@ -35,6 +35,8 @@ export class WalletModel {
   
     @Prop({ default: 'active' })
     status?: string;
+
+   
   }
  
 
