@@ -78,4 +78,7 @@ export class UserInvestmentDTO {
     description:"The interval at which repayments are made in days"
   })
   repaymentInterval?: string;
+
+   @ApiProperty({ description: 'Due date for the investment', type: Date })
+    investmentDueDate: Date;
 }

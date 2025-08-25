@@ -49,6 +49,9 @@ export class UserInvestmentModel {
   refBy?:string
  @Prop({ })
   repaymentInterval:string
+
+  @Prop({})
+  investmentDueDate: Date;
 }
 
 export const UserInvestmentSchema = SchemaFactory.createForClass(UserInvestmentModel);
