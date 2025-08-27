@@ -23,7 +23,7 @@ export class UserInvestmentModel {
   @Prop({ 
     
     enum: UserInvestmentStatus,
-    default: UserInvestmentStatus.PENDING
+    default: UserInvestmentStatus.ACTIVE
   })
   status: string;
 
