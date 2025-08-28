@@ -1,22 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { CouponModel, CouponDoc } from '@app/schema';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { CouponModel, CouponDoc, WalletModel, WalletDoc } from '@app/schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CouponDTO, UserDTO } from '@app/dto';
-import { ObjectReturnType, serviceResponse, getMetadata } from '@app/service';
+import { ObjectReturnType, serviceResponse, getMetadata, FlutterwaveService } from '@app/service';
 
 @Injectable()
 export class CouponService {
  constructor(
     @InjectModel(CouponModel.name)
-    private couponModel: Model<CouponDoc>,){
+    private couponModel: Model<CouponDoc>,
+    @InjectModel(WalletModel.name)
+    private walletModel: Model<WalletDoc>,
+    private flutterwaveService: FlutterwaveService
+){
 
  }
   async upset(
     createCouponDto: CouponDTO,
     userData: UserDTO
   ): Promise<ObjectReturnType> {
-    const created = await this.couponModel.create(createCouponDto);
+
+    const balanceResponse = await this.flutterwaveService.getAvailableBalance(userData._id.toString());
+      const availableBalance = balanceResponse.data.available_balance;
+
+      // Check if user has sufficient balance
+      if (availableBalance < createCouponDto.value) {
+        return serviceResponse({
+          message: `Insufficient balance. `,
+          status: false,
+        });
+      }
+    const created = await this.couponModel.create({...createCouponDto,userIDs:userData._id.toString()});
     return serviceResponse({
       data: await created.save(),
       message: "Coupon plan created successfully",
@@ -146,4 +161,101 @@ export class CouponService {
     }
   }
 
+  async redeem(code: string, user: UserDTO): Promise<ObjectReturnType> {
+    try {
+      // Find coupon by code
+      const coupon = await this.couponModel.findOne({ code }).exec();
+      
+      if (!coupon) {
+        return serviceResponse({
+          message: "Coupon not found",
+          status: false,
+        });
+      }
+
+      // Check if coupon is already used by this user
+      if (coupon.usedBy.includes(user._id.toString())) {
+        return serviceResponse({
+          message: "Coupon already redeemed by this user",
+          status: false,
+        });
+      }
+
+      // Check if max redemptions reached
+      if (coupon.usedBy.length >= parseInt(coupon.max)) {
+        return serviceResponse({
+          message: "Coupon redemption limit reached",
+          status: false,
+        });
+      }
+
+      // Get user's wallet balance
+      const balanceResponse = await this.flutterwaveService.getAvailableBalance(user._id.toString());
+      const availableBalance = balanceResponse.data.available_balance;
+
+      // Check if user has sufficient balance
+      if (availableBalance < coupon.value) {
+        return serviceResponse({
+          message: `Insufficient balance. please contact administrator`,
+          status: false,
+        });
+      }
+
+      // Get coupon creator's wallet for transfer
+      const creatorWallet = await this.walletModel.findOne({ userID: coupon.userID }).exec();
+       const userWallet = await this.walletModel.findOne({ userID: user._id.toString() }).exec();
+      if (!creatorWallet||!userWallet) {
+        return serviceResponse({
+          message: "Coupon creator || user wallet not found",
+          status: false,
+        });
+      }
+
+      // Perform wallet-to-wallet transfer
+      const transferData = {
+        account_bank: userWallet.bankCode,
+        account_number: userWallet.accountNumber,
+        amount: coupon.value,
+        narration: `Coupon redemption: ${code}`,
+        reference: `COUPON_${code}_${Date.now()}`,
+        debit_subaccount: creatorWallet.customerCode,
+      };
+
+      const transferResponse = await this.flutterwaveService.walletToWalletTransfer(transferData);
+
+      if (transferResponse.status !== 'success') {
+        return serviceResponse({
+          message: "Transfer failed",
+          status: false,
+          data: transferResponse,
+        });
+      }
+
+      // Mark coupon as used by this user
+      await this.couponModel.findByIdAndUpdate(
+        coupon._id,
+        { $addToSet: { usedBy: user._id.toString() } },
+        { new: true }
+      ).exec();
+
+      return serviceResponse({
+        data: {
+          coupon: {
+            code: coupon.code,
+            value: coupon.value,
+            currency: coupon.currency,
+          },
+          transfer: transferResponse,
+        },
+        message: "Coupon redeemed successfully",
+        status: true,
+      });
+
+    } catch (error) {
+      return serviceResponse({
+        message: error.message || "Failed to redeem coupon",
+        status: false,
+      });
+    }
+  }
 }

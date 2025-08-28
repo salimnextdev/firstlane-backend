@@ -107,5 +107,13 @@ export class CouponController {
   async delete(@Body() ids: string[],  @Req() req: any) {
     return this.couponService.delete(ids, req.user);
   }
+
+  @Post('redeem/:code')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Redeem a coupon code' })
+  @ApiParam({ name: 'code', description: 'Coupon code to redeem', type: String })
+  async redeem(@Param('code') code: string, @Req() req: any) {
+    return this.couponService.redeem(code, req.user);
+  }
   
 }

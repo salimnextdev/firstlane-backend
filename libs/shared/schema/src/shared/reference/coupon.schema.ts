@@ -9,6 +9,8 @@ export type CouponDoc = CouponModel & Document;
 export class CouponModel {
   @Prop({ ref: "UserModel" })
   userIDs: string[];
+  @Prop({ ref: "UserModel" })
+  userID: string;
   @Prop({})
   code: string;
    @Prop({})
@@ -19,6 +21,9 @@ export class CouponModel {
   type: string;
   @Prop({ default: 1 })
   max: string;
+  // Track which users have redeemed this coupon
+  @Prop({ type: [String], ref: "UserModel", default: [] })
+  usedBy: string[];
 }
 
 export const CouponSchema = SchemaFactory.createForClass(CouponModel);

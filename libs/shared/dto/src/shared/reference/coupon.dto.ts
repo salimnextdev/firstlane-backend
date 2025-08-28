@@ -7,6 +7,7 @@ export class CouponDTO {
     example: ["687f966ff5a15e9164b36cf7"],
   })
   userIDs: string[];
+  
   @ApiProperty({ example: "code" })
   code: string;
   @ApiProperty({ enum: AppTypeEnum, example: AppTypeEnum.INVESTMENT })
