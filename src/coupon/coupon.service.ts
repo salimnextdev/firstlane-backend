@@ -190,7 +190,7 @@ export class CouponService {
       }
 
       // Get user's wallet balance
-      const balanceResponse = await this.flutterwaveService.getAvailableBalance(user._id.toString());
+      const balanceResponse = await this.flutterwaveService.getAvailableBalance(coupon.userID);
       const availableBalance = balanceResponse.data.available_balance;
 
       // Check if user has sufficient balance
