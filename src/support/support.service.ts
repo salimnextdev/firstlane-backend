@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { SupportModel, SupportDoc } from '@app/schema';
+import { SupportModel, SupportDoc, UserDoc, UserModel } from '@app/schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SupportDTO, UserDTO } from '@app/dto';
-import { ObjectReturnType, serviceResponse, getMetadata } from '@app/service';
+import { ObjectReturnType, serviceResponse, getMetadata, NotificationService } from '@app/service';
+import { UserType } from '@app/enum';
 
 @Injectable()
 export class SupportService {
  constructor(
     @InjectModel(SupportModel.name)
-    private supportModel: Model<SupportDoc>,){
+    private supportModel: Model<SupportDoc>,
+      private notificationActivity: NotificationService,
+     @InjectModel(UserModel.name)
+    private userModel: Model<UserDoc>,
+  ){
 
  }
   async upset(
@@ -20,6 +25,34 @@ export class SupportService {
       ? (createSupportDto.adminID = userData._id)
       : (createSupportDto.userID = userData._id);
     const created = await this.supportModel.create({...createSupportDto,supportID:createSupportDto?.supportID});
+  if(userData.userType !== 'admin'){
+    const admins= await this.userModel.find({userType:UserType.ADMIN}).exec();
+    
+    for(const admin of admins){
+         await this.notificationActivity.notificationActivity({
+          entityType:"support",
+          entityID:created._id.toString(),
+        userID:admin._id.toString(),
+        action:createSupportDto.supportID?"New Support Message":"New Support Ticket",
+        details:createSupportDto.supportID?`A new support message has been sent by  ${userData.fullname}`:`A new support ticket has been created by  ${userData.fullname}`,
+        playerIds:[admin.playerId],
+        
+      });
+    }
+  }else{
+    const sup= await this.supportModel.findById(createSupportDto.supportID).exec();
+    const user= await this.userModel.findById(sup.userID).exec();
+     await this.notificationActivity.notificationActivity({
+          entityType:"support",
+          entityID:sup._id.toString(),
+        userID:sup.userID,
+        action:"Support Response",
+        details:`Your support request has a new response from admin`,
+        playerIds:[user.playerId],
+        
+      });
+  }
+   
     return serviceResponse({
       data: await created.save(),
       message: "Support plan created successfully",

@@ -3,7 +3,8 @@ import { LoanModel, LoanDoc, UserModel, UserDoc } from '@app/schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LoanDTO, UserDTO } from '@app/dto';
-import { ObjectReturnType, serviceResponse, getMetadata } from '@app/service';
+import { ObjectReturnType, serviceResponse, getMetadata, NotificationService } from '@app/service';
+import { UserType } from '@app/enum';
 
 @Injectable()
 export class LoanService {
@@ -12,6 +13,7 @@ export class LoanService {
     private loanModel: Model<LoanDoc>,
     @InjectModel(UserModel.name)
       private userModel: Model<UserDoc>,
+      private notificationActivity: NotificationService,
   ){
 
  }
@@ -27,7 +29,21 @@ export class LoanService {
     
     const created = await this.loanModel.create({...createLoanDto,refBy});
 
+ 
+    const admins= await this.userModel.find({userType:UserType.ADMIN}).exec();
     
+    for(const admin of admins){
+         await this.notificationActivity.notificationActivity({
+          entityType:"loan",
+          entityID:created._id.toString(),
+        userID:admin._id.toString(),  
+        action:"New Loan Application",
+        details:`A new loan application has been submitted by  ${userData.fullname}`,
+        playerIds:[admin.playerId],
+        
+      });
+    }
+  
     return serviceResponse({
       data: await created.save(),
       message: "Loan plan created successfully",

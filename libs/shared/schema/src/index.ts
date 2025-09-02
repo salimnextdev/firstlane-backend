@@ -36,6 +36,6 @@ export * from './shared/fx/currency.schema';
 export * from './shared/fx/fx.schema';
 export * from './shared/fx/fxrate.schema';
 
-
+export * from './shared/settings.schema';
 
 

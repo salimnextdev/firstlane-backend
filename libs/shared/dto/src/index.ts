@@ -33,3 +33,5 @@ export * from './shared/support.dto';
 export * from './shared/fx/currency.dto';
 export * from './shared/fx/fx.dto';
 export * from './shared/fx/fxrate.dto';
+
+export * from './shared/settings.dto';

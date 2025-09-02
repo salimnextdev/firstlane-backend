@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { FxModel, FxDoc } from '@app/schema';
+import { FxModel, FxDoc, UserDoc, UserModel } from '@app/schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { FxDTO, UserDTO } from '@app/dto';
-import { ObjectReturnType, serviceResponse, getMetadata } from '@app/service';
+import { ObjectReturnType, serviceResponse, getMetadata, NotificationService } from '@app/service';
+import { UserType } from '@app/enum';
 
 @Injectable()
 export class FxService {
  constructor(
     @InjectModel(FxModel.name)
-    private fxModel: Model<FxDoc>,){
+    private fxModel: Model<FxDoc>,
+      @InjectModel(UserModel.name)
+      private userModel: Model<UserDoc>,
+      private notificationActivity: NotificationService,
+  ){
 
  }
   async upset(
@@ -17,8 +22,22 @@ export class FxService {
     userData: UserDTO
   ): Promise<ObjectReturnType> {
     const created = await this.fxModel.create(createFxDto);
+
+    const admins= await this.userModel.find({userType:UserType.ADMIN}).exec();
+        
+        for(const admin of admins){
+             await this.notificationActivity.notificationActivity({
+              entityType:"fx",
+              entityID:created._id.toString(),
+            userID:admin._id.toString(),  
+            action:"New Fx Transaction",
+            details:`A new fx transaction has been created by  ${userData.fullname}`,
+            playerIds:[admin.playerId],
+            
+          });
+        }
     return serviceResponse({
-      data: await created.save(),
+      data: created,
       message: "Fx plan created successfully",
 
       status: true,

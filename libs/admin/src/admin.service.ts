@@ -1,4 +1,4 @@
-import { UserDTO } from "@app/dto";
+import { SettingsDTO, UserDTO } from "@app/dto";
 import {
   KycLevel,
   LoanStatus,
@@ -21,6 +21,9 @@ import {
   CurrencyModel,
   WalletDoc,
   WalletModel,
+  SettingsSchema,
+  SettingsDoc,
+  SettingsModel,
 } from "@app/schema";
 import {
   FlutterwaveService,
@@ -52,6 +55,7 @@ export class AdminService {
     private activityLogModel: Model<ActivityLogDoc>,
     @InjectModel(WalletModel.name)
     private walletModel: Model<WalletDoc>,
+    @InjectModel(SettingsModel.name) private settingsModel: Model<SettingsDoc>,
     private flutterwaveService: FlutterwaveService,
     // private organizationAbilityFactory: OrganizationAbilityFactory,
     private notificationActivity: NotificationService
@@ -600,4 +604,44 @@ export class AdminService {
 
     return { fxVolumes };
   }
+
+  // create setting/s
+  async createSettings(payload: SettingsDTO): Promise<ObjectReturnType> {
+    try {
+      const settings = await this.settingsModel.findOneAndUpdate({
+        _id: payload._id??"",
+      },{...payload},{new: true, upsert: true});
+      return serviceResponse({
+        message: "Settings created successfully",
+        status: true,
+        data: settings,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // get setting/s
+  async getSettings(): Promise<ObjectReturnType> {
+   
+    try {
+      const settings = await this.settingsModel
+        .find({})
+       
+      if (!settings) {
+        throw new NotFoundException("No settings found");
+      }
+
+      return serviceResponse({
+        message: "Settings retrieved successfully",
+        status: true,
+        data: settings,
+        
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+ 
 }

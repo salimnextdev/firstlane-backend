@@ -51,6 +51,8 @@ import {
   FxRateModel,
   FxRateSchema,
   FxSchema,
+  SettingsModel,
+  SettingsSchema,
 } from '@app/schema';
 import { BankAccountModel, BankAccountSchema } from '@app/schema/shared/bank.schema';
 import { RideModel, RideSchema } from '@app/schema/shared/ride.schema';
@@ -112,6 +114,8 @@ MongooseModule.forFeature([
     MongooseModule.forFeature([{ name: RideModel.name, schema: RideSchema }]),
     MongooseModule.forFeature([{ name: FeeModel.name, schema: FeeSchema }]),
     MongooseModule.forFeature([{ name: ChatModel.name, schema: ChatSchema }]),
+    MongooseModule.forFeature([{ name: SettingsModel.name, schema: SettingsSchema }]),
+    
 
     MongooseModule.forFeature([{ name:AdModel.name, schema:AdSchema }]),
     MongooseModule.forFeature([{ name: TransactionModel.name, schema: TransactionSchema }]),

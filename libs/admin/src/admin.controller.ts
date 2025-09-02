@@ -5,6 +5,7 @@ import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '@app/guard';
 import { LoanStatus } from '@app/enum';
+import { SettingsDTO } from '@app/dto';
 
 @Controller('admin')
 @ApiTags("admin")
@@ -183,4 +184,18 @@ constructor(private readonly adminService: AdminService) {}
     return this.adminService.getFxVolumesByCurrencySimple(filters);
   }
 
+  // settings
+  @Patch('settings')
+  @ApiOperation({ summary: 'Create or update platform settings (Admin)' })
+  @ApiBody({ type: SettingsDTO })
+  @UseGuards(JwtAuthGuard)
+  async createOrUpdateSettings(@Body() body: SettingsDTO) {
+    return this.adminService.createSettings(body);
+  }
+  @Get('settings')
+  @ApiOperation({ summary: 'Get platform settings (Admin)' })
+  @UseGuards(JwtAuthGuard)
+  async getSettings() {
+    return this.adminService.getSettings();
+  }
 }
