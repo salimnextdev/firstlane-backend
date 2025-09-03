@@ -3,133 +3,133 @@ import { Document } from 'mongoose';
 
 @Schema()
 export class Platform {
-  @Prop({ required: false })
+  @Prop({  })
   logo?: string;
 
-  @Prop({ required: false })
+  @Prop({  })
   name?: string;
 
-  @Prop({ required: false })
+  @Prop({  })
   email?: string;
 
-  @Prop({ required: false })
+  @Prop({  })
   phone?: string;
 }
 
 
 @Schema()
 export class LoanSettings {
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   personalLoanInterestRate?: number;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   businessLoanInterestRate?: number;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   employeeLoanInterestRate?: number;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   assetFinanceLoanInterestRate?: number;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   minimumLoanLimit?: number;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   maximumLoanLimit?: number;
 
-  @Prop({ required: false })
+  @Prop({  })
   maximumGracePeriod?: string;
 
-  @Prop({ required: false })
+  @Prop({  })
   loanTermsDocument?: string;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   enablePersonalLoan?: boolean;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   enableBusinessLoan?: boolean;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   enableEmployeeLoan?: boolean;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   enableAssetFinanceLoan?: boolean;
 }
 
 
 @Schema()
 export class InvestmentSettings {
-  @Prop({ type: [Number], required: false, default: [] })
+  @Prop({ type: [Number],  default: [] })
   availableDurations?: number[];
 
-  @Prop({ required: false })
+  @Prop({  })
   investmentTermsDocument?: string;
 }
 
 
 @Schema()
 export class FxSettings {
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   minFxTransactionLimit?: number;
 
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   maxFxTransactionLimit?: number;
 }
 
 
 @Schema()
 export class WalletSettings {
-  @Prop({ required: false, default: 0 })
+  @Prop({  default: 0 })
   dailyTransferLimit?: number;
 
-  @Prop({ type: [String], required: false, default: [] })
+  @Prop({ type: [String],  default: [] })
   supportedFundingMethods?: string[];
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   enableMultiCurrencyWallets?: boolean;
 }
 
 
 @Schema()
 export class SecuritySettings {
-  @Prop({ required: false, default: 5 })
+  @Prop({  default: 5 })
   loginAttemptLimit?: number;
 
-  @Prop({ required: false, default: '30 mins' })
+  @Prop({  default: '30 mins' })
   sessionTimeoutDuration?: string;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   enable2FAForAdmins?: boolean;
 }
 
 
 @Schema({ timestamps: true })
 export class SettingsModel {
-  @Prop({ required: false })
+  @Prop({  })
   privacyPolicy?: string;
 
-  @Prop({ type: Platform, required: false })
+  @Prop({ type: Platform,  })
   plaform?: Platform;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   smsNotification?: boolean;
 
-  @Prop({ required: false, default: false })
+  @Prop({  default: false })
   emailNotification?: boolean;
 
-  @Prop({ type: LoanSettings, required: false })
+  @Prop({ type: LoanSettings,  })
   loanSettings?: LoanSettings;
 
-  @Prop({ type: InvestmentSettings, required: false })
+  @Prop({ type: InvestmentSettings,  })
   investmentSettings?: InvestmentSettings;
 
-  @Prop({ type: FxSettings, required: false })
+  @Prop({ type: FxSettings,  })
   fxSettings?: FxSettings;
 
-  @Prop({ type: WalletSettings, required: false })
+  @Prop({ type: WalletSettings,  })
   walletSettings?: WalletSettings;
 
-  @Prop({ type: SecuritySettings, required: false })
+  @Prop({ type: SecuritySettings,  })
   securitySettings?: SecuritySettings;
 }
 
