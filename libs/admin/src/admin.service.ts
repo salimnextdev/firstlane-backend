@@ -170,12 +170,17 @@ export class AdminService {
             status: false,
           });
         }
-        if (adminWallet.balance < loan.amountRequested) {
-          return serviceResponse({
+
+        const wallet = await this.flutterwaveService.getAvailableBalance(
+        userData._id.toString()
+      );
+      if ((wallet?.data?.available_balance ?? 0) < loan.amountRequested) {
+       return serviceResponse({
             message: "Admin wallet balance is less than loan amount",
             status: false,
           });
-        }
+      }
+       
         const transferData = {
           account_bank: userWallet.bankCode,
           account_number: userWallet.accountNumber,
