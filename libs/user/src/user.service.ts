@@ -319,6 +319,7 @@ export class UserService {
     const skip = (page - 1) * limit;
     const result = await this.activityLogModel
       .find({ [key]: value })
+      .populate("userID")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
