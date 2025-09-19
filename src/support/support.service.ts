@@ -55,7 +55,7 @@ export class SupportService {
    
     return serviceResponse({
       data: await created.save(),
-      message: "Support plan created successfully",
+      message: "success",
 
       status: true,
     });
