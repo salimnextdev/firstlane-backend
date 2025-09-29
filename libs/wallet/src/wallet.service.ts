@@ -1,3 +1,4 @@
+import { UserDTO } from "@app/dto";
 import { UserInvestmentStatus } from "@app/enum";
 import {
   WalletModel,
@@ -336,4 +337,61 @@ console.log(wallet,userID)
       throw new NotAcceptableException(error?.message);
     }
   }
+
+  
+// initiateCheckout
+async initiateCheckout(userData:UserDTO, paymentRequest:PaymentRequestDTO){
+  const paymentrequest={
+    amount:paymentRequest.amount,
+    currency:"NGN",
+   tx_ref:`${userData._id.toString()}-${new Date()}`,
+    redirect_url:paymentRequest.redirect_url,
+    payment_options:"card,banktransfer,ussd",
+    customer:{
+      phonenumber:userData.phone,
+      name:userData.fullname??userData.username??userData.firstname,
+      email:userData.email
+    },
+    customizations:{
+      title:"First lane",
+      logo:"https://first.vercel.app/logo.png",
+      description:"Fund account"
+    }
+  }
+ const payment = await this.flutterwaveService.initiateCheckout(paymentrequest);
+ console.log(payment,payment.data.link.split("pay/")[1])
+return serviceResponse({
+      data: payment.data.link,
+      message: "successfully",
+
+      status: true,
+    });
 }
+}
+
+
+// Define the structure of PaymentRequestDTO
+
+interface Customer {
+  phonenumber: string;
+  name: string;
+  email: string;
+}
+
+interface Customizations {
+  title: string;
+  logo: string;
+  description: string;
+}
+
+export interface PaymentRequestDTO {
+  amount: number;
+  
+
+  redirect_url: string;
+
+ 
+}
+
+// Create PaymentRequestDTO instance
+

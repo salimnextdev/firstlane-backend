@@ -53,6 +53,62 @@ export class FlutterwaveService {
       throw new Error("Failed to process webhook");
     }
   }
+
+  async initiateCheckout(data: {
+  tx_ref: string;
+  amount: number;
+  currency: string;
+  redirect_url: string;
+  payment_options?: string;
+  meta?: any;
+  customer: {
+    email: string;
+    phonenumber?: string;
+    name?: string;
+  };
+  customizations?: {
+    title?: string;
+    logo?: string;
+    description?: string;
+  };
+  // You can include other optional fields like meta, customer name, etc.
+}): Promise<any> {
+  
+
+  try {
+    const options = {
+      method: 'POST',
+      url: 'https://api.flutterwave.com/v3/payments',
+      headers: this.headers,
+      data
+    };
+    const response = await axios.request(options);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error initiating checkout:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+/**
+ * Verify a checkout / transaction after payment
+ * (Using the same verify endpoint you already planned)
+ */
+async verifyCheckout(tx_ref: string): Promise<any> {
+  try {
+    const options = {
+      method: 'GET',
+      url: `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`,
+      headers: this.headers,
+    };
+    const response = await axios.request(options);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error verifying checkout transaction:', error.response?.data || error.message);
+    throw error.response?.data;
+  }
+}
+
 //test deposit
   async testDeposit(data: {
     account_reference: string;

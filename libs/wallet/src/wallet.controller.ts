@@ -13,7 +13,7 @@ import {
   Patch,
   Res,
 } from "@nestjs/common";
-import { WalletService } from "./wallet.service";
+import { PaymentRequestDTO, WalletService } from "./wallet.service";
 import { JwtAuthGuard } from "@app/guard";
 import {
   ApiBearerAuth,
@@ -203,4 +203,28 @@ export class WalletController {
   async getTransferById(@Param("transferId") transferId: string) {
     return await this.walletService.getTransferById(transferId);
   }
+
+// initiateCheckout
+@Post("fund-account")
+@ApiOperation({ summary: "Initiate a payment to fund account" })
+@ApiBody({
+  schema: {
+    type: "object",
+    properties: {
+      amount: { type: "number", example: 5000 },
+      redirect_url: { type: "string", example: "https://example.com/redirect" },
+    },
+    required: ["amount", "redirect_url"],
+  },
+})
+@UseGuards(JwtAuthGuard)
+async fundAccount(
+  @Request() req,
+  @Body()
+  body: PaymentRequestDTO
+) {
+  const userData = req.user; // assuming JWT user includes _id, email, etc.
+  return await this.walletService.initiateCheckout(userData, body);
+}
+
 }
