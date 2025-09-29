@@ -137,6 +137,19 @@ export class InvestmentPlanController {
   }
 
  
+// deletePlan
+@Delete('transfer-delete/:toTinvestmentPlanID/:id')
+@UseGuards(JwtAuthGuard)
+@ApiParam({
+  name: 'toTinvestmentPlanID',
+  description: 'The toTinvestmentPlanID to transfer users to',
+  type: String,
+})  
+@ApiParam({ name: 'id', description: 'The investmentPlan ID to delete', type: String })
+@ApiOperation({ summary: 'Delete investmentPlans by their IDs and transfer users to another plan' })
 
+async deleteAndTransfer(@Param("id") ids: string, @Param('toTinvestmentPlanID') toTinvestmentPlanID: string, @Request() req: any) {
+  return this.investmentPlanService.deletePlan(ids, toTinvestmentPlanID, req.user);
+}
     
 }

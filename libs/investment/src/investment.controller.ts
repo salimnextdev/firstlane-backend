@@ -31,7 +31,7 @@ class UpdateInvestmentDTO extends PartialType(InvestmentDTO) {
   @ApiProperty({ type: String })
   _id: string;
 }
-class UserInvestmentToPlan extends PickType(
+export class UserInvestmentToPlan extends PickType(
   UserInvestmentDTO,
   ['amount','investmentID','repaymentInterval',]
 ) {}
@@ -191,4 +191,5 @@ export class InvestmentController {
     return this.investmentService.copyInvestment(code, req.user);
   }
 
+  
 }
