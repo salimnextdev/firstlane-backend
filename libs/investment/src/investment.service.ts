@@ -1,9 +1,12 @@
 import { InvestmentDTO, UserDTO, UserInvestmentDTO } from "@app/dto";
+import { TransactionStatus, TransactionType } from "@app/enum";
 import {
   InvestmentDoc,
   InvestmentModel,
   InvestmentPlanDoc,
   InvestmentPlanModel,
+  TransactionDoc,
+  TransactionModel,
   UserDoc,
   UserInvestmentDoc,
   UserInvestmentModel,
@@ -33,6 +36,8 @@ export class InvestmentService {
     private config: ConfigService,
     @InjectModel(InvestmentModel.name)
     private investmentModel: Model<InvestmentDoc>,
+    @InjectModel(TransactionModel.name)
+    private transactionModel: Model<TransactionDoc>,
     @InjectModel(UserInvestmentModel.name)
     private userInvestmentModel: Model<UserInvestmentDoc>,
     @InjectModel(InvestmentPlanModel.name)
@@ -231,6 +236,17 @@ export class InvestmentService {
         reference: `${userData._id}_${userInvestment._id}`,
         debit_subaccount: userWallet.customerCode,
       });
+      
+      const transaction = await this.transactionModel.create({
+        userID: userData._id.toString(),
+        amount: investmentData.amount,
+        reference: res?.response?.data?.reference,
+        type: TransactionType.INVESTMENT,
+        status: TransactionStatus.PAID,
+       
+        senderBank: userWallet.bankName,
+        senderAccountNumber: userWallet.accountNumber,
+      });
       investment.userIDs.push(userData._id.toString()) 
       await investment.save()
      await userInvestment.save()
@@ -321,6 +337,16 @@ const res = await this.flutterwaveService.walletToWalletTransfer({
         narration: `Investment of ${investment.amount} in ${investment.investmentType}`,
         reference: `${userData._id}_${newInvestment._id}`,
         debit_subaccount: userWallet.customerCode,
+      });
+      const transaction = await this.transactionModel.create({
+        userID: userData._id.toString(),
+        amount: investment.amount,
+        reference: res?.response?.data?.reference,
+        type: TransactionType.INVESTMENT,
+        status: TransactionStatus.PAID,
+       
+        senderBank: userWallet.bankName,
+        senderAccountNumber: userWallet.accountNumber,
       });
       // investmentPlan.userIDs.push(userData._id.toString()) 
       

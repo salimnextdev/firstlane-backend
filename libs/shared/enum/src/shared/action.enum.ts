@@ -46,7 +46,20 @@ export enum InvestmentStatus {
   ACTIVE = 'active',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
-  
+}
+
+export enum TransactionStatus {
+  PENDING = 'pending',
+  ACTIVE = 'active',
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  PAID = 'paid',
+}
+export enum TransactionType {
+  LOAN = 'loan',
+  INVESTMENT = 'investment',
+  DEPOSIT = 'deposit',
+  WITHDRAWAL = 'withdrawal',
 }
 
 export enum LoanStatus {

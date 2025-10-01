@@ -171,16 +171,14 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
       }
 
       await this.userInvestmentModel.findByIdAndUpdate({
-        investmentPlanID: { $in: ids },
+        investmentPlanID: ids,
       }, {
         investmentPlanID: toTinvestmentPlan._id.toString(),
         ...toTinvestmentPlan.toJSON()
       })
-      const result = await this.investmentPlanModel.deleteMany({
-        _id: { $in: ids },
-      });
+      const result = await this.investmentPlanModel.findByIdAndDelete(ids);
 
-      if (result.deletedCount === 0) {
+      if (!result) {
         return serviceResponse({
           message: "No investment plans found to delete",
           status: false,
@@ -188,7 +186,7 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
       }
 
       return serviceResponse({
-        message: `${result.deletedCount} investment plans deleted successfully`,
+        message: `Investment plans deleted successfully`,
         status: true,
       });
     } catch (error) {

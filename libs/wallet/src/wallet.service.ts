@@ -1,5 +1,9 @@
 import { UserDTO } from "@app/dto";
-import { UserInvestmentStatus } from "@app/enum";
+import {
+  TransactionStatus,
+  TransactionType,
+  UserInvestmentStatus,
+} from "@app/enum";
 import {
   WalletModel,
   WalletDoc,
@@ -9,6 +13,8 @@ import {
   UserInvestmentDoc,
   OTPDoc,
   OTPModel,
+  TransactionModel,
+  TransactionDoc,
 } from "@app/schema";
 import {
   NotificationService,
@@ -17,7 +23,12 @@ import {
   WebSocketGatewayService,
 } from "@app/service";
 import { FlutterwaveService } from "@app/service/shared/payment/flutterwave";
-import { Injectable, Logger, NotAcceptableException, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  NotAcceptableException,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { randomInt, randomUUID } from "crypto";
 import { Model } from "mongoose";
@@ -54,6 +65,8 @@ export class WalletService {
 
     @InjectModel(WalletModel.name) private walletModel: Model<WalletDoc>,
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
+    @InjectModel(TransactionModel.name)
+    private transactionModel: Model<TransactionDoc>,
     @InjectModel(OTPModel.name) private otpModel: Model<OTPDoc>,
     @InjectModel(UserInvestmentModel.name)
     private userInvestmentModel: Model<UserInvestmentDoc>
@@ -116,12 +129,12 @@ export class WalletService {
     amount: number;
   }): Promise<ObjectReturnType> {
     const { userID, amount } = data;
-    const wallet = await this.walletModel.findOne({userID})
-console.log(wallet,userID)
+    const wallet = await this.walletModel.findOne({ userID });
+    console.log(wallet, userID);
 
     try {
       const res = await this.flutterwaveService.testDeposit({
-      account_reference:  wallet.customerCode,
+        account_reference: wallet.customerCode,
         amount,
       });
       return serviceResponse({
@@ -152,7 +165,10 @@ console.log(wallet,userID)
         data: res.data,
       });
     } catch (error) {
-      this.logger.error("Error creating virtual account:", error.response?.data.message || error.message);
+      this.logger.error(
+        "Error creating virtual account:",
+        error.response?.data.message || error.message
+      );
       throw new NotAcceptableException(error?.message);
     }
   }
@@ -267,6 +283,17 @@ console.log(wallet,userID)
         reference,
         debit_subaccount,
       });
+      // const transaction = await this.transactionModel.create({
+      //   userID: userData._id.toString(),
+      //   amount,
+      //   reference: res?.response?.data?.reference,
+      //   type: TransactionType.DEPOSIT,
+      //   status: TransactionStatus.PAID,
+      //   receiverBank: res?.response?.data?.bank_name,
+      //   receiverAccountNumber: account_number,
+      //   senderBank: wallet.bankName,
+      //   senderAccountNumber: wallet.accountNumber,
+      // });
       return serviceResponse({
         status: true,
         message: res.message,
@@ -278,7 +305,7 @@ console.log(wallet,userID)
     }
   }
 
-   async withdrawFunds(data: {
+  async withdrawFunds(data: {
     account_bank: string;
     account_number: string;
     amount: number;
@@ -312,6 +339,17 @@ console.log(wallet,userID)
           randomUUID().replace(/\D/g, "").substring(0, 2),
         debit_subaccount: wallet.customerCode,
       });
+      const transaction = await this.transactionModel.create({
+        userID: user._id.toString(),
+        amount:data.amount,
+        reference: res?.response?.data?.reference,
+        type: TransactionType.WITHDRAWAL,
+        status: TransactionStatus.PAID,
+        receiverBank: data.account_bank,
+        receiverAccountNumber: data.account_number,
+        senderBank: wallet.bankName,
+        senderAccountNumber: wallet.accountNumber,
+      });
       return serviceResponse({
         status: true,
         message: res.message,
@@ -338,37 +376,114 @@ console.log(wallet,userID)
     }
   }
 
-  
-// initiateCheckout
-async initiateCheckout(userData:UserDTO, paymentRequest:PaymentRequestDTO){
-  const paymentrequest={
-    amount:paymentRequest.amount,
-    currency:"NGN",
-   tx_ref:`${userData._id.toString()}-${new Date()}`,
-    redirect_url:paymentRequest.redirect_url,
-    payment_options:"card,banktransfer,ussd",
-    customer:{
-      phonenumber:userData.phone,
-      name:userData.fullname??userData.username??userData.firstname,
-      email:userData.email
-    },
-    customizations:{
-      title:"First lane",
-      logo:"https://first.vercel.app/logo.png",
-      description:"Fund account"
+  // initiateCheckout
+  async initiateCheckout(userData: UserDTO, paymentRequest: PaymentRequestDTO) {
+    const paymentrequest = {
+      amount: paymentRequest.amount,
+      currency: "NGN",
+      tx_ref: `${userData._id.toString()}-${Date.now()}`,
+      redirect_url: paymentRequest.redirect_url,
+      payment_options: "card,banktransfer,ussd",
+      customer: {
+        phonenumber: userData.phone,
+        name: userData.fullname ?? userData.username ?? userData.firstname,
+        email: userData.email,
+      },
+      customizations: {
+        title: "First lane",
+        logo: "https://first.vercel.app/logo.png",
+        description: "Fund account",
+      },
+    };
+    const wallet = await this.walletModel.findOne({
+      userID: userData._id.toString(),
+    });
+    if (!wallet) {
+      throw new NotFoundException("Wallet not found");
     }
-  }
- const payment = await this.flutterwaveService.initiateCheckout(paymentrequest);
- console.log(payment,payment.data.link.split("pay/")[1])
-return serviceResponse({
-      data: payment.data.link,
+    const payment = await this.flutterwaveService.initiateCheckout(
+      paymentrequest
+    );
+    const transaction = await this.transactionModel.create({
+      userID: userData._id.toString(),
+      amount: paymentrequest.amount,
+      reference: paymentrequest.tx_ref,
+      type: TransactionType.DEPOSIT,
+      receiverBank: wallet.bankName,
+
+      receiverAccountNumber: wallet.accountNumber,
+    });
+
+    console.log(paymentrequest);
+    return serviceResponse({
+      data: {
+        link: payment.data.link,
+        ...transaction.toObject(),
+      },
       message: "successfully",
 
       status: true,
     });
-}
-}
+  }
 
+  //verify payment
+  async verifyCheckout(ref: string) {
+    try {
+      const transaction = await this.transactionModel.findOne({
+        reference: ref,
+      });
+      if (!transaction) {
+        throw new NotFoundException("Transaction not found");
+      }
+      if (transaction.status === TransactionStatus.PAID) {
+        throw new NotAcceptableException("Transaction already verified");
+      }
+     
+      const v = await this.flutterwaveService.verifyCheckout(ref);
+
+      if (v.data.status === "successful") {
+        const admin = await this.userModel.findOne({
+          isSuperAdmin: true,
+        });
+        const adminWallet = await this.walletModel.findOne({
+          userID: admin._id.toString(),
+        });
+        const userWallet = await this.walletModel.findOne({
+          userID: transaction.userID,
+        });
+
+       await this.flutterwaveService.walletToWalletTransfer({
+          account_bank: "flutterwave",
+          account_number: userWallet.barter_id,
+          amount: transaction.amount,
+          narration: `Deposited`,
+          reference: `${transaction.userID}_${transaction._id}`,
+          debit_subaccount: adminWallet.customerCode,
+        });
+
+         transaction.senderBank = adminWallet.bankName;
+      transaction.senderAccountNumber = adminWallet.accountNumber;
+      }
+     
+      transaction.status =
+        v.data.status === "successful"
+          ? TransactionStatus.PAID
+          : v.data === "pending"
+          ? TransactionStatus.PENDING
+          : TransactionStatus.CANCELLED;
+      await transaction.save();
+
+      return serviceResponse({
+        message: "  ",
+        data: v.data,
+        status: true,
+      });
+    } catch (error) {
+      this.logger.error("Error fetching transfer by ID:", error);
+      throw new NotAcceptableException(error?.message);
+    }
+  }
+}
 
 // Define the structure of PaymentRequestDTO
 
@@ -386,12 +501,8 @@ interface Customizations {
 
 export interface PaymentRequestDTO {
   amount: number;
-  
 
   redirect_url: string;
-
- 
 }
 
 // Create PaymentRequestDTO instance
-

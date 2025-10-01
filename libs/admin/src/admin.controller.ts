@@ -198,4 +198,18 @@ constructor(private readonly adminService: AdminService) {}
   async getSettings() {
     return this.adminService.getSettings();
   }
+
+  // get top n users that refer another user to invest
+  @Get('top-referral-staff')
+  @ApiOperation({ summary: 'Get top referral staff (Admin)' })
+  @ApiQuery({
+    name: 'n',
+    required: false,
+    description: 'Number of top referral staff to retrieve',
+    type: Number,
+  })
+  @UseGuards(JwtAuthGuard)
+  async getTopReferralStaff(@Query('n') n?: number) {
+    return this.adminService.getTopReferralStaff(n);
+  }
 }

@@ -2,7 +2,10 @@ import { SettingsDTO, UserDTO } from "@app/dto";
 import {
   KycLevel,
   LoanStatus,
+  TransactionStatus,
+  TransactionType,
   UserInvestmentStatus,
+  UserType,
   VerificationStatus,
 } from "@app/enum";
 import {
@@ -24,6 +27,8 @@ import {
   SettingsSchema,
   SettingsDoc,
   SettingsModel,
+  TransactionModel,
+  TransactionDoc,
 } from "@app/schema";
 import {
   FlutterwaveService,
@@ -48,6 +53,8 @@ export class AdminService {
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
     @InjectModel(UserInvestmentModel.name)
     private userInvestmentModel: Model<UserInvestmentDoc>,
+    @InjectModel(TransactionModel.name)
+    private transactionModel: Model<TransactionDoc>,
     @InjectModel(LoanModel.name) private loanModel: Model<LoanDoc>,
     @InjectModel(FxModel.name) private fxModel: Model<FxDoc>,
     @InjectModel(CurrencyModel.name) private currencyModel: Model<CurrencyDoc>,
@@ -144,7 +151,7 @@ export class AdminService {
       throw new BadRequestException(error.message);
     }
   }
- 
+
   //change loan status
   async changeLoanStatus(
     loanId: string,
@@ -172,15 +179,15 @@ export class AdminService {
         }
 
         const wallet = await this.flutterwaveService.getAvailableBalance(
-        userData._id.toString()
-      );
-      if ((wallet?.data?.available_balance ?? 0) < loan.amountRequested) {
-       return serviceResponse({
+          userData._id.toString()
+        );
+        if ((wallet?.data?.available_balance ?? 0) < loan.amountRequested) {
+          return serviceResponse({
             message: "Admin wallet balance is less than loan amount",
             status: false,
           });
-      }
-       
+        }
+
         const transferData = {
           account_bank: userWallet.bankCode,
           account_number: userWallet.accountNumber,
@@ -194,6 +201,17 @@ export class AdminService {
         const transferResponse = await this.flutterwaveService.walletToWalletTransfer(
           transferData
         );
+        const transaction = await this.transactionModel.create({
+          userID: loan.userID,
+          amount: loan.amountRequested,
+          reference: transferResponse.data?.reference,
+          type: TransactionType.LOAN,
+          status: TransactionStatus.PAID,
+          receiverBank: userWallet.bankName,
+          receiverAccountNumber: userWallet.accountNumber,
+          senderBank: adminWallet.bankName,
+          senderAccountNumber: adminWallet.accountNumber,
+        });
 
         if (transferResponse.status !== "success") {
           return serviceResponse({
@@ -613,9 +631,13 @@ export class AdminService {
   // create setting/s
   async createSettings(payload: SettingsDTO): Promise<ObjectReturnType> {
     try {
-      const settings = await this.settingsModel.findOneAndUpdate({
-        _id: payload._id??"",
-      },{...payload},{new: true, upsert: true});
+      const settings = await this.settingsModel.findOneAndUpdate(
+        {
+          _id: payload._id ?? "",
+        },
+        { ...payload },
+        { new: true, upsert: true }
+      );
       return serviceResponse({
         message: "Settings created successfully",
         status: true,
@@ -628,11 +650,9 @@ export class AdminService {
 
   // get setting/s
   async getSettings(): Promise<ObjectReturnType> {
-   
     try {
-      const settings = await this.settingsModel
-        .find({})
-       
+      const settings = await this.settingsModel.find({});
+
       if (!settings) {
         throw new NotFoundException("No settings found");
       }
@@ -641,13 +661,79 @@ export class AdminService {
         message: "Settings retrieved successfully",
         status: true,
         data: settings,
-        
       });
     } catch (error) {
       throw new BadRequestException(error.message);
     }
   }
 
-  
- 
+  // get top n users that refer another user to invest
+  async getTopReferralStaff(n: number = 10): Promise<ObjectReturnType> {
+    try {
+      const topReferralStaff = await this.userModel
+        .aggregate([
+          {
+            $match: {
+              // userType: UserType.STAFF,
+              "email": "john@example2.com",
+            },
+          },
+          {
+            $addFields: {
+              staffObjectId: {
+                $cond: {
+                  if: { $type: "$_id" },
+                  then: { $toString: "$_id" }, // Convert to ObjectId if it's a string
+                  else: "$_id", // Keep as is if already ObjectId
+                },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "userinvestmentmodels", 
+              localField: "staffObjectId", 
+              foreignField: "refBy", // Field in UserInvestmentModel that stores the user who referred
+              as: "referredInvestments",
+            },
+          },
+
+          {
+            $unwind: {
+              path: '$referredInvestments',
+              preserveNullAndEmptyArrays: true,  // This is important in case a user has no referrals
+            },
+
+          },
+          {
+            $group: {
+              _id: '$_id',  // Grouping by User's ID
+              username: { $first: '$username' },
+              fullname:  { $first: '$fullname' },
+              refCode: { $first: '$refCode' },
+              email: { $first: '$email' },
+              profileImage: { $first: '$profileImage' },
+              referredCount: { $sum: 1 },  // Count how many referrals this user has made
+            },
+          },
+          {
+            $sort: {
+              referredCount: -1,  // Sort by referral count, descending
+            },
+          },
+          {
+            $limit: Number(n), // Limit the result to top N
+          },
+        ])
+        .exec();
+
+      return serviceResponse({
+        message: "Top referral investors retrieved successfully",
+        status: true,
+        data: topReferralStaff,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
 }

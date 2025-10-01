@@ -227,4 +227,16 @@ async fundAccount(
   return await this.walletService.initiateCheckout(userData, body);
 }
 
+
+ // verify a bank account number
+  @Get("verify-fund/:id")
+  @ApiOperation({ summary: "Verify a fund paid" })
+  async verifyCheckout(
+    @Param("id") id: string,
+    
+  ) {
+    return await this.walletService.verifyCheckout(
+      id
+    );
+  }
 }

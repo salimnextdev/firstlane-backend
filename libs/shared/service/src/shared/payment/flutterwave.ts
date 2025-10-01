@@ -98,13 +98,13 @@ async verifyCheckout(tx_ref: string): Promise<any> {
   try {
     const options = {
       method: 'GET',
-      url: `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(tx_ref)}`,
+      url: `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
       headers: this.headers,
     };
     const response = await axios.request(options);
     return response.data;
   } catch (error: any) {
-    console.error('Error verifying checkout transaction:', error.response?.data || error.message);
+    
     throw error.response?.data;
   }
 }
@@ -146,6 +146,8 @@ async verifyCheckout(tx_ref: string): Promise<any> {
     mobilenumber: string;
   }): Promise<any> {
     let { account_name, email = "", mobilenumber } = data;
+    account_name = account_name
+    mobilenumber=mobilenumber
      email = email.toLowerCase();
      try {
       //check if user exists in fultterwave
@@ -181,6 +183,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         accountNumber: responseType.nuban,
         accountName: account_name,
         userID: user?._id.toString(),
+        email,
         barter_id: responseType.barter_id,
         bankCode: responseType.bank_code,
         bankName: responseType.bank_name,

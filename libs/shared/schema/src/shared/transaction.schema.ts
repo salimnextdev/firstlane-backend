@@ -1,3 +1,4 @@
+import { TransactionStatus, TransactionType } from '@app/enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
@@ -6,7 +7,6 @@ export type TransactionDoc = HydratedDocument<TransactionModel>;
 @Schema({ timestamps: true })
 export class TransactionModel {
   @Prop({  ref: 'UserModel' })
-  
     userID: string;
   
     @Prop()
@@ -16,31 +16,37 @@ export class TransactionModel {
     @Prop({ })
     customerCode: string;
   
-    @Prop({ default: 0 })
+    @Prop({ })
     balance: number;
   
     @Prop({  default: 'NGN' })
     currency: string;
   
-    @Prop({ default: 'pending' })
+    @Prop({ default: TransactionStatus.PENDING,enum: TransactionStatus })
     status?: string;
 
      @Prop({ })
     reference: string;
-    @Prop({ })
+     @Prop({ })
+    action: string;
+    @Prop({default:0 })
     amount: number;
     @Prop({ })
     message: string;
 
     @Prop({ })
-    sender_bank_account_number: string;
+    senderAccountNumber: string;
+     @Prop({ })
+    receiverAccountNumber: string;
     @Prop({ })
     narration: string;
     @Prop({ })
-    sender_bank:string;
+    senderBank:string;
+     @Prop({ })
+    receiverBank: string;
     @Prop({ })
     card_type: string;
-    @Prop({ })
+    @Prop({ default: TransactionType.LOAN,enum: TransactionType })
     type: string;
 
   }
