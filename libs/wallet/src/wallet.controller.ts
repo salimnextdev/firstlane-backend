@@ -196,14 +196,54 @@ export class WalletController {
   ) {
     return await this.walletService.withdrawFunds({ ...body, userID: req.user._id.toString() });
   }
-// getTransferById
-  @Get("transaction/:transferId")
-  @ApiOperation({ summary: "Get transaction by ID" })
-  @ApiParam({ name: "transferId", description: "Transfer ID", example: "FLW_REF_12345" })
-  async getTransferById(@Param("transferId") transferId: string) {
-    return await this.walletService.getTransferById(transferId);
+
+@Get("by-any/:key/:value")
+  // @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Find a transaction by any key-value pair" })
+  @ApiParam({ name: "key", description: "The key to search by", type: String })
+  @ApiParam({
+    name: "value",
+    description: "The value to search for",
+    type: String,
+  })
+  @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Page number for pagination",
+    type: Number,
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of investments per page",
+    type: Number,
+  })
+  async findbyId(
+    @Param() params: { key: string; value: string },
+    @Query() query: any
+  ) {
+    return this.walletService.findByAny(params, query);
   }
 
+  @Get("")
+  // @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Get all transactions" })
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Page number for pagination",
+    type: Number,
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of transactions per page",
+    type: Number,
+  })
+  async findAll(@Query() query: any) {
+    return this.walletService.findAll(query);
+  }
 // initiateCheckout
 @Post("fund-account")
 @ApiOperation({ summary: "Initiate a payment to fund account" })

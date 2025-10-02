@@ -17,6 +17,7 @@ import {
   TransactionDoc,
 } from "@app/schema";
 import {
+  getMetadata,
   NotificationService,
   ObjectReturnType,
   serviceResponse,
@@ -361,19 +362,53 @@ export class WalletService {
     }
   }
 
-  // getTransferById
-  async getTransferById(transferId: string): Promise<ObjectReturnType> {
-    try {
-      const res = await this.flutterwaveService.getTransferById(transferId);
-      return serviceResponse({
-        status: true,
-        message: res.message,
-        data: res.data,
-      });
-    } catch (error) {
-      this.logger.error("Error fetching transfer by ID:", error);
-      throw new NotAcceptableException(error?.message);
-    }
+ async findAll(query: any): Promise<ObjectReturnType> {
+     const { limit = 10, page = 1 } = query;
+     const skip = (page - 1) * limit;
+ 
+     const plans = await this.transactionModel
+       .find()
+       .skip(skip)
+       .limit(limit)
+       .sort({ createdAt: -1 })
+       .exec();
+     return serviceResponse({
+       data: plans,
+       message: "Transactions retrieved successfully",
+       status: true,
+       metadata: await getMetadata({
+         model: this.transactionModel,
+         query,
+         querys: {},
+       }),
+     });
+   }
+
+   //find by any
+  async findByAny(
+    params: { key: string; value: string },
+    query: any
+  ): Promise<ObjectReturnType> {
+    const { key, value } = params;
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
+
+    const plans = await this.transactionModel
+      .find({ [key]: value })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .exec();
+    return serviceResponse({
+      data: plans,
+      message: "Transaction retrieved successfully",
+      status: true,
+      metadata: await getMetadata({
+        model: this.transactionModel,
+        query,
+        querys: { [key]: value },
+      }),
+    });
   }
 
   // initiateCheckout

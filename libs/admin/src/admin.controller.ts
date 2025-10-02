@@ -2,7 +2,7 @@
 
 import { Body, Controller, Get, Param, Patch, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { AdminService } from './admin.service';
+import { AdminService, TimeFrame } from './admin.service';
 import { JwtAuthGuard } from '@app/guard';
 import { LoanStatus } from '@app/enum';
 import { SettingsDTO } from '@app/dto';
@@ -200,16 +200,27 @@ constructor(private readonly adminService: AdminService) {}
   }
 
   // get top n users that refer another user to invest
-  @Get('top-referral-staff')
-  @ApiOperation({ summary: 'Get top referral staff (Admin)' })
-  @ApiQuery({
-    name: 'n',
-    required: false,
-    description: 'Number of top referral staff to retrieve',
-    type: Number,
-  })
-  @UseGuards(JwtAuthGuard)
-  async getTopReferralStaff(@Query('n') n?: number) {
-    return this.adminService.getTopReferralStaff(n);
-  }
+ @Get('top-referral-staff')
+@ApiOperation({ summary: 'Get top referral staff (Admin)' })
+@ApiQuery({
+  name: 'n',
+  required: false,
+  description: 'Number of top referral staff to retrieve',
+  type: Number,
+})
+@ApiQuery({
+  name: 'timeframe',
+  required: false,
+  description: 'Timeframe to filter referrals (today, 7days, 30days, 90days, 360days)',
+  type: String,
+  enum: ['today' , '7d' , '30d' , '90d' , '360d'],
+})
+@UseGuards(JwtAuthGuard)
+async getTopReferralStaff(
+  @Query('n') n?: number,
+  @Query('timeframe') timeframe?: TimeFrame
+) {
+  return this.adminService.getTopInvestmentReferrers( timeframe ,n );
+}
+
 }

@@ -170,7 +170,7 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
         });
       }
 
-      await this.userInvestmentModel.findByIdAndUpdate({
+      await this.userInvestmentModel.findOneAndUpdate({
         investmentPlanID: ids,
       }, {
         investmentPlanID: toTinvestmentPlan._id.toString(),

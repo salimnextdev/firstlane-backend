@@ -44,7 +44,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import * as moment from "moment";
 import { Model } from "mongoose";
+// Define allowed timeframes for type safety
+export type TimeFrame = "today" | "7d" | "30d" | "90d" | "360d";
 
 @Injectable()
 export class AdminService {
@@ -667,73 +670,131 @@ export class AdminService {
     }
   }
 
-  // get top n users that refer another user to invest
-  async getTopReferralStaff(n: number = 10): Promise<ObjectReturnType> {
-    try {
-      const topReferralStaff = await this.userModel
-        .aggregate([
-          {
-            $match: {
-              // userType: UserType.STAFF,
-              "email": "john@example2.com",
-            },
-          },
-          {
-            $addFields: {
-              staffObjectId: {
-                $cond: {
-                  if: { $type: "$_id" },
-                  then: { $toString: "$_id" }, // Convert to ObjectId if it's a string
-                  else: "$_id", // Keep as is if already ObjectId
-                },
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: "userinvestmentmodels", 
-              localField: "staffObjectId", 
-              foreignField: "refBy", // Field in UserInvestmentModel that stores the user who referred
-              as: "referredInvestments",
-            },
+  async getTopInvestmentReferrers(timeframe: TimeFrame, limit: number = 10) {
+    const startDate = this.calculateStartDate(timeframe);
+    const now = new Date();
+    console.log({
+      startDate,
+      now,
+      timeframe,
+    });
+    const pipeline = [
+      // 1. Filter Investments by Date, Status, and existence of a Referrer
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: now },
+          refBy: { $exists: true, $ne: null },
+        },
+      },
+
+      // 2. Deduplicate: Group by Referrer AND Investor.
+      {
+        $group: {
+          _id: {
+            referrerId: "$refBy",
+            investorId: "$userID",
           },
 
-          {
-            $unwind: {
-              path: '$referredInvestments',
-              preserveNullAndEmptyArrays: true,  // This is important in case a user has no referrals
-            },
+          totalInvestedByThisUser: { $sum: "$amount" },
+        },
+      },
 
-          },
-          {
-            $group: {
-              _id: '$_id',  // Grouping by User's ID
-              username: { $first: '$username' },
-              fullname:  { $first: '$fullname' },
-              refCode: { $first: '$refCode' },
-              email: { $first: '$email' },
-              profileImage: { $first: '$profileImage' },
-              referredCount: { $sum: 1 },  // Count how many referrals this user has made
-            },
-          },
-          {
-            $sort: {
-              referredCount: -1,  // Sort by referral count, descending
-            },
-          },
-          {
-            $limit: Number(n), // Limit the result to top N
-          },
-        ])
-        .exec();
+      // 3. Aggregate: Group purely by Referrer now
+      {
+        $group: {
+          _id: "$_id.referrerId", // The custom ID from UserModel
+          // Count of unique investors
+          referralCount: { $sum: 1 },
 
-      return serviceResponse({
-        message: "Top referral investors retrieved successfully",
+          // Sum of volume from those investors
+          totalVolume: { $sum: "$totalInvestedByThisUser" },
+        },
+      },
+
+      // 5. Limit: Take top N
+      {
+        $limit: limit,
+      },
+      {
+        $addFields: {
+          staffObjectId: {
+            $cond: {
+              if: { $type: "$_id" },
+              then: { $toObjectId: "$_id" }, // Convert to ObjectId if it's a string
+              else: "$_id", // Keep as is if already ObjectId
+            },
+          },
+        },
+      },
+
+      // 6. Join: Get Referrer's profile details from UserModel
+      {
+        $lookup: {
+          from: "usermodels", // Actual MongoDB collection name for UserModel
+          localField: "staffObjectId", // The 'refBy' string form previous stage
+          foreignField: "_id", // Matching custom 'id' in UserModel
+          as: "referrerDetails",
+        },
+      },
+
+      // 7. Unwind: $lookup returns an array, flatten it (should exist)
+      {
+        $unwind: {
+          path: "$referrerDetails",
+          preserveNullAndEmptyArrays: false, // Exclude if user not found (edge case)
+        },
+      },
+
+      // // // 8. Project: Format final output cleanly
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+
+          fullname: "$referrerDetails.fullname",
+          email: "$referrerDetails.email",
+          profileImage: "$referrerDetails.profileImage",
+          referralCount: 1,
+          totalVolume: 1,
+        },
+      },
+    ];
+return serviceResponse({
+              message: "Top referral investors retrieved successfully",
+
         status: true,
-        data: topReferralStaff,
-      });
-    } catch (error) {
-      throw new BadRequestException(error.message);
+        data: this.userInvestmentModel.aggregate(pipeline).exec(),})
+    
+  }
+
+  // --- Helper for Dates ---
+  private calculateStartDate(timeframe: TimeFrame): Date {
+    // Using moment.js is safer for timezones/leap years, but native Date works too.
+    // Below uses native JS for fewer dependencies, assuming UTC or server time is acceptable.
+
+    // Option A: Rolling Window (Exactly 24h * X ago)
+    // const now = new Date();
+    // switch (timeframe) {
+    //   case 'today': return new Date(now.setHours(0,0,0,0)); // Start of today
+    //   case '7d': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    //   // ... etc
+    // }
+
+    // Option B: Using Moment (Recommended for accuracy "Start of X days ago")
+    const m = moment().utc(); // Use UTC if your DB stores UTC
+    switch (timeframe) {
+      case "today":
+        return m.startOf("day").toDate();
+      case "7d":
+        return m.subtract(7, "days").startOf("day").toDate();
+      case "30d":
+        return m.subtract(30, "days").startOf("day").toDate();
+      case "90d":
+        return m.subtract(90, "days").startOf("day").toDate();
+      case "360d":
+        return m.subtract(360, "days").startOf("day").toDate();
+      default:
+        return m.startOf("day").toDate();
     }
   }
 }
