@@ -100,7 +100,10 @@ export class LoanDTO {
     example: "vendorBankCode",
   })
   vendorBankCode: string;
-
+ @ApiProperty({
+    example: "proofOfPayment",
+  })
+  proofOfPayment: string;
   @ApiProperty({ enum: LoanStatus, example: LoanStatus.PENDING })
   status: string;
   @ApiProperty({

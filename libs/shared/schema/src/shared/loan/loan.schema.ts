@@ -78,6 +78,8 @@ export class LoanModel {
   vendorBankName: string;
   @Prop({  })
   vendorBankCode: string;
+  @Prop({  })
+  proofOfPayment: string;
 
 }
 
