@@ -29,6 +29,7 @@ export class SmsService {
 
   async sendSingleSMS(destination: string, text: string) {
     try {
+      destination=convertToInternational(destination);
       console.log(destination, text);
 
       const username = "goveloox";
@@ -99,4 +100,10 @@ export class SmsService {
         throw new Error("Invalid message type");
     }
   }
+}
+function convertToInternational(phoneNumber:string) {
+  if (phoneNumber.startsWith('0')) {
+    return '234' + phoneNumber.slice(1);
+  }
+  return phoneNumber; // return as is if it doesn't start with '0'
 }
