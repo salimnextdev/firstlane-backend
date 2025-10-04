@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { FlutterwaveService } from '@app/service/shared/payment/flutterwave';
-import { NotificationGateway, NotificationService } from '@app/service';
+import { NotificationGateway, NotificationService, TransactionNotificationService, SendMailService, SmsService } from '@app/service';
 import { WalletController } from './wallet.controller';
 import { WebSocketGatewayService } from '@app/service';
 
@@ -9,7 +9,10 @@ import { WebSocketGatewayService } from '@app/service';
   controllers:[WalletController],
   providers: [WalletService, NotificationGateway, WebSocketGatewayService,
     FlutterwaveService,
-    NotificationService,],
+    NotificationService,
+    TransactionNotificationService,
+    SendMailService,
+    SmsService,],
   exports: [WalletService],
 })
 export class WalletModule {}

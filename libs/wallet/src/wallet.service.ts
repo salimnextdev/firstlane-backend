@@ -22,6 +22,7 @@ import {
   ObjectReturnType,
   serviceResponse,
   WebSocketGatewayService,
+  TransactionNotificationService,
 } from "@app/service";
 import { FlutterwaveService } from "@app/service/shared/payment/flutterwave";
 import {
@@ -63,6 +64,7 @@ export class WalletService {
     private flutterwaveService: FlutterwaveService,
     private notificationActivity: NotificationService,
     private webSockekGatwaySerrvice: WebSocketGatewayService,
+    private transactionNotificationService: TransactionNotificationService,
 
     @InjectModel(WalletModel.name) private walletModel: Model<WalletDoc>,
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
@@ -351,6 +353,16 @@ export class WalletService {
         senderBank: wallet.bankName,
         senderAccountNumber: wallet.accountNumber,
       });
+
+      // Send transaction notifications
+      await this.transactionNotificationService.sendTransactionNotifications({
+        type: TransactionType.WITHDRAWAL,
+        amount: data.amount,
+        userID: user._id.toString(),
+        reference: res?.response?.data?.reference,
+        status: TransactionStatus.PAID,
+      });
+
       return serviceResponse({
         status: true,
         message: res.message,
@@ -507,6 +519,17 @@ export class WalletService {
           ? TransactionStatus.PENDING
           : TransactionStatus.CANCELLED;
       await transaction.save();
+
+      // Send transaction notifications for successful deposits
+      if (transaction.status === TransactionStatus.PAID) {
+        await this.transactionNotificationService.sendTransactionNotifications({
+          type: transaction.type as TransactionType,
+          amount: transaction.amount,
+          userID: transaction.userID,
+          reference: transaction.reference,
+          status: transaction.status,
+        });
+      }
 
       return serviceResponse({
         message: "  ",

@@ -36,6 +36,7 @@ import {
   NotificationService,
   ObjectReturnType,
   serviceResponse,
+  TransactionNotificationService,
 } from "@app/service";
 import {
   BadRequestException,
@@ -68,7 +69,8 @@ export class AdminService {
     @InjectModel(SettingsModel.name) private settingsModel: Model<SettingsDoc>,
     private flutterwaveService: FlutterwaveService,
     // private organizationAbilityFactory: OrganizationAbilityFactory,
-    private notificationActivity: NotificationService
+    private notificationActivity: NotificationService,
+    private transactionNotificationService: TransactionNotificationService
   ) {}
 
   // Update KYC status (for admin use)
@@ -214,6 +216,15 @@ export class AdminService {
           receiverAccountNumber: userWallet.accountNumber,
           senderBank: adminWallet.bankName,
           senderAccountNumber: adminWallet.accountNumber,
+        });
+
+        // Send transaction notifications for approved loan
+        await this.transactionNotificationService.sendTransactionNotifications({
+          type: transaction.type as TransactionType,
+          amount: transaction.amount,
+          userID: transaction.userID,
+          reference: transaction.reference,
+          status: transaction.status as TransactionStatus,
         });
 
         if (transferResponse.status !== "success") {
