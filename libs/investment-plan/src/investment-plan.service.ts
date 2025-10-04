@@ -169,12 +169,13 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
           status: false,
         });
       }
-
+      const userInvest = await this.userInvestmentModel.findOne({   investmentPlanID: ids})
       await this.userInvestmentModel.findOneAndUpdate({
         investmentPlanID: ids,
       }, {
         investmentPlanID: toTinvestmentPlan._id.toString(),
-        ...toTinvestmentPlan.toJSON()
+        ...toTinvestmentPlan.toJSON(),
+        duration:userInvest.duration
       })
       const result = await this.investmentPlanModel.findByIdAndDelete(ids);
 
