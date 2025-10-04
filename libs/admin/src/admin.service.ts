@@ -2,6 +2,7 @@ import { SettingsDTO, UserDTO } from "@app/dto";
 import {
   KycLevel,
   LoanStatus,
+  LoanType,
   TransactionStatus,
   TransactionType,
   UserInvestmentStatus,
@@ -192,10 +193,10 @@ export class AdminService {
             status: false,
           });
         }
-
+const isVendor = loan.loanType === LoanType.ASSETFINANCE 
         const transferData = {
-          account_bank: userWallet.bankCode,
-          account_number: userWallet.accountNumber,
+          account_bank: isVendor ? loan.vendorBankCode : userWallet.bankCode,
+          account_number: isVendor ? loan.vendorAccountNumber : userWallet.accountNumber,
           amount: loan.amountRequested,
           narration: `Loan approval for ${loan.amountRequested}`,
           reference: `LOAN_${loanId}_${Date.now()}`,
@@ -212,8 +213,8 @@ export class AdminService {
           reference: transferResponse.data?.reference,
           type: TransactionType.LOAN,
           status: TransactionStatus.PAID,
-          receiverBank: userWallet.bankName,
-          receiverAccountNumber: userWallet.accountNumber,
+          receiverBank: isVendor ? loan.vendorBankName : userWallet.bankName,
+          receiverAccountNumber: isVendor ? loan.vendorAccountNumber : userWallet.accountNumber,
           senderBank: adminWallet.bankName,
           senderAccountNumber: adminWallet.accountNumber,
         });

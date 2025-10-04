@@ -72,6 +72,13 @@ export class LoanModel {
 
   @Prop({ ref:"UserModel"})
   refBy?:string
+  @Prop({  })
+  vendorAccountNumber: string;
+  @Prop({  })
+  vendorBankName: string;
+  @Prop({  })
+  vendorBankCode: string;
+
 }
 
 export const LoanSchema = SchemaFactory.createForClass(LoanModel);

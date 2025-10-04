@@ -88,6 +88,19 @@ export class LoanDTO {
     example: "vendorInvoice",
   })
   vendorInvoice: string;
+ @ApiProperty({
+    example: "vendorAccountNumber",
+  })
+  vendorAccountNumber: string;
+  @ApiProperty({
+    example: "vendorBankName",
+  })
+  vendorBankName: string;
+   @ApiProperty({
+    example: "vendorBankCode",
+  })
+  vendorBankCode: string;
+
   @ApiProperty({ enum: LoanStatus, example: LoanStatus.PENDING })
   status: string;
   @ApiProperty({
@@ -105,6 +118,7 @@ export class LoanDTO {
       description: "Staff referral code",
     })
       refCode?:string
+    
 }
 
 
