@@ -31,6 +31,7 @@ import {
   ObjectReturnType,
   PaystackService,
   SendMailService,
+  AuthNotificationService,
 } from "@app/service";
 import { BankAccountDTO, OTPDTO, UserDTO } from "@app/dto";
 import { WalletModel, WalletDoc } from "@app/schema/shared/waller.schema";
@@ -56,7 +57,8 @@ export class AuthService {
     private jwtService: JwtService,
     private flutterwaveService: FlutterwaveService,
     private smsService: SmsService,
-    private sendMailService: SendMailService
+    private sendMailService: SendMailService,
+    private authNotificationService: AuthNotificationService
   ) {}
 
   async register(users: Partial<UserDTO>): Promise<any> {
@@ -109,6 +111,14 @@ export class AuthService {
         mobilenumber: created.phone,
       });
 
+      // Send registration notification
+      await this.authNotificationService.sendAuthNotifications({
+        userID: created._id.toString(),
+        email: created.email,
+        username: created.username,
+        eventType: 'register',
+      });
+
       return {
         message:
           "Registration successful, Please Proceed to Email Verification",
@@ -143,6 +153,14 @@ export class AuthService {
         if (user.emailStatus !== "verified") {
           throw new UnauthorizedException("Email not verified");
         }
+        
+        // Send login notification
+        await this.authNotificationService.sendAuthNotifications({
+          userID: user._id.toString(),
+          email: user.email,
+          username: user.username,
+          eventType: 'login',
+        });
         
         return this.getLoginToken(user);
       }
@@ -489,6 +507,14 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
     await this.userModel.findByIdAndUpdate(userID, {
       password: hashedPassword,
+    });
+
+    // Send password change notification
+    await this.authNotificationService.sendAuthNotifications({
+      userID: user._id.toString(),
+      email: user.email,
+      username: user.username,
+      eventType: 'password_change',
     });
 
     return {

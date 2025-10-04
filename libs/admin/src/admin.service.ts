@@ -38,6 +38,7 @@ import {
   ObjectReturnType,
   serviceResponse,
   TransactionNotificationService,
+  AuthNotificationService,
 } from "@app/service";
 import {
   BadRequestException,
@@ -71,7 +72,8 @@ export class AdminService {
     private flutterwaveService: FlutterwaveService,
     // private organizationAbilityFactory: OrganizationAbilityFactory,
     private notificationActivity: NotificationService,
-    private transactionNotificationService: TransactionNotificationService
+    private transactionNotificationService: TransactionNotificationService,
+    private authNotificationService: AuthNotificationService
   ) {}
 
   // Update KYC status (for admin use)
@@ -109,6 +111,19 @@ export class AdminService {
         userID: user._id.toString(),
         details: `KYC verification ${status}`,
         playerIds: [user?.playerId ?? ""],
+      });
+
+      // Send KYC status change notification
+      await this.authNotificationService.sendAuthNotifications({
+        userID: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        eventType: 'kyc_update',
+        eventDetails: {
+          status: status,
+          notes: notes || '',
+          verifiedAt: new Date().toISOString(),
+        },
       });
 
       return serviceResponse({

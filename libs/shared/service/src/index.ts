@@ -8,3 +8,4 @@ export * from './shared/websocket/web.socket';
 export * from './shared/payment/paystack';
 export * from './shared/payment/flutterwave';
 export * from './shared/transaction-notification.service';
+export * from './shared/auth-notification.service';

@@ -19,7 +19,7 @@ import { LocalStrategy } from './local.strategy';
 
 // import { UsersModule, UsersService } from '../users/src';
 // import { OrganizationAbilityFactory } from '../users/src/organization-ability.factory';
-import { NotificationService, NotificationGateway, SendMailService, PaystackService } from '@app/service';
+import { NotificationService, NotificationGateway, SendMailService, PaystackService, TransactionNotificationService, AuthNotificationService } from '@app/service';
 
 import { SmsService } from '@app/service/shared/sms.service';
 import { FlutterwaveService } from '@app/service/shared/payment/flutterwave';
@@ -37,6 +37,8 @@ import { UserModule, UserService } from '@app/user';
     UserService,
     SendMailService,
     SmsService,
+    TransactionNotificationService,
+    AuthNotificationService,
     LocalStrategy,PaystackService,
     NotificationService,NotificationGateway,FlutterwaveService
   ],
