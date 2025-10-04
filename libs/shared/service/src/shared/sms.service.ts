@@ -32,10 +32,10 @@ export class SmsService {
       destination=convertToInternational(destination);
       console.log(destination, text);
 
-      const username = "goveloox";
+      const username = "firstlane";
       
-      const senderID = "GoVeloox";
-      const campaignname = "GoVeloox";
+      const senderID = "FIRSTLANE";
+      const campaignname = "Firstlane";
       
       const finalDestination = destination || "2348104944428";
       const encodedText = text; // Safe encoding for URL

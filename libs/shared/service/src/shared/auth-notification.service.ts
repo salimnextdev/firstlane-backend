@@ -9,7 +9,7 @@ import { SendMailService } from './email.service';
 export interface AuthNotificationData {
   userID: string;
   email: string;
-  username?: string;
+  fullname?: string;
   eventType: 'login' | 'register' | 'password_change' | 'kyc_update';
   eventDetails?: any;
 }
@@ -25,6 +25,7 @@ export class AuthNotificationService {
 
   async sendAuthNotifications(data: AuthNotificationData): Promise<void> {
     try {
+      console.log(data)
       // Always send email notification
       await this.sendEmailNotification(data);
 
@@ -33,7 +34,8 @@ export class AuthNotificationService {
      
       if (smsSettings?.smsNotification) {
         // Get user phone number
-        const user = await this.userModel.findById(data.userID).select('phone');
+        const user = await this.userModel.findById(data.userID).select('phone email username fullname');
+     
         if (user?.phone) {
           await this.sendSmsNotification(data, user.phone);
         }
@@ -55,6 +57,7 @@ export class AuthNotificationService {
   }
 
   private async sendSmsNotification(data: AuthNotificationData, phone: string): Promise<void> {
+    console.log("data",data)
     const message = this.generateSmsContent(data);
     
     await this.smsService.sendSingleSMS(
@@ -74,8 +77,8 @@ export class AuthNotificationService {
   }
 
   private generateEmailContent(data: AuthNotificationData): string {
-    const { eventType, username, eventDetails } = data;
-    const displayName = username || 'User';
+    const { eventType, fullname, eventDetails } = data;
+    const displayName = fullname || 'User';
     const timestamp = new Date().toLocaleString();
 
     const templates = {
@@ -129,8 +132,8 @@ export class AuthNotificationService {
   }
 
   private generateSmsContent(data: AuthNotificationData): string {
-    const { eventType, username, eventDetails } = data;
-    const displayName = username || 'User';
+    const { eventType, fullname, eventDetails } = data;
+    const displayName = fullname || 'User';
     const timestamp = new Date().toLocaleString();
 
     const templates = {

@@ -115,7 +115,7 @@ export class AuthService {
       await this.authNotificationService.sendAuthNotifications({
         userID: created._id.toString(),
         email: created.email,
-        username: created.username,
+        fullname: created.fullname,
         eventType: 'register',
       });
 
@@ -137,6 +137,7 @@ export class AuthService {
         "_id",
         "username",
         "id",
+        "fullname",
         "password",
         "userType",
         "status",
@@ -153,12 +154,12 @@ export class AuthService {
         if (user.emailStatus !== "verified") {
           throw new UnauthorizedException("Email not verified");
         }
-        
+        console.log(user)
         // Send login notification
         await this.authNotificationService.sendAuthNotifications({
           userID: user._id.toString(),
           email: user.email,
-          username: user.username,
+          fullname: user.fullname,
           eventType: 'login',
         });
         
@@ -508,12 +509,12 @@ export class AuthService {
     await this.userModel.findByIdAndUpdate(userID, {
       password: hashedPassword,
     });
-
+ 
     // Send password change notification
     await this.authNotificationService.sendAuthNotifications({
       userID: user._id.toString(),
       email: user.email,
-      username: user.username,
+      fullname: user.fullname,
       eventType: 'password_change',
     });
 

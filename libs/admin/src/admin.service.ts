@@ -117,7 +117,7 @@ export class AdminService {
       await this.authNotificationService.sendAuthNotifications({
         userID: user._id.toString(),
         email: user.email,
-        username: user.username,
+        fullname: user.fullname,
         eventType: 'kyc_update',
         eventDetails: {
           status: status,
