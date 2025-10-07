@@ -538,6 +538,14 @@ export class WalletService {
       });
     } catch (error) {
       this.logger.error("Error fetching transfer by ID:", error);
+      if((error.message as String).includes("No transaction was found for this id")){
+         await this.transactionModel.findOneAndUpdate({
+        reference: ref,
+      },{
+        status:TransactionStatus.CANCELLED
+      });
+     
+      }
       throw new NotAcceptableException(error?.message);
     }
   }
