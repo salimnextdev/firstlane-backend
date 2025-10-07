@@ -498,13 +498,19 @@ export class WalletService {
         const userWallet = await this.walletModel.findOne({
           userID: transaction.userID,
         });
-
+        const wallet = await this.flutterwaveService.getAvailableBalance(
+        admin._id.toString()
+      );
+      console.log(wallet?.data, transaction.amount)
+      if ((wallet?.data?.available_balance ?? 0) < transaction.amount) {
+        throw new Error("Insufficient balance");
+      }
        await this.flutterwaveService.walletToWalletTransfer({
           account_bank: "flutterwave",
           account_number: userWallet.barter_id,
           amount: transaction.amount,
           narration: `Deposited`,
-          reference: `${transaction.userID}_${transaction._id}`,
+          reference: `${transaction._id}_${Date.now()}`,
           debit_subaccount: adminWallet.customerCode,
         });
 
