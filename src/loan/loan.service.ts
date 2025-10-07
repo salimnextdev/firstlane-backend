@@ -4,7 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LoanDTO, UserDTO } from '@app/dto';
 import { ObjectReturnType, serviceResponse, getMetadata, NotificationService } from '@app/service';
-import { UserType } from '@app/enum';
+import { LoanStatus, UserType } from '@app/enum';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class LoanService {
@@ -17,6 +18,27 @@ export class LoanService {
   ){
 
  }
+//check every 12 hours check if loan is due send a mail to the user also check if that user has enough balance to repay the loan, then auto repay the loan
+  @Cron(CronExpression.EVERY_12_HOURS)
+  async checkLoanDue() {
+    const now = new Date();
+    const dueLoans = await this.loanModel.find({
+      dueDate: { $lt: now },
+      status: LoanStatus.APPROVED,
+    }).exec();
+
+    for (const loan of dueLoans) {
+      const user = await this.userModel.findById(loan.userID).exec();
+      if (user) {
+        // await this.notificationActivity.sendEmailNotification({
+        //   to: user.email,
+        //   subject: 'Loan Due Reminder',
+        //   text: `Your loan of ${loan.amount} is due on ${loan.dueDate}. Please repay on time.`,
+        // });
+      }
+    }
+  }
+
   async upset(
     createLoanDto: LoanDTO,
     userData: UserDTO

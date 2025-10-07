@@ -31,7 +31,7 @@ export class CouponService {
           status: false,
         });
       }
-    const created = await this.couponModel.create({...createCouponDto,userIDs:userData._id.toString()});
+    const created = await this.couponModel.create({...createCouponDto,userID:userData._id.toString()});
     return serviceResponse({
       data: await created.save(),
       message: "Coupon plan created successfully",

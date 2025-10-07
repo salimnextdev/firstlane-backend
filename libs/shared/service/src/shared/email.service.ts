@@ -23,8 +23,11 @@ export class SendMailService {
     };
     try {
       this.mailService.sendMail(data).catch((e) => {
-        console.log('SmS failed');
+        console.log('Email failed', e);
+       
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log('Email failed', error.message);
+    }
   }
 }
