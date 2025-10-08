@@ -23,7 +23,6 @@ import {
   TransactionNotificationService,
   NotificationService,
 } from "@app/service";
-import { UserService } from "@app/user";
 
 @Injectable()
 export class InvestmentCronService {
@@ -38,7 +37,7 @@ export class InvestmentCronService {
     private readonly userModel: Model<UserModel>,
     private readonly flutterwaveService: FlutterwaveService,
     private readonly transactionNotificationService: TransactionNotificationService,
-    private readonly userService: UserService,
+   
     @InjectModel(TransactionModel.name)
     private transactionModel: Model<TransactionDoc>,
     private readonly notificationService: NotificationService
