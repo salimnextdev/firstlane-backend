@@ -26,6 +26,7 @@ import {
 } from "@nestjs/swagger";
 import { InvestmentDTO, UserInvestmentDTO } from "@app/dto";
 import { InvestmentService } from "./investment.service";
+import { InvestmentCronService } from "./investment.cron.service";
 
 class UpdateInvestmentDTO extends PartialType(InvestmentDTO) {
   @ApiProperty({ type: String })
@@ -40,7 +41,8 @@ export class UserInvestmentToPlan extends PickType(
 @Controller("investments")
 export class InvestmentController {
   constructor(
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
+     private investmentCronService: InvestmentCronService,
   ) // private organizationAbilityFactory: OrganizationAbilityFactory,
 
   {}
@@ -190,6 +192,19 @@ export class InvestmentController {
   async copyInvestment(@Param("code") code: string, @Request() req: any) {
     return this.investmentService.copyInvestment(code, req.user);
   }
-
+@Patch(':id/refresh-status')
+  @ApiOperation({ summary: "Refresh investment status" })
+  @ApiParam({
+    name: "id",
+    required: true,
+    description: "Investment ID",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async refreshInvestmentStatus(@Param('id') id: string) {
+    const updatedInvestment = await this.investmentCronService.refreshStatus(id);
+  
+    return updatedInvestment;
+  }
   
 }

@@ -7,7 +7,7 @@ export class UserInvestmentDTO {
     description: "The ID of the user who owns the investment",
   })
   userID: string;
-
+_id?:string;
   @ApiProperty({
     example: "investmentID",
     description: "The ID of the investment plan",

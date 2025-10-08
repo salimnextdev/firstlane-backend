@@ -16,6 +16,8 @@ export interface TransactionNotificationData {
   receiverAccountNumber?: string;
   senderBank?: string;
   receiverBank?: string;
+  receiverName?: string;
+  senderName?: string;
 }
 
 @Injectable()

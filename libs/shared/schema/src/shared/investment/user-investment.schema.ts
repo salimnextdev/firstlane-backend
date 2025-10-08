@@ -52,14 +52,34 @@ export class UserInvestmentModel {
 
   @Prop({})
   investmentDueDate: Date;
+
+  @Prop({ default: null })
+  lastExpectedReturnUpdate: Date;
 }
 
 export const UserInvestmentSchema = SchemaFactory.createForClass(UserInvestmentModel);
 
 // Generate investment code before saving
 UserInvestmentSchema.pre('save', async function(next) {
-  
+  if(this.isNew ){
     this.id = randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
    this.investmentCode = randomInt(100, 999) + randomUUID().replace(/\D/g, "").substring(0, 3);
+   this.investmentDueDate = calculateInvestmentDueDate(this.duration);
+   this.maturityDate = this.investmentDueDate
+  }
+    
   next();
 });
+// Calculate investmentDueDate date based on duration (10 days, 3 months)
+function calculateInvestmentDueDate(duration: string): Date {
+  const [value, unit] = duration.split(' ');
+  const amount = parseInt(value, 10);
+
+  if (unit === 'days') {
+    return new Date(Date.now() + amount * 24 * 60 * 60 * 1000);
+  } else if (unit === 'months') {
+    return new Date(Date.now() + amount * 30 * 24 * 60 * 60 * 1000);
+  } else {
+    throw new Error('Invalid duration unit. Use "days" or "months".');
+  }
+}
