@@ -149,7 +149,11 @@ export class LoanController {
     if (!loan) {
       throw new NotFoundException(`Loan with ID ${loanID} not found`);
     }
-    return this.loanCronService.processLoanRepayment(loan._id.toString(), loan.payments, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
+    const nextPayment = loan.payments.find((p) => p.status === "pending");
+    if (!nextPayment) {
+      throw new NotFoundException(`No pending payment found for loan with ID ${loanID}`);
+    }
+    return this.loanCronService.processLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
   }
 }
 
