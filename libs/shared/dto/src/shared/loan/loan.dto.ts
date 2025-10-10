@@ -26,7 +26,7 @@ export class LoanDTO {
   tenure: string;
 
   @ApiProperty({
-    example: "repaymentInterval",
+    enum:["Daily","Weekly","Monthly","Quarterly","Yearly"],default:"Monthly"
   })
   repaymentInterval: string;
 

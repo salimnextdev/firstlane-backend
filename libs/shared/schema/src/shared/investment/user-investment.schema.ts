@@ -47,7 +47,9 @@ export class UserInvestmentModel {
 
   @Prop({ ref:"UserModel"})
   refBy?:string
- @Prop({ })
+ @Prop({ 
+    enum:["Daily","Weekly","Monthly","Quarterly","Yearly"],default:"Monthly"
+  })
   repaymentInterval:string
 
   @Prop({})

@@ -168,7 +168,7 @@ export class LoanCronService {
   loanId: string,
   payment: any,
   reference: string
-): Promise<void> {
+) {
   try {
 
     console.log(payment)
@@ -189,7 +189,7 @@ export class LoanCronService {
     if (!adminUser) {
       this.logger.error(`Admin user not found for loan repayment ${loanId}`);
       return;
-    }
+    } 
 
     const adminWallet = await this.walletModel.findOne({
       userID: adminUser._id,
@@ -210,11 +210,11 @@ export class LoanCronService {
     // 5️⃣ Transfer from admin → user
     await this.flutterwaveService.walletToWalletTransfer({
       account_bank: "flutterwave",
-      account_number: userWallet.barter_id,
+      account_number: adminWallet.barter_id,
       amount:payment.amount,
       narration: `Loan repayment for ${loanId}`,
       reference,
-      debit_subaccount: adminWallet.customerCode,
+      debit_subaccount:   userWallet.customerCode,
     });
 
     // 6️⃣ Update payment schedule
@@ -230,11 +230,12 @@ export class LoanCronService {
       }
     }
     loan.payments=loan.payments.map((p) => {
-      if (p.id === payment.id) {
-        return { ...p, ...payment };
+      if (p.id === nextPendingPayment.id) {
+        return { ...p, ...nextPendingPayment };
       }
       return p;
     })
+    
     // 7️⃣ Recalculate loan status
     const remainingPayments = loan.payments.filter(
       (p) => p.status === "pending"
@@ -287,7 +288,11 @@ export class LoanCronService {
       details: `Your loan repayment of ₦${payment.amount.toLocaleString()} has been received.`,
       playerIds: [user.playerId || ""],
     });
+  return {
+        status: true,
+        message: `Loan repayment processed successfully for ${loan._id}`,
 
+      }
     this.logger.log(`🎉 Loan repayment processed successfully for ${loan._id}`);
   } catch (error) {
     this.logger.error(`❌ Error processing loan repayment for ${loanId}:`, error);
