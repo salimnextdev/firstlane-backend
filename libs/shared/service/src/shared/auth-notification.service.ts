@@ -27,7 +27,7 @@ export class AuthNotificationService {
     try {
 
       // Always send email notification
-      await this.sendEmailNotification(data);
+       this.sendEmailNotification(data);
 
       // Check if SMS is enabled in admin settings
       const smsSettings = await this.settingsModel.findOne();
