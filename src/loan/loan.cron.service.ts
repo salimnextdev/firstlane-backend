@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotAcceptableException, NotFoundException } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -170,6 +170,8 @@ export class LoanCronService {
   reference: string
 ): Promise<void> {
   try {
+
+    console.log(payment)
     // 1️⃣ Fetch loan
     const loan = await this.loanModel.findById(loanId);
     if (!loan) throw new NotFoundException(`Loan with ID ${loanId} not found`);
@@ -289,7 +291,7 @@ export class LoanCronService {
     this.logger.log(`🎉 Loan repayment processed successfully for ${loan._id}`);
   } catch (error) {
     this.logger.error(`❌ Error processing loan repayment for ${loanId}:`, error);
-    throw error;
+    throw new NotAcceptableException(error.message)
   }
 }
 
