@@ -221,7 +221,7 @@ export class InvestmentService {
         refBy=user._id.toString()
       }
       const userInvestment = new this.userInvestmentModel(
-        {...investmentData,userID:userData._id.toString(),refBy:refBy}
+        {...investmentData,userID:userData._id.toString(),refBy:refBy,interestRate:investment.interestRate}
       );
       const userWallet = await this.walletModel.findOne({
         userID: userData._id.toString(),
