@@ -20,18 +20,26 @@ import { SupportModule } from './support/support.module';
 import { CouponModule } from './coupon/coupon.module';
 import { FxModule } from './fx/fx.module';
 import { AppController } from './app.controller';
+
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 @Module({
   imports: [ 
     CaslModule,
     ScheduleModule.forRoot(),
-    MailerModule.forRoot({
-      transport: {
-        host: process.env.EMAIL_HOST||"jamfortetech.com",
-        auth: {
-          user: process.env.EMAIL_USERNAME||"emmanuel@jamfortetech.com",
-          pass: process.env.EMAIL_PASSWORD||"Simple@1010*",
+   MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('EMAIL_HOST') || 'jamfortetech.com',
+          auth: {
+            user: configService.get<string>('EMAIL_USERNAME') || 'emmanuel@jamfortetech.com',
+            pass: configService.get<string>('EMAIL_PASSWORD') || 'Simple@1010*',
+          },
         },
-      },
+      }),
     }),
     MulterModule.registerAsync({
       useFactory: () => ({

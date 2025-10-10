@@ -256,7 +256,7 @@ const isVendor = loan.loanType === LoanType.ASSETFINANCE
         {
           status,
           notes: notes ?? "",
-          adminID: userData.id,
+          adminID: userData._id,
         },
         { new: true }
       );
