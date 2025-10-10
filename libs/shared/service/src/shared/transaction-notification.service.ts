@@ -112,10 +112,12 @@ export class TransactionNotificationService {
 
   private generateEmailContent(user: UserDoc, data: TransactionNotificationData): string {
     const statusColor = data.status === TransactionStatus.PAID ? '#28a745' : 
+    data.status === TransactionStatus.COMPLETED ? 'Successful' :
                        data.status === TransactionStatus.PENDING ? '#ffc107' : '#dc3545';
     
     const transactionTypeText = this.getTransactionTypeText(data.type);
     const statusText = data.status === TransactionStatus.PAID ? 'Successful' : 
+                      data.status === TransactionStatus.COMPLETED ? 'Successful' :
                       data.status === TransactionStatus.PENDING ? 'Pending' : 'Failed';
 
     return `
@@ -198,7 +200,8 @@ export class TransactionNotificationService {
 
   private generateSmsContent(user: UserDoc, data: TransactionNotificationData): string {
     const transactionTypeText = this.getTransactionTypeText(data.type);
-    const statusText = data.status === TransactionStatus.PAID ? 'successful' : 
+    const statusText = data.status === TransactionStatus.PAID ? 'successful' :
+    data.status === TransactionStatus.COMPLETED ? 'Successful' :
                       data.status === TransactionStatus.PENDING ? 'pending' : 'failed';
 
     return `Hi ${user.firstname}, your ${transactionTypeText.toLowerCase()} of ₦${data.amount.toLocaleString()} was ${statusText}. Ref: ${data.reference}. Contact support if you didn't initiate this transaction.`;
