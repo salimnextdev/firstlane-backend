@@ -435,7 +435,8 @@ export class UserService {
     };
 
     // ---------- CURRENT PERIOD ----------
-    const currentLoansAgg = await this.loanModel.aggregate([
+    const currentLoansAggCollected = await this.loanModel.aggregate([
+      
       {
         $match: {
           userID,
@@ -450,12 +451,28 @@ export class UserService {
         }
       }
     ]);
-
-    const currentInvestmentsAgg = await this.userInvestmentModel.aggregate([
+const currentLoansAggRepaid = await this.loanModel.aggregate([
+      
       {
         $match: {
           userID,
-          status: UserInvestmentStatus.ACTIVE
+          status: LoanStatus.PAID
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRequested: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRequested" }
+        }
+      }
+    ]);
+    const currentInvestmentsAgg = await this.userInvestmentModel.aggregate([
+      
+      {
+        $match: {
+          userID,
+           status: { $in: [UserInvestmentStatus.ACTIVE, UserInvestmentStatus.COMPLETED] }
         }
       },
       {
@@ -467,8 +484,8 @@ export class UserService {
       }
     ]);
 
-    const currentLoanRequested = currentLoansAgg[0]?.totalRequested || 0;
-    const currentLoanRepaid = currentLoansAgg[0]?.totalRepaid || 0;
+    const currentLoanRequested = currentLoansAggCollected[0]?.totalRequested || 0;
+    const currentLoanRepaid = currentLoansAggRepaid[0]?.totalRepaid || 0;
     const currentLoanBalance = currentLoanRequested - currentLoanRepaid;
 
     const currentInvestmentBalance = currentInvestmentsAgg[0]?.totalInvested || 0;
@@ -551,7 +568,7 @@ async getUserLoanStats(userID: string): Promise<ObjectReturnType> {
     };
 
     // ---------- CURRENT ----------
-    const currentLoanAgg = await this.loanModel.aggregate([
+    const currentLoanAggRepaid = await this.loanModel.aggregate([
       {
         $match: {
           userID,
@@ -566,13 +583,43 @@ async getUserLoanStats(userID: string): Promise<ObjectReturnType> {
         }
       }
     ]);
-
-    const currentCollected = currentLoanAgg[0]?.totalCollected || 0;
-    const currentRepaid = currentLoanAgg[0]?.totalRepaid || 0;
+const currentLoanAggCollected = await this.loanModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: LoanStatus.PAID
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCollected: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRequested" }
+        }
+      }
+    ]);
+    const currentCollected = currentLoanAggCollected[0]?.totalCollected || 0;
+    const currentRepaid = currentLoanAggRepaid[0]?.totalRepaid || 0;
     const currentDue = currentCollected - currentRepaid;
 
     // ---------- LAST MONTH ----------
-    const lastMonthLoanAgg = await this.loanModel.aggregate([
+    const lastMonthLoanAggRepaid = await this.loanModel.aggregate([
+      {
+        $match: {
+          userID,
+          status: LoanStatus.PAID,
+          createdAt: { $lt: startOfCurrentMonth }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCollected: { $sum: "$amountRequested" },
+          totalRepaid: { $sum: "$amountRequested" }
+        }
+      }
+    ]);
+ const lastMonthLoanAggCollected = await this.loanModel.aggregate([
       {
         $match: {
           userID,
@@ -588,9 +635,8 @@ async getUserLoanStats(userID: string): Promise<ObjectReturnType> {
         }
       }
     ]);
-
-    const lastCollected = lastMonthLoanAgg[0]?.totalCollected || 0;
-    const lastRepaid = lastMonthLoanAgg[0]?.totalRepaid || 0;
+    const lastCollected = lastMonthLoanAggCollected[0]?.totalCollected || 0;
+    const lastRepaid = lastMonthLoanAggRepaid[0]?.totalRepaid || 0;
     const lastDue = lastCollected - lastRepaid;
 
     // ---------- CHANGES ----------
