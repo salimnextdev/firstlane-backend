@@ -34,7 +34,7 @@ class UpdateInvestmentDTO extends PartialType(InvestmentDTO) {
 }
 export class UserInvestmentToPlan extends PickType(
   UserInvestmentDTO,
-  ['amount','investmentID','repaymentInterval',]
+  ['amount','investmentID','repaymentInterval','duration']
 ) {}
 @ApiTags("investments")
 @ApiBearerAuth("access-token")
