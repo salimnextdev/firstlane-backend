@@ -221,6 +221,7 @@ export class LoanCronService {
     if (nextPendingPayment) {
       if (payment.amount >= nextPendingPayment.amount) {
         nextPendingPayment.status = "paid";
+        nextPendingPayment.paidAt = moment().toDate();
         this.logger.log(
           `💰 Payment ${nextPendingPayment.id} for loan ${loanId} marked as PAID`
         );

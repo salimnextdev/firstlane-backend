@@ -88,19 +88,24 @@ export class LoanModel {
         id: Number,
         date: Date,
         amount: Number,
+        paidAt: Date,
         status: { type: String, enum: ["pending", "paid"], default: "pending" },
       },
     ],
     default: [],
   })
-  payments: { id: number; date: Date; amount: number; status: "pending" | "paid" }[];
+  payments: { paidAt: Date, id: number; date: Date; amount: number; status: "pending" | "paid" }[];
 
   @Prop({  })
   totalRepayable:number
 
 @Prop({  })
   totalInterest:number
+@Prop()
+tenureValue: number; // e.g. 12
 
+@Prop({ enum: ['days', 'months', 'years'] })
+tenureUnit: string;
 }
 
 export const LoanSchema = SchemaFactory.createForClass(LoanModel);
@@ -113,19 +118,24 @@ LoanSchema.pre('save', async function (next) {
     const interestRate = this.interest || 10; // %
     const totalInterest = (principal * interestRate) / 100;
     const totalRepayable = principal + totalInterest;
-    this.totalRepayable = totalRepayable;
-    this.totalInterest = totalInterest;
-
-    // Extract number from tenure string (e.g. "12 months" → 12)
-    const tenureMonths = parseInt(this.tenure?.toString().replace(/\D/g, "")) || 12;
-
+ const tenureString = this.tenure?.toLowerCase() || '';
+ const [tenureValueStr, tenureUnitRaw] = tenureString.split(' ');
+    const tenureValue = parseInt(tenureValueStr, 10);
+    const tenureUnit = tenureUnitRaw?.includes('day')
+      ? 'days'
+      : tenureUnitRaw?.includes('year')
+      ? 'years'
+      : 'months';
+      this.tenureValue = tenureValue;
+      this.tenureUnit = tenureUnit;
+  
     // Determine number of payments
     let numPayments = 0;
-    if (this.repaymentInterval === "Daily") numPayments = tenureMonths * 30;
-    if (this.repaymentInterval === "Weekly") numPayments = Math.round((tenureMonths / 12) * 52);
-    if (this.repaymentInterval === "Monthly") numPayments = tenureMonths;
-    if (this.repaymentInterval === "Quarterly") numPayments = Math.round((tenureMonths / 12) * 4);
-    if (this.repaymentInterval === "Yearly") numPayments = Math.round(tenureMonths / 12);
+    if (this.repaymentInterval === "Daily") numPayments  = moment.duration(tenureValue, tenureUnit).asDays();;
+    if (this.repaymentInterval === "Weekly") numPayments = moment.duration(tenureValue, tenureUnit).asWeeks();
+    if (this.repaymentInterval === "Monthly") numPayments = tenureUnit === 'months' ? tenureValue : moment.duration(tenureValue, tenureUnit).asMonths();;
+    if (this.repaymentInterval === "Quarterly") numPayments = tenureUnit === 'months' ? tenureValue / 3 : moment.duration(tenureValue, tenureUnit).asMonths() / 3;
+    if (this.repaymentInterval === "Yearly") numPayments = tenureUnit === 'years' ? tenureValue/ 12 : moment.duration(tenureValue, tenureUnit).asYears();
 
     const paymentAmount = Number((totalRepayable / numPayments).toFixed(2));
 
