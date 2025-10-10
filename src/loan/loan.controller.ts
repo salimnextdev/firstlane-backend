@@ -1,15 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { LoanService } from './loan.service';
-import { LoanDTO } from '@app/dto';
+import { LoanDTO, LoanRepaymentDTO } from '@app/dto';
 import { JwtAuthGuard } from '@app/guard';
-import { ApiOperation, ApiBody, ApiParam, ApiQuery, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-
+import { ApiOperation, ApiBody, ApiParam, ApiQuery, ApiBearerAuth, ApiTags, ApiProperty } from '@nestjs/swagger';
+import { LoanCronService } from './loan.cron.service';
+import { LoanDoc, LoanModel } from '@app/schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import * as moment from "moment";
 @ApiTags("loan")
 @ApiBearerAuth("access-token")
 
 @Controller('loan')
 export class LoanController {
-  constructor(private readonly loanService: LoanService) {}
+  constructor(private readonly loanService: LoanService,@InjectModel(LoanModel.name)
+    private loanModel: Model<LoanDoc>, private readonly loanCronService: LoanCronService) {}
 
    @Post()
   @ApiOperation({ summary: "Create a new loan" })
@@ -130,4 +135,21 @@ export class LoanController {
     return this.loanService.findByMany(data, query);
   }
   
+ // processLoanRepayment
+  @Post("process-repayment/:loanID")
+  @ApiOperation({ summary: "Process loan repayment" })
+  @ApiParam({
+    name: "loanID",
+    description: "The loanID to repay",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async processLoanRepayment(@Param("loanID") loanID: string,  @Req() req: any) {
+    const loan = await this.loanModel.findById(loanID);
+    if (!loan) {
+      throw new NotFoundException(`Loan with ID ${loanID} not found`);
+    }
+    return this.loanCronService.processLoanRepayment(loan._id.toString(), loan.payments, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
+  }
 }
+

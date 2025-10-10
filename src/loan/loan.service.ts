@@ -43,7 +43,8 @@ export class LoanService {
     createLoanDto: LoanDTO,
     userData: UserDTO
   ): Promise<ObjectReturnType> {
-     let refBy
+  try {
+       let refBy
       if(createLoanDto.refCode){
         const user= await this.userModel.findOne({refCode:createLoanDto.refCode})
         refBy=user._id.toString()
@@ -72,6 +73,13 @@ export class LoanService {
 
       status: true,
     });
+  } catch (error) {
+    return serviceResponse({
+      data: null,
+      message: error.message,
+      status: false,
+    });
+  }
   }
 
   async findAll(query: any): Promise<ObjectReturnType> {

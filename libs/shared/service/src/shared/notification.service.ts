@@ -68,7 +68,7 @@ export class NotificationService {
 
       console.log(`Notification sent: ${response.status}`);
     } catch (error) {
-      console.log(error);
+      console.log(error.response.data);
     }
   }
 

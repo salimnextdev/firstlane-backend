@@ -1,10 +1,27 @@
 import { Module } from '@nestjs/common';
 import { LoanService } from './loan.service';
 import { LoanController } from './loan.controller';
-import { NotificationGateway, NotificationService } from '@app/service';
+import { LoanCronService } from './loan.cron.service';
+import { 
+  NotificationGateway, 
+  NotificationService, 
+  FlutterwaveService,
+  TransactionNotificationService, 
+  SendMailService,
+  SmsService
+} from '@app/service';
 
 @Module({
   controllers: [LoanController],
-  providers: [LoanService,NotificationService,NotificationGateway],
+  providers: [
+    LoanService,
+    LoanCronService,
+    NotificationService,
+    NotificationGateway,
+    FlutterwaveService,
+    SendMailService,
+    SmsService,
+    TransactionNotificationService
+  ],
 })
 export class LoanModule {}

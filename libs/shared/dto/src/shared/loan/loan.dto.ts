@@ -1,6 +1,14 @@
 import { LoanStatus, LoanType } from "@app/enum";
 import { ApiProperty } from "@nestjs/swagger";
 
+export class LoanRepaymentDTO {
+  @ApiProperty({ description: 'ID of the loan to repay' })  
+   loanID: string;
+  @ApiProperty({ description: 'Payment details for the repayment' })
+  payment: any;
+  @ApiProperty({ description: 'Reference for the repayment transaction' })
+  reference: string
+}
 export class LoanDTO {
   @ApiProperty({
     example: 1000,

@@ -218,16 +218,19 @@ const isVendor = loan.loanType === LoanType.ASSETFINANCE
 
           debit_subaccount: adminWallet.customerCode,
         };
-
-        const transferResponse = await this.flutterwaveService.walletToWalletTransfer(
+let transferResponse: any = {}
+        if(!isVendor){
+           transferResponse = await this.flutterwaveService.walletToWalletTransfer(
           transferData
         );
+        }
+       
         const transaction = await this.transactionModel.create({
           userID: loan.userID,
           amount: loan.amountRequested,
-          reference: transferResponse.data?.reference,
+          reference: transferResponse?.data?.reference?? `LOAN_${loanId}_${Date.now()}`,
           type: TransactionType.LOAN,
-          status: TransactionStatus.PAID,
+          status: TransactionStatus.COMPLETED,
           receiverBank: isVendor ? loan.vendorBankName : userWallet.bankName,
           receiverAccountNumber: isVendor ? loan.vendorAccountNumber : userWallet.accountNumber,
           senderBank: adminWallet.bankName,
@@ -243,13 +246,13 @@ const isVendor = loan.loanType === LoanType.ASSETFINANCE
           status: transaction.status as TransactionStatus,
         });
 
-        if (transferResponse.status !== "success") {
-          return serviceResponse({
-            message: "Transfer failed",
-            status: false,
-            data: transferResponse,
-          });
-        }
+        // if (transferResponse.status !== "success") {
+        //   return serviceResponse({
+        //     message: "Transfer failed",
+        //     status: false,
+        //     data: transferResponse,
+        //   });
+        // }
       }
       const updatedLoan = await this.loanModel.findByIdAndUpdate(
         loanId,
