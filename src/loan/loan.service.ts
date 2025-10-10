@@ -18,26 +18,7 @@ export class LoanService {
   ){
 
  }
-//check every 12 hours check if loan is due send a mail to the user also check if that user has enough balance to repay the loan, then auto repay the loan
-  @Cron(CronExpression.EVERY_12_HOURS)
-  async checkLoanDue() {
-    const now = new Date();
-    const dueLoans = await this.loanModel.find({
-      dueDate: { $lt: now },
-      status: LoanStatus.APPROVED,
-    }).exec();
 
-    for (const loan of dueLoans) {
-      const user = await this.userModel.findById(loan.userID).exec();
-      if (user) {
-        // await this.notificationActivity.sendEmailNotification({
-        //   to: user.email,
-        //   subject: 'Loan Due Reminder',
-        //   text: `Your loan of ${loan.amount} is due on ${loan.dueDate}. Please repay on time.`,
-        // });
-      }
-    }
-  }
 
   async upset(
     createLoanDto: LoanDTO,
@@ -50,7 +31,7 @@ export class LoanService {
         refBy=user._id.toString()
       }
     
-    const created = await this.loanModel.create({...createLoanDto,refBy});
+    const created = await this.loanModel.create({...createLoanDto,userID:userData._id.toString(),refBy});
 
  
     const admins= await this.userModel.find({userType:UserType.ADMIN}).exec();
