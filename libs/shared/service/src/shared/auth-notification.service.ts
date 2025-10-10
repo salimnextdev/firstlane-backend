@@ -10,7 +10,7 @@ export interface AuthNotificationData {
   userID: string;
   email: string;
   fullname?: string;
-  eventType: 'login' | 'register' | 'password_change' | 'kyc_update';
+  eventType: 'login' | 'register' | 'password_change' | 'kyc_update' | 'otp';
   eventDetails?: any;
 }
 
@@ -72,6 +72,7 @@ export class AuthNotificationService {
       register: 'Welcome! Your Account Has Been Created',
       password_change: 'Password Changed Successfully',
       kyc_update: 'KYC Status Update',
+      otp: 'Your OTP Code',
     };
     return subjects[eventType] || 'Account Activity Alert';
   }
@@ -119,6 +120,15 @@ export class AuthNotificationService {
           <p>Best regards,<br>The Compliance Team</p>
         </div>
       `,
+      otp: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">OTP Code</h2>
+          <p>Hello ${displayName},</p>
+          <p>Your OTP code is ${eventDetails?.otp || '123456'}.</p>
+          <p>This code is valid for 5 minutes.</p>
+          <p>Best regards,<br>The Security Team</p>
+        </div>
+      `,
     };
 
     return templates[eventType] || `
@@ -137,6 +147,7 @@ export class AuthNotificationService {
     const timestamp = new Date().toLocaleString();
 
     const templates = {
+      otp: `Hello ${displayName}, your OTP code is ${eventDetails?.otp || '123456'}. It is valid for 5 minutes.`,
       login: `Hello ${displayName}, your account was accessed on ${timestamp}. If this wasn't you, contact support immediately.`,
       register: `Welcome ${displayName}! Your account was created successfully on ${timestamp}.`,
       password_change: `Hello ${displayName}, your password was changed on ${timestamp}. Contact support if this wasn't you.`,

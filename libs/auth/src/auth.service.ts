@@ -99,11 +99,11 @@ export class AuthService {
         data.toJSON() as any
       );
 
-      this.sendMailService.sendMail({
-        to: created.email,
-        subject: "Email Code Verification",
-        text: message,
-      });
+      // this.sendMailService.sendMail({
+      //   to: created.email,
+      //   subject: "Email Code Verification",
+      //   text: message,
+      // });
 
       this.flutterwaveService.createVirtualAccount({
         account_name: created.fullname,
@@ -117,6 +117,16 @@ export class AuthService {
         email: created.email,
         fullname: created.fullname,
         eventType: 'register',
+      });
+
+      await this.authNotificationService.sendAuthNotifications({
+        userID: created._id.toString(),
+        email: created.email,
+        fullname: created.fullname,
+        eventType: 'otp',
+        eventDetails: {
+          otp: data.code,
+        },
       });
 
       return {
@@ -428,11 +438,21 @@ export class AuthService {
     });
     const message = await this.smsService.generateMessage(data.toJSON() as any);
 
-    this.sendMailService.sendMail({
-      to: user.email,
-      subject: body.type,
-      text: message,
-    });
+    this.authNotificationService.sendAuthNotifications({
+      email:user.email,
+      eventType:"otp",
+      userID:user._id.toString(),
+      eventDetails:{
+        otp:data.code,
+      },
+      fullname:user.fullname
+    })
+
+    // this.sendMailService.sendMail({
+    //   to: user.email,
+    //   subject: body.type,
+    //   text: message,
+    // });
 
     return {
       message: "Code sent",
