@@ -572,7 +572,7 @@ async getUserLoanStats(userID: string): Promise<ObjectReturnType> {
       {
         $match: {
           userID,
-          status: LoanStatus.APPROVED
+          status: LoanStatus.PAID
         }
       },
       {
@@ -587,7 +587,7 @@ const currentLoanAggCollected = await this.loanModel.aggregate([
       {
         $match: {
           userID,
-          status: LoanStatus.PAID
+          status: LoanStatus.APPROVED
         }
       },
       {

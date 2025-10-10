@@ -138,7 +138,7 @@ LoanSchema.pre('save', async function (next) {
     if (this.repaymentInterval === "Yearly") numPayments = tenureUnit === 'years' ? tenureValue/ 12 : moment.duration(tenureValue, tenureUnit).asYears();
 
     const paymentAmount = Number((totalRepayable / numPayments).toFixed(2));
-
+console.log(numPayments)
     // Use createdAt if available, else now
     const startDate =  moment();
 
