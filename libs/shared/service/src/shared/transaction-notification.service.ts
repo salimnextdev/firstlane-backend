@@ -59,10 +59,11 @@ export class TransactionNotificationService {
     try {
       const subject = this.getEmailSubject(data.type, data.status);
       const htmlContent = this.generateEmailContent(user, data);
-
+      const from = data.type === TransactionType.LOAN ? "Firstlane Loan<loan@firstlanemultinvestment.com>" : TransactionType.INVESTMENT?"Firstlane Investment<investment@firstlanemultinvestment.com>":TransactionType.FX?"Firstlane FX<fx@firstlanemultinvestment.com>":null;
       await this.sendMailService.sendMail({
         to: user.email,
         subject,
+        from,
         html: htmlContent,
       });
 

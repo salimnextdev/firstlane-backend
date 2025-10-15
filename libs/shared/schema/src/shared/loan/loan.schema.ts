@@ -22,7 +22,8 @@ export class LoanModel {
   notes: string;
   @Prop({  })
   purpose: string;
-
+  @Prop({  })
+  bankStatement: string;
   @Prop({  })
   tenure: string;
 

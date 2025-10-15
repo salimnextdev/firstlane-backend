@@ -80,6 +80,8 @@ export class KycService {
         "verifications.idType": kycData.idType,
         "verifications.issueDate": kycData.issueDate,
         "verifications.expiryDate": kycData.expiryDate,
+         "verifications.waterBill": kycData.waterBill,
+          "verifications.utilityBill": kycData.utilityBill,
         "verifications.bvn": kycData.bvn,
         "verifications.level": KycLevel.LEVEL2,
         

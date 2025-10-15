@@ -57,6 +57,9 @@ export class UserInvestmentModel {
 
   @Prop({ default: null })
   lastExpectedReturnUpdate: Date;
+
+  @Prop({ default: null })
+  withdrawalDate: Date;
 }
 
 export const UserInvestmentSchema = SchemaFactory.createForClass(UserInvestmentModel);

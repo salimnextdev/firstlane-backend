@@ -332,20 +332,21 @@ export class WalletService {
       if (!wallet) {
         throw new NotFoundException("User not found");
       }
+      const ref= user.id +`_withdrawal-` +
+          randomInt(99999) +
+          randomUUID().replace(/\D/g, "").substring(0, 2)
 
       const res = await this.flutterwaveService.withdrawFunds({
         ...data,
-        reference:
-          user.id +
-          `_withdrawal-` +
-          randomInt(99999) +
-          randomUUID().replace(/\D/g, "").substring(0, 2),
+        reference:ref,
+          
+         
         debit_subaccount: wallet.customerCode,
       });
       const transaction = await this.transactionModel.create({
         userID: user._id.toString(),
         amount:data.amount,
-        reference: res?.response?.data?.reference,
+        reference: res?.response?.data?.reference??ref,
         type: TransactionType.WITHDRAWAL,
         status: TransactionStatus.PAID,
         receiverBank: data.account_bank,
@@ -358,6 +359,7 @@ export class WalletService {
       await this.transactionNotificationService.sendTransactionNotifications({
         type: TransactionType.WITHDRAWAL,
         amount: data.amount,
+
         userID: user._id.toString(),
         reference: res?.response?.data?.reference,
         status: TransactionStatus.PAID,

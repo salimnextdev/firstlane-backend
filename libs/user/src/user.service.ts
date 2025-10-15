@@ -479,7 +479,7 @@ const currentLoansAggRepaid = await this.loanModel.aggregate([
         $group: {
           _id: null,
           totalInvested: { $sum: "$amount" },
-          totalAccruedInterest: { $sum: "$interestAccrued" }
+          totalAccruedInterest: { $sum: "$expectedReturn" }
         }
       }
     ]);
@@ -587,7 +587,7 @@ const currentLoanAggCollected = await this.loanModel.aggregate([
       {
         $match: {
           userID,
-          status: LoanStatus.APPROVED
+         status: { $in: [LoanStatus.APPROVED, LoanStatus.PAID] }
         }
       },
       {
@@ -623,7 +623,7 @@ const currentLoanAggCollected = await this.loanModel.aggregate([
       {
         $match: {
           userID,
-          status: LoanStatus.APPROVED,
+         status: { $in: [LoanStatus.APPROVED, LoanStatus.PAID] },
           createdAt: { $lt: startOfCurrentMonth }
         }
       },

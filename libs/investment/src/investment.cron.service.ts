@@ -295,6 +295,11 @@ export class InvestmentCronService {
       this.logger.log(
         `Successfully credited ${totalAmount} to user ${user.email} for investment ${investment.investmentCode}`
       );
+      this.userInvestmentModel.findByIdAndUpdate(_id, {
+        status: UserInvestmentStatus.COMPLETED,
+        withdrawalDate: new Date(),
+      })
+
       // Create transaction record
       await this.transactionModel.create({
         userID: investment.userID,

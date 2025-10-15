@@ -53,6 +53,16 @@ export class VerificationsDTO {
   @ApiProperty({ description: 'Status of verification', enum: ['pending', 'verified', 'rejected'], default: 'pending' })
   status: string;
 
+ @ApiProperty({
+    example: "utilityBill",
+  })
+  utilityBill: string;
+
+   @ApiProperty({
+    example: "waterBill",
+  })
+  waterBill: string;
+
   @ApiProperty({ description: 'URL to uploaded ID document image', required: false })
   documentUrl?: string;
 

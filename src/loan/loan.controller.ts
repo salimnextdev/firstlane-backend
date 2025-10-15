@@ -155,5 +155,26 @@ export class LoanController {
     }
     return this.loanCronService.processLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
   }
+
+  // processLoanRepayment
+  @Post("process-repayment/:loanID/all")
+  @ApiOperation({ summary: "Process loan repayment" })
+  @ApiParam({
+    name: "loanID",
+    description: "The loanID to repay",
+    type: String,
+  })
+  @UseGuards(JwtAuthGuard)
+  async processFullLoanRepayment(@Param("loanID") loanID: string,  @Req() req: any) {
+    const loan = await this.loanModel.findById(loanID);
+    if (!loan) {
+      throw new NotFoundException(`Loan with ID ${loanID} not found`);
+    }
+    const nextPayment = loan.payments.find((p) => p.status === "pending");
+    if (!nextPayment) {
+      throw new NotFoundException(`No pending payment found for loan with ID ${loanID}`);
+    }
+    return this.loanCronService.processFullLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
+  }
 }
 

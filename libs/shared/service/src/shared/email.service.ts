@@ -17,7 +17,7 @@ export class SendMailService {
 
   async sendMail({ from, to, subject, html, text }: SendMailInterface) {
     const data = {
-      from: from ||process.env.EMAIL_USERNAME|| 'emmanuel@jamfortetech.com',
+      from:  from ||process.env.EMAIL_USERNAME|| 'emmanuel@jamfortetech.com',
       to,
       subject,
       text,

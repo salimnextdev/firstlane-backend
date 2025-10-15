@@ -19,6 +19,10 @@ export class LoanDTO {
     example: "purpose",
   })
   purpose: string;
+   @ApiProperty({
+    example: "bank statement",
+  })
+  bankStatement: string;
 
   @ApiProperty({
     example: "tenure",

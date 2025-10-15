@@ -112,6 +112,12 @@ class Verifications {
   @Prop()
   notes?: string;
 
+    @Prop()
+  utilityBill?: string;
+
+    @Prop()
+  waterBill?: string;
+
   @Prop()
   verifiedAt?: Date;
 

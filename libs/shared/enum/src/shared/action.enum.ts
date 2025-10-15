@@ -57,6 +57,7 @@ export enum TransactionStatus {
 }
 export enum TransactionType {
   LOAN = 'loan',
+  FX = 'fx',
   INVESTMENT = 'investment',
   DEPOSIT = 'deposit',
   WITHDRAWAL = 'withdrawal',
