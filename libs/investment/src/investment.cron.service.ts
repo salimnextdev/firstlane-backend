@@ -43,7 +43,7 @@ export class InvestmentCronService {
     private readonly notificationService: NotificationService
   ) {}
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_2_HOURS)
   async calculateExpectedReturns() {
     this.logger.log("Running daily expected return calculation...");
 
