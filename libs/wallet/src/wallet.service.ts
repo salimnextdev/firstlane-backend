@@ -336,6 +336,13 @@ export class WalletService {
           randomInt(99999) +
           randomUUID().replace(/\D/g, "").substring(0, 2)
 
+
+    const wallet2 = await this.flutterwaveService.getAvailableBalance(
+        user._id.toString()
+      );
+      if ((wallet2?.data?.available_balance ?? 0) < data.amount) {
+        throw new Error("Insufficient balance");
+      }
       const res = await this.flutterwaveService.withdrawFunds({
         ...data,
         reference:ref,
