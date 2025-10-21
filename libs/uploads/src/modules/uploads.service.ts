@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import * as streamifier from 'streamifier';
+import { v4 as uuidv4 } from 'uuid';
 
 import * as dotenv from 'dotenv';
+import { DmsService } from './dms/dms.service';
 dotenv.config();
 
 cloudinary.config({
@@ -15,6 +17,7 @@ cloudinary.config({
 
 @Injectable()
 export class UploadsService {
+  constructor(private readonly dmsService: DmsService) { }
   getMulterConfig() {
     return {
       storage: diskStorage({
@@ -35,19 +38,18 @@ export class UploadsService {
 
     for (const file of files) {
       try {
-        
-        const result = await this.uploadToCloudinary(file.buffer, folder);
+        const result = await this.uploadToS3(file, folder);
         uploadResults.push({
-          originalname: result.public_id,
-          url: result.secure_url,
-        
+          originalname: result.originalname,
+          url: result.url,
+
         });
       } catch (error) {
         console.error(`Error uploading file ${file.originalname}:`, error);
         uploadResults.push({
           originalname: file.originalname,
           url: null,
-         
+
           error: error.message || 'Upload failed',
         });
       }
@@ -76,4 +78,29 @@ export class UploadsService {
       streamifier.createReadStream(buffer).pipe(stream);
     });
   }
+
+  private async uploadToS3(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<{ originalname: string; url: string }> {
+    try {
+      const extension = file.originalname.split('.').pop();
+      const key = `${folder}/${uuidv4()}.${extension}`;
+
+      const result = await this.dmsService.uploadSingleFile({
+        file,
+        key,
+        isPublic: true,
+      });
+
+      return {
+        originalname: key,
+        url: result.url,
+      };
+    } catch (error) {
+      console.error('❌ Error uploading to S3/Wasabi:', error);
+      throw new InternalServerErrorException('Upload to S3 failed');
+    }
+  }
+
 }

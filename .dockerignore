@@ -1,0 +1,8 @@
+.git
+.dockerignore
+.env
+.env.production
+
+node_modules
+infra/
+infra/**
