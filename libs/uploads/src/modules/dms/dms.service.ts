@@ -6,7 +6,7 @@ import {
     CreateBucketCommand,
     GetObjectCommand,
     HeadBucketCommand,
-    BucketLocationConstraint
+    PutBucketPolicyCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -54,12 +54,29 @@ export class DmsService implements OnModuleInit {
                 await this.client.send(
                     new CreateBucketCommand({
                         Bucket: this.bucketName,
-                        CreateBucketConfiguration: {
-                            LocationConstraint: this.configService.get<string>('S3_REGION') as BucketLocationConstraint,
-                        }
                     })
                 )
                 console.log(`Bucket "${this.bucketName}" created successfully.`);
+                console.log(`Setting public read policy for bucket "${this.bucketName}"...`);
+                const publicReadPolicy = {
+                    Version: "2012-10-17",
+                    Statement: [
+                        {
+                            Sid: "PublicReadGetObject",
+                            Effect: "Allow",
+                            Principal: "*",
+                            Action: "s3:GetObject",
+                            Resource: `arn:aws:s3:::${this.bucketName}/*`
+                        }
+                    ]
+                };
+                await this.client.send(
+                    new PutBucketPolicyCommand({
+                        Bucket: this.bucketName,
+                        Policy: JSON.stringify(publicReadPolicy)
+                    })
+                );
+                console.log(`Public read policy set for bucket "${this.bucketName}".`);
             } else {
                 console.error("Error checking/creating bucket:", err);
                 throw new InternalServerErrorException('Failed to verify or create S3 bucket.')
@@ -89,7 +106,7 @@ export class DmsService implements OnModuleInit {
                 },
             });
 
-            const uploadResult = await this.client.send(command);
+            await this.client.send(command);
 
             return {
                 url: isPublic

@@ -4,9 +4,10 @@ import { extname } from 'path';
 
 describe('UploadsService', () => {
   let uploadsService: UploadsService;
+  let dmsService: any;
 
   beforeEach(() => {
-    uploadsService = new UploadsService();
+    uploadsService = new UploadsService(dmsService);
   });
 
   it('should return multer config with correct destination', () => {
@@ -19,11 +20,11 @@ describe('UploadsService', () => {
   it('should generate filenames with correct format', () => {
     const config = uploadsService.getMulterConfig();
     const filenameCallback = jest.fn();
-    
+
     const mockFile = { originalname: 'testfile.jpg' };
-    
+
     // Mock Date.now() for predictable output
-    jest.spyOn(global.Date, 'now').mockImplementation(() => 1700000000000); 
+    jest.spyOn(global.Date, 'now').mockImplementation(() => 1700000000000);
 
     (config.storage as any).getFilename({}, mockFile, filenameCallback);
 
