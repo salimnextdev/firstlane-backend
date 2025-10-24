@@ -86,7 +86,7 @@ export class LoanCronService {
         await this.processLoanRepayment(loan._id.toString(),  nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}`);
       } else if (daysUntilDue < 0) {
         // ⏰ Overdue: mark loan as overdue
-        if (loan.status !== LoanStatus.OVERDUE) {
+      
           loan.status = LoanStatus.OVERDUE;
           await loan.save();
           await this.sendMailService.sendMail({
@@ -113,15 +113,10 @@ export class LoanCronService {
       })
           this.logger.warn(`⚠️ Loan ${loan._id} is OVERDUE!`);
         }
+
       } 
-      // else {
-      //   // Loan active and not near due date
-      //   if (loan.status !== LoanStatus.ACTIVE && loan.status !== LoanStatus.APPROVED) {
-      //     loan.status = LoanStatus.ACTIVE;
-      //     await loan.save();
-      //   }
-      // }
-    }
+     
+    
   }
 
   private async sendReminder(
