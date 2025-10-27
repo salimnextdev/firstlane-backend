@@ -86,7 +86,7 @@ export class FlutterwaveService {
     return response.data;
   } catch (error: any) {
     console.error('Error initiating checkout:', error.response?.data || error.message);
-    throw error;
+    throw error.response?.data;
   }
 }
 
@@ -105,7 +105,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
     return response.data;
   } catch (error: any) {
     
-    throw error.response?.data;
+    throw error.response?.data.response?.data;
   }
 }
 
@@ -134,7 +134,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error performing wallet to wallet transfer:",
         error.response?.data || error.message
       );
-      throw error;
+      throw error.response?.data;
     }
   }
 
@@ -196,7 +196,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       //   "Error creating virtual account:",
       //   error.response?.data.message || error.message
       // );
-      throw error;
+      throw error.response?.data;
     }
   }
   // wallet-to-wallet transfers
@@ -285,7 +285,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error withdrawing funds:",
         error.response?.data || error.message
       );
-      throw error;
+      throw error.response?.data;
     }
   }
 
@@ -312,7 +312,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error fetching available balance:",
         error.response?.data || error.message
       );
-      throw error;
+      throw error.response?.data;
     }
   }
 
@@ -338,7 +338,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error fetching transactions:",
         error.response?.data || error.message
       );
-      throw error;
+      throw error.response?.data;
     }
   }
 
@@ -357,7 +357,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error fetching transfer by ID:",
         error.response?.data || error.message
       );
-      throw error;
+      throw error.response?.data;
     }
   }
 
@@ -383,7 +383,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error verifying account number:",
         error.response?.data || error.message
       );
-      throw error;
+      throw error.response?.data;
     }
   }
   
@@ -400,7 +400,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       return response.data;
     } catch (error) {
       console.error("Error fetching banks:", error.response?.data || error.message);
-      throw error;
+      throw error.response?.data;
     }
   }
   
