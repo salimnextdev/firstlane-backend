@@ -198,10 +198,10 @@ const pendingPayments = loan.payments.filter((p) => p.status === "pending");
 
     // 4️⃣ Check available admin balance
     const wallet = await this.flutterwaveService.getAvailableBalance(
-      adminUser._id.toString()
+      user._id.toString()
     );
     if ((wallet?.data?.available_balance ?? 0) < payment.amount) {
-      throw new Error("Insufficient admin wallet balance");
+      throw new Error("Insufficient  wallet balance");
     }
 
     // 5️⃣ Transfer from admin → user
@@ -341,10 +341,10 @@ async processFullLoanRepayment(
 
     // 5️⃣ Check available admin balance
     const wallet = await this.flutterwaveService.getAvailableBalance(
-      adminUser._id.toString()
+      user._id.toString()
     );
     if ((wallet?.data?.available_balance ?? 0) < totalLoanAmount) {
-      throw new Error("Insufficient admin wallet balance for full repayment");
+      throw new Error("Insufficient balance for full repayment");
     }
 
     // 6️⃣ Transfer from admin → user (Full repayment)
