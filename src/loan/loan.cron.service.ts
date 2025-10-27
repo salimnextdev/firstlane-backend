@@ -95,8 +95,10 @@ export class LoanCronService {
             text: `Your ${loan.loanType} Loan of ${loan.amountRequested.toLocaleString()} is OVERDUE!`,
           })
            const settings = await this.settingsModel.findOne();
+const pendingPayments = loan.payments.filter((p) => p.status === "pending");
+    const totalLoanAmount = pendingPayments.reduce((acc, p) => acc + p.amount, 0);
 
-      
+       await this.processLoanRepayment(loan._id.toString(),  totalLoanAmount, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}`);
       // Send SMS notification if admin SMS settings are enabled
       if (settings?.smsNotification) {
         await this.smsService.sendSingleSMS(user.phone,
