@@ -25,7 +25,6 @@ import { JwtService } from "@nestjs/jwt";
 
 import { authenticator } from "otplib";
 
-import { MailerService } from "@nestjs-modules/mailer";
 
 import {
   ObjectReturnType,
@@ -44,7 +43,7 @@ import { ConfigService } from "@nestjs/config";
 export class AuthService {
   constructor(
     private readonly config: ConfigService,
-    private readonly mailService: MailerService,
+  
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
     @InjectModel(FeeModel.name) private feeModel: Model<FeeDoc>,
     private paystackService: PaystackService,

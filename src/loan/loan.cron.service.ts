@@ -13,7 +13,7 @@ import {
   SettingsDoc,
   SettingsModel,
 } from "@app/schema";
-import { MailerService } from "@nestjs-modules/mailer";
+
 import * as moment from "moment";
 import {
   TransactionStatus,
