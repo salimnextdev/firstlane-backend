@@ -110,13 +110,7 @@ export class AuthService {
         mobilenumber: created.phone,
       });
 
-      // Send registration notification
-      await this.authNotificationService.sendAuthNotifications({
-        userID: created._id.toString(),
-        email: created.email,
-        fullname: created.fullname,
-        eventType: 'register',
-      });
+     
 
       await this.authNotificationService.sendAuthNotifications({
         userID: created._id.toString(),
@@ -200,7 +194,13 @@ export class AuthService {
     if (!user) {
       throw new NotFoundException("User not found");
     }
-
+ // Send registration notification
+      await this.authNotificationService.sendAuthNotifications({
+        userID: user._id.toString(),
+        email: user.email,
+        fullname: user.fullname,
+        eventType: 'register',
+      });
     await this.otpModel.findByIdAndDelete(otp._id);
 
     return {
@@ -406,7 +406,18 @@ export class AuthService {
     if (!isValid) {
       throw new NotFoundException("Code not found or expired");
     }
-    const user = await this.userModel.findByIdAndUpdate(
+
+    const userdata =  (await this.userModel.findById(body.userID))
+  const isUsermailVerified=userdata.emailStatus==="verified"
+    if(!isUsermailVerified){
+       // Send registration notification
+      await this.authNotificationService.sendAuthNotifications({
+        userID: userdata._id.toString(),
+        email: userdata.email,
+        fullname: userdata.fullname,
+        eventType: 'register',
+      });
+       const user = await this.userModel.findByIdAndUpdate(
       body.userID,
       {
         emailStatus: "verified",
@@ -418,9 +429,11 @@ export class AuthService {
       await this.otpModel.findByIdAndDelete(code._id);
     }
 
+    }
+   
    
 
-    return this.getLoginToken(user);
+    return this.getLoginToken(isUsermailVerified);
   }
 
   async sendTwoFactorAuthenticationMail(body: any): Promise<any> {
