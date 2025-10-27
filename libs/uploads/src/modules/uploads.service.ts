@@ -45,7 +45,7 @@ export class UploadsService {
         //   url: result.url,
 
         // });
-        const result = await this.uploadToS3(file, folder);
+        const result = await this.uploadToCloudinary(file.buffer, folder);
         uploadResults.push({
           originalname: result.originalname,
           url: result.url,
