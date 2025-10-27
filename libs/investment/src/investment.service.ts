@@ -1,5 +1,5 @@
 import { InvestmentDTO, UserDTO, UserInvestmentDTO } from "@app/dto";
-import { TransactionStatus, TransactionType } from "@app/enum";
+import { InvestmentStatus, TransactionStatus, TransactionType } from "@app/enum";
 import {
   InvestmentDoc,
   InvestmentModel,
@@ -221,7 +221,7 @@ export class InvestmentService {
         refBy=user._id.toString()
       }
       const userInvestment = new this.userInvestmentModel(
-        {...investmentData,userID:userData._id.toString(),refBy:refBy,interestRate:investment.interestRate}
+        { ...investmentData,userID:userData._id.toString(),refBy:refBy,interestRate:investment.interestRate,status:InvestmentStatus.ACTIVE }
       );
       const userWallet = await this.walletModel.findOne({
         userID: userData._id.toString(),
