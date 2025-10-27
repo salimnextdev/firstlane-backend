@@ -223,4 +223,25 @@ async getTopReferralStaff(
   return this.adminService.getTopInvestmentReferrers( timeframe ,n );
 }
 
+//getInvestmentsSortedByDueDate
+@Get("upcoming")
+  // @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: "Get all upcoming user investments" })
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({
+    name: "page",
+    required: false,
+    description: "Page number for pagination",
+    type: Number,
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of investments per page",
+    type: Number,
+  })
+  async findAll(@Query() query: any) {
+    return this.adminService.getInvestmentsSortedByDueDate(query);
+  }
+
 }

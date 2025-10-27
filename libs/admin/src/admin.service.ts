@@ -799,18 +799,7 @@ return serviceResponse({
 
   // --- Helper for Dates ---
   private calculateStartDate(timeframe: TimeFrame): Date {
-    // Using moment.js is safer for timezones/leap years, but native Date works too.
-    // Below uses native JS for fewer dependencies, assuming UTC or server time is acceptable.
-
-    // Option A: Rolling Window (Exactly 24h * X ago)
-    // const now = new Date();
-    // switch (timeframe) {
-    //   case 'today': return new Date(now.setHours(0,0,0,0)); // Start of today
-    //   case '7d': return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    //   // ... etc
-    // }
-
-    // Option B: Using Moment (Recommended for accuracy "Start of X days ago")
+    
     const m = moment().utc(); // Use UTC if your DB stores UTC
     switch (timeframe) {
       case "today":
@@ -826,5 +815,28 @@ return serviceResponse({
       default:
         return m.startOf("day").toDate();
     }
+  }
+
+    async getInvestmentsSortedByDueDate(query): Promise<any> {
+       const { limit = 10, page = 1 } = query;
+        const skip = (page - 1) * limit;
+
+  const userPlans=   await this.userInvestmentModel
+      .find({status:UserInvestmentStatus.ACTIVE}) 
+      .skip(skip)
+      .limit(limit)
+      .sort({ investmentDueDate: 1 }) 
+      .exec();
+
+       return serviceResponse({
+      data: userPlans,
+      message: "Investments retrieved successfully",
+      status: true,
+      metadata: await getMetadata({
+        model: this.userInvestmentModel,
+        query,
+        querys: {status:UserInvestmentStatus.ACTIVE},
+      }),
+    });
   }
 }
