@@ -39,7 +39,13 @@ export class UploadsService {
     for (const file of files) {
       try {
         // const result = await this.uploadToS3(file, folder); ---- we will use cloudinary for now till we pay for the wasabi account
-        const result = await this.uploadToCloudinary(file.buffer, folder);
+        // const result = await this.uploadToCloudinary(file.buffer, folder);
+        // uploadResults.push({
+        //   originalname: result.originalname,
+        //   url: result.url,
+
+        // });
+        const result = await this.uploadToS3(file, folder);
         uploadResults.push({
           originalname: result.originalname,
           url: result.url,

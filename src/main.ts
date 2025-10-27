@@ -24,7 +24,12 @@ async function bootstrap() {
 
   app.use(helmet());
   // app.useGlobalPipes(new ValidationPipe());
-  app.enableCors({ origin: true, credentials: true });
+  app.enableCors({
+    origin: [
+      "https://app.firstlanemultinvestment.com",
+      "https://access.firstlanemultinvestment.com",
+    ], credentials: true
+  });
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   app.use("/webhook/paystack", new RawBodyMiddleware().use);
