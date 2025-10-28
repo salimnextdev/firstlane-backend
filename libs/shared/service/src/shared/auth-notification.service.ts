@@ -184,9 +184,8 @@ export class AuthNotificationService {
 
             <div class="details-box">
                 <p><strong>Login Details:</strong><br>
-                    Time: ${timestamp}}<br>
-                    // Device: {{device_name}}<br>
-                    // Location: {{location}}
+                    Time: ${timestamp}<br>
+                   
                     </p>
             </div>
 
@@ -449,8 +448,7 @@ export class AuthNotificationService {
             <div class="details-box">
                 <p><strong>Change Details:</strong><br>
                     Time: ${timestamp}<br>
-                    // Device: {{device_name}}<br>
-                    // Location: {{location}}
+                    
                     </p>
             </div>
 

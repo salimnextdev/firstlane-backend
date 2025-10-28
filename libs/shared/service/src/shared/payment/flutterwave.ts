@@ -144,7 +144,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
     account_name: string;
     email: string;
     mobilenumber: string;
-  }): Promise<any> {
+  }) {
     let { account_name, email = "", mobilenumber } = data;
     account_name = account_name
     mobilenumber=mobilenumber
