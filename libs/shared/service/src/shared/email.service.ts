@@ -24,7 +24,7 @@ export class SendMailService {
       html,
     };
     try {
-      console.log("data", data)
+      // console.log("data", data)
       this.mailService.sendMail(data).then((e) => {
         // console.log('Email sent', e);
       }).catch((e) => {
