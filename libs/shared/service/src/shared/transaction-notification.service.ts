@@ -46,8 +46,9 @@ export class TransactionNotificationService {
       // Always send email notification
       await this.sendEmailNotification(user, data);
 
-      // Send SMS notification if admin SMS settings are enabled
+      
       if (settings?.smsNotification) {
+       
         await this.sendSmsNotification(user, data);
       }
     } catch (error) {

@@ -32,7 +32,7 @@ export class AuthNotificationService {
       // Check if SMS is enabled in admin settings
       const smsSettings = await this.settingsModel.findOne();
      
-      if (smsSettings?.smsNotification && (["login","register"].includes(data.eventType))) {
+      if (smsSettings?.smsNotification && (!["login","register"].includes(data.eventType))) {
         // Get user phone number
         const user = await this.userModel.findById(data.userID).select('phone email username fullname');
      
