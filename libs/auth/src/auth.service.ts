@@ -94,25 +94,14 @@ export class AuthService {
         userID: created._id,
         type: "EmailVerification",
       });
-      const message = await this.smsService.generateMessage(
-        data.toJSON() as any
-      );
+     
 
       // this.sendMailService.sendMail({
       //   to: created.email,
       //   subject: "Email Code Verification",
       //   text: message,
       // });
-
-      this.flutterwaveService.createVirtualAccount({
-        account_name: created.fullname,
-        email: created.email,
-        mobilenumber: created.phone,
-      });
-
-     
-
-      await this.authNotificationService.sendAuthNotifications({
+ await this.authNotificationService.sendAuthNotifications({
         userID: created._id.toString(),
         email: created.email,
         fullname: created.fullname,
@@ -121,6 +110,15 @@ export class AuthService {
           otp: data.code,
         },
       });
+     await this.flutterwaveService.createVirtualAccount({
+        account_name: created.fullname,
+        email: created.email,
+        mobilenumber: created.phone,
+      });
+
+     
+
+     
 
       return {
         message:
@@ -403,7 +401,7 @@ export class AuthService {
 
     isValid = code ? true : isValid;
 
-    if (!isValid) {
+    if (!isValid) { 
       throw new NotFoundException("Code not found or expired");
     }
 
