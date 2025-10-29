@@ -400,7 +400,7 @@ export class AuthService {
       throw new NotFoundException("Code not found or expired");
     }
 
-    const userdata =  (await this.userModel.findById(body.userID))
+    const userdata =  await this.userModel.findById(body.userID)
   const isUsermailVerified=userdata.emailStatus==="verified"
     if(!isUsermailVerified){
        // Send registration notification
@@ -426,7 +426,7 @@ export class AuthService {
    
    
 
-    return this.getLoginToken(isUsermailVerified);
+    return this.getLoginToken(userdata);
   }
 
   async sendTwoFactorAuthenticationMail(body: any): Promise<any> {
