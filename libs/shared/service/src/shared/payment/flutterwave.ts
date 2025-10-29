@@ -1,8 +1,5 @@
 import { UserModel, UserDoc, RideModel, RideDoc } from "@app/schema";
-import {
-  TransactionModel,
-  TransactionDoc,
-} from "@app/schema";
+import { TransactionModel, TransactionDoc } from "@app/schema";
 import { WalletModel, WalletDoc } from "@app/schema";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -28,7 +25,9 @@ export class FlutterwaveService {
   ) {
     this.baseUrl = "";
     this.secretKey = this.configService.get<string>("FLUTTERWAVE_SECRET_KEY");
-    this.secretHash = this.configService.get<string>("FLUTTERWAVEEncryptionKey");
+    this.secretHash = this.configService.get<string>(
+      "FLUTTERWAVEEncryptionKey"
+    );
     this.headers = {
       accept: "application/json",
       Authorization: `Bearer ${this.secretKey}`,
@@ -36,17 +35,16 @@ export class FlutterwaveService {
     };
   }
 
-  //webhook 
+  //webhook
   async handleWebhook(req: any): Promise<any> {
     try {
-   
-    const signature = req.headers["verif-hash"];
-    if (!signature || (signature !== this.secretHash)) {
+      const signature = req.headers["verif-hash"];
+      if (!signature || signature !== this.secretHash) {
         // This request isn't from Flutterwave; discard
         throw new Error("Failed to process webhook");
-    }
-    return req.body 
-    
+      }
+      return req.body;
+
       return { status: "success", message: "Webhook processed successfully" };
     } catch (error) {
       console.error("Error processing webhook:", error);
@@ -55,65 +53,64 @@ export class FlutterwaveService {
   }
 
   async initiateCheckout(data: {
-  tx_ref: string;
-  amount: number;
-  currency: string;
-  redirect_url: string;
-  payment_options?: string;
-  meta?: any;
-  customer: {
-    email: string;
-    phonenumber?: string;
-    name?: string;
-  };
-  customizations?: {
-    title?: string;
-    logo?: string;
-    description?: string;
-  };
-  // You can include other optional fields like meta, customer name, etc.
-}): Promise<any> {
-  
-
-  try {
-    const options = {
-      method: 'POST',
-      url: 'https://api.flutterwave.com/v3/payments',
-      headers: this.headers,
-      data
+    tx_ref: string;
+    amount: number;
+    currency: string;
+    redirect_url: string;
+    payment_options?: string;
+    meta?: any;
+    customer: {
+      email: string;
+      phonenumber?: string;
+      name?: string;
     };
-    const response = await axios.request(options);
-    return response.data;
-  } catch (error: any) {
-    console.error('Error initiating checkout:', error.response?.data || error.message);
-    throw error.response?.data;
-  }
-}
-
-/**
- * Verify a checkout / transaction after payment
- * (Using the same verify endpoint you already planned)
- */
-async verifyCheckout(tx_ref: string): Promise<any> {
-  try {
-    const options = {
-      method: 'GET',
-      url: `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
-      headers: this.headers,
+    customizations?: {
+      title?: string;
+      logo?: string;
+      description?: string;
     };
-    const response = await axios.request(options);
-    return response.data;
-  } catch (error: any) {
-    
-    throw error.response?.data.response?.data;
+    // You can include other optional fields like meta, customer name, etc.
+  }): Promise<any> {
+    try {
+      const options = {
+        method: "POST",
+        url: "https://api.flutterwave.com/v3/payments",
+        headers: this.headers,
+        data,
+      };
+      const response = await axios.request(options);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error initiating checkout:",
+        error.response?.data || error.message
+      );
+      throw error.response?.data;
+    }
   }
-}
 
-//test deposit
+  /**
+   * Verify a checkout / transaction after payment
+   * (Using the same verify endpoint you already planned)
+   */
+  async verifyCheckout(tx_ref: string): Promise<any> {
+    try {
+      const options = {
+        method: "GET",
+        url: `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${tx_ref}`,
+        headers: this.headers,
+      };
+      const response = await axios.request(options);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data.response?.data;
+    }
+  }
+
+  //test deposit
   async testDeposit(data: {
     account_reference: string;
     amount: number;
-
   }): Promise<any> {
     const { account_reference, amount } = data;
     try {
@@ -122,7 +119,6 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         url: `https://api.flutterwave.com/v3/payout-subaccounts/${account_reference}/fund-account`,
         headers: this.headers,
         data: {
-         
           amount,
           currency: "NGN",
         },
@@ -138,7 +134,6 @@ async verifyCheckout(tx_ref: string): Promise<any> {
     }
   }
 
-
   //create wallet for users
   async createVirtualAccount(data: {
     account_name: string;
@@ -146,10 +141,10 @@ async verifyCheckout(tx_ref: string): Promise<any> {
     mobilenumber: string;
   }) {
     let { account_name, email = "", mobilenumber } = data;
-    account_name = account_name
-    mobilenumber=mobilenumber
-     email = email.toLowerCase();
-     try {
+    account_name = account_name;
+    mobilenumber = mobilenumber;
+    email = email.toLowerCase();
+    try {
       //check if user exists in fultterwave
       const response = await axios.request({
         method: "GET",
@@ -159,8 +154,6 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       let responseType = response.data.data[0];
       console.log(responseType);
       if (responseType) {
-
-
       } else {
         const options = {
           method: "POST",
@@ -192,11 +185,10 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       });
       return responseType;
     } catch (error) {
-      // console.error(
-      //   "Error creating virtual account:",
-      //   error.response?.data.message || error.message
-      // );
-      throw error.response?.data;
+      if ((error.response?.data.message as string).includes("exist")) {
+      } else {
+        throw error.response?.data;
+      }
     }
   }
   // wallet-to-wallet transfers
@@ -229,7 +221,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
           currency: "NGN",
           debit_currency: "NGN",
           narration,
-          reference:reference,
+          reference: reference,
           debit_subaccount,
         },
       };
@@ -240,7 +232,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
         "Error performing wallet to wallet transfer:",
         error.response?.data || error.message
       );
-      throw  error.response?.data;
+      throw error.response?.data;
     }
   }
 
@@ -272,7 +264,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
           amount,
           currency: "NGN",
           narration,
-          reference:reference,
+          reference: reference,
           debit_subaccount,
           callback_url: "https://www.flutterwave.com/ng/",
           debit_currency: "NGN",
@@ -292,9 +284,9 @@ async verifyCheckout(tx_ref: string): Promise<any> {
   //fetch available balance on a payout subaccount.
   async getAvailableBalance(userID: string): Promise<any> {
     const wallet = await this.walletModel.findOne({
-      userID
+      userID,
     });
-    if(!wallet){
+    if (!wallet) {
       throw new Error("Wallet not found");
     }
     const subaccountId = wallet.customerCode;
@@ -306,7 +298,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       };
       const response = await axios.request(options);
       console.log(response.data);
-      return {data:{...response.data.data,wallet}};
+      return { data: { ...response.data.data, wallet } };
     } catch (error) {
       console.error(
         "Error fetching available balance:",
@@ -386,7 +378,7 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       throw error.response?.data;
     }
   }
-  
+
   //Get all banks
 
   async getAllBanks(): Promise<any> {
@@ -399,12 +391,13 @@ async verifyCheckout(tx_ref: string): Promise<any> {
       const response = await axios.request(options);
       return response.data;
     } catch (error) {
-      console.error("Error fetching banks:", error.response?.data || error.message);
+      console.error(
+        "Error fetching banks:",
+        error.response?.data || error.message
+      );
       throw error.response?.data;
     }
   }
-  
-
 }
 
 const CreateSubaccount = {
