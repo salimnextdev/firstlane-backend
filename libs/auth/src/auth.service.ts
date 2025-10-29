@@ -115,11 +115,6 @@ export class AuthService {
         email: created.email,
         mobilenumber: created.phone,
       });
-
-     
-
-     
-
       return {
         message:
           "Registration successful, Please Proceed to Email Verification",

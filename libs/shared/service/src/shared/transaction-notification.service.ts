@@ -259,7 +259,8 @@ export class TransactionNotificationService {
     data.status === TransactionStatus.COMPLETED ? 'Successful' :
                       data.status === TransactionStatus.PENDING ? 'pending' : 'failed';
 
-    return `Hi ${user.firstname}, your ${transactionTypeText.toLowerCase()} of ₦${data.amount.toLocaleString()} was ${statusText}. Ref: ${data.reference}. Contact support if you didn't initiate this transaction.`;
+   return `Hi ${user.firstname}, your ${transactionTypeText.toLowerCase()} of ₦${data.amount.toLocaleString()} on FIRSTLANE Multi Investment was ${statusText}. Reference: ${data.reference}. Contact support if you didn't initiate this transaction.`;
+
   }
 
   private getTransactionTypeText(type: TransactionType): string {

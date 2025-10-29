@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 
-import { SmsService } from './sms.service';
-import { SettingsModel, SettingsDoc, UserModel, UserDoc } from '@app/schema';
-import { SendMailService } from './email.service';
+import { SmsService } from "./sms.service";
+import { SettingsModel, SettingsDoc, UserModel, UserDoc } from "@app/schema";
+import { SendMailService } from "./email.service";
 
 export interface AuthNotificationData {
   userID: string;
   email: string;
   fullname?: string;
-  eventType: 'login' | 'register' | 'password_change' | 'kyc_update' | 'otp';
+  eventType: "login" | "register" | "password_change" | "kyc_update" | "otp";
   eventDetails?: any;
 }
 
@@ -20,71 +20,75 @@ export class AuthNotificationService {
     private readonly sendMailService: SendMailService,
     private readonly smsService: SmsService,
     @InjectModel(SettingsModel.name) private settingsModel: Model<SettingsDoc>,
-    @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
+    @InjectModel(UserModel.name) private userModel: Model<UserDoc>
   ) {}
 
   async sendAuthNotifications(data: AuthNotificationData): Promise<void> {
     try {
-
       // Always send email notification
-       this.sendEmailNotification(data);
+      this.sendEmailNotification(data);
 
       // Check if SMS is enabled in admin settings
       const smsSettings = await this.settingsModel.findOne();
-     
-      if (smsSettings?.smsNotification && (!["login","register"].includes(data.eventType))) {
+
+      if (
+        smsSettings?.smsNotification &&
+        !["login", "register"].includes(data.eventType)
+      ) {
         // Get user phone number
-        const user = await this.userModel.findById(data.userID).select('phone email username fullname');
-     
+        const user = await this.userModel
+          .findById(data.userID)
+          .select("phone email username fullname");
 
         if (user?.phone) {
           await this.sendSmsNotification(data, user.phone);
         }
       }
     } catch (error) {
-      console.error('Error sending auth notifications:', error);
+      console.error("Error sending auth notifications:", error);
     }
   }
 
-  private async sendEmailNotification(data: AuthNotificationData): Promise<void> {
+  private async sendEmailNotification(
+    data: AuthNotificationData
+  ): Promise<void> {
     const subject = this.getEmailSubject(data.eventType);
     const content = this.generateEmailContent(data);
 
     await this.sendMailService.sendMail({
-      from:"Firstlane Multi Investment<noreply@firstlanemultinvestment.com>",
+      from: "Firstlane Multi Investment<noreply@firstlanemultinvestment.com>",
       to: data.email,
       subject,
       html: content,
     });
   }
 
-  private async sendSmsNotification(data: AuthNotificationData, phone: string): Promise<void> {
-
+  private async sendSmsNotification(
+    data: AuthNotificationData,
+    phone: string
+  ): Promise<void> {
     const message = this.generateSmsContent(data);
-    
-    await this.smsService.sendSingleSMS(
-      phone,
-      message,
-    );
+
+    await this.smsService.sendSingleSMS(phone, message);
   }
 
   private getEmailSubject(eventType: string): string {
     const subjects = {
-      login: 'Login Alert - Your Account Was Accessed',
-      register: 'Welcome! Your Account Has Been Created',
-      password_change: 'Password Changed Successfully',
-      kyc_update: 'KYC Status Update',
-      otp: 'Your OTP Code',
+      login: "Login Alert - Your Account Was Accessed",
+      register: "Welcome! Your Account Has Been Created",
+      password_change: "Password Changed Successfully",
+      kyc_update: "KYC Status Update",
+      otp: "Your OTP Code",
     };
-    return subjects[eventType] || 'Account Activity Alert';
+    return subjects[eventType] || "Account Activity Alert";
   }
 
   private generateEmailContent(data: AuthNotificationData): string {
     const { eventType, fullname, eventDetails } = data;
-    const displayName = fullname || 'User';
+    const displayName = fullname || "User";
     const timestamp = new Date().toLocaleString();
     const current_year = new Date().getFullYear();
-    const dashboard_link=""
+    const dashboard_link = "";
     const templates = {
       login: `
         <!DOCTYPE html>
@@ -471,8 +475,16 @@ export class AuthNotificationService {
           <h2 style="color: #333;">KYC Status Update</h2>
           <p>Hello ${displayName},</p>
           <p>Your KYC status has been updated on ${timestamp}.</p>
-          ${eventDetails?.status ? `<p><strong>New Status:</strong> ${eventDetails.status}</p>` : ''}
-          ${eventDetails?.reason ? `<p><strong>Reason:</strong> ${eventDetails.reason}</p>` : ''}
+          ${
+            eventDetails?.status
+              ? `<p><strong>New Status:</strong> ${eventDetails.status}</p>`
+              : ""
+          }
+          ${
+            eventDetails?.reason
+              ? `<p><strong>Reason:</strong> ${eventDetails.reason}</p>`
+              : ""
+          }
           <p>Best regards,<br>The Compliance Team</p>
         </div>
 
@@ -555,9 +567,21 @@ export class AuthNotificationService {
         Here’s what this means:
       </p>
       <ul>
-      ${eventDetails?.status === 'rejected' && eventDetails?.reason ? `<li><strong>Reason for Rejection:</strong> ${eventDetails.reason}</li>` : ''}
-      ${eventDetails?.status==="pending"?'<li><strong>Pending Review</strong> — Your documents have been received and are being reviewed by our team.</li>':''}
-      ${eventDetails?.status==="verified"?'<li><strong>Approved</strong> — Your KYC has been successfully verified. You now have full access to all platform features.</li>':''}
+      ${
+        eventDetails?.status === "rejected" && eventDetails?.reason
+          ? `<li><strong>Reason for Rejection:</strong> ${eventDetails.reason}</li>`
+          : ""
+      }
+      ${
+        eventDetails?.status === "pending"
+          ? "<li><strong>Pending Review</strong> — Your documents have been received and are being reviewed by our team.</li>"
+          : ""
+      }
+      ${
+        eventDetails?.status === "verified"
+          ? "<li><strong>Approved</strong> — Your KYC has been successfully verified. You now have full access to all platform features.</li>"
+          : ""
+      }
         
       
         </ul>
@@ -654,29 +678,39 @@ export class AuthNotificationService {
       `,
     };
 
-    return templates[eventType] || `
+    return (
+      templates[eventType] ||
+      `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Account Activity</h2>
         <p>Hello ${displayName},</p>
         <p>There was activity on your account on ${timestamp}.</p>
         <p>Best regards,<br>The Team</p>
       </div>
-    `;
+    `
+    );
   }
 
   private generateSmsContent(data: AuthNotificationData): string {
     const { eventType, fullname, eventDetails } = data;
-    const displayName = fullname || 'User';
+    const displayName = fullname || "User";
     const timestamp = new Date().toLocaleString();
 
     const templates = {
-      otp: `Hello ${displayName}, your OTP code is ${eventDetails?.otp || '123456'}. It is valid for 5 minutes.`,
-      login: `Hello ${displayName}, your account was accessed on ${timestamp}. If this wasn't you, contact support immediately.`,
-      register: `Welcome ${displayName}! Your account was created successfully on ${timestamp}.`,
-      password_change: `Hello ${displayName}, your password was changed on ${timestamp}. Contact support if this wasn't you.`,
-      kyc_update: `Hello ${displayName}, your KYC status was updated on ${timestamp}${eventDetails?.status ? ` to ${eventDetails.status}` : ''}.`,
+      otp: `Hello ${displayName}, your verification code is ${
+        eventDetails?.otp || "123456"
+      }. Use this code to verify your phone number on FIRSTLANE Multi Investment. It is valid for 5 minutes.`,
+      login: `Hello ${displayName}, your account on FIRSTLANE Multi Investment was accessed on ${timestamp}. If this wasn't you, contact support immediately.`,
+      register: `Welcome ${displayName}! Your account on FIRSTLANE Multi Investment was created successfully on ${timestamp}.`,
+      password_change: `Hello ${displayName}, your password on FIRSTLANE Multi Investment was changed on ${timestamp}. Contact support if this wasn't you.`,
+      kyc_update: `Hello ${displayName}, your KYC status on FIRSTLANE Multi Investment was updated on ${timestamp} ${
+        eventDetails?.status ? ` to ${eventDetails.status}` : ""
+      }.`,
     };
 
-    return templates[eventType] || `Hello ${displayName}, there was activity on your account on ${timestamp}.`;
+    return (
+      templates[eventType] ||
+      `Hello ${displayName}, there was activity on your account on ${timestamp}.`
+    );
   }
 }
