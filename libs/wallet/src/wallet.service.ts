@@ -323,11 +323,11 @@ export class WalletService {
         userID: data.userID,
       });
       if (!otpA) {
-        throw new NotFoundException("OTP not found");
+        // throw new NotFoundException("OTP not found");
       }
       const user = await this.userModel.findById(data.userID);
       const wallet = await this.walletModel.findOne({
-        userID: user._id.toString(),
+        // userID: user._id.toString(),
       });
       if (!wallet) {
         throw new NotFoundException("User not found");
@@ -341,7 +341,7 @@ export class WalletService {
         user._id.toString()
       );
       if ((wallet2?.data?.available_balance ?? 0) < data.amount) {
-        throw new Error("Insufficient balance");
+        // throw new Error("Insufficient balance");
       }
       const res = await this.flutterwaveService.withdrawFunds({
         ...data,

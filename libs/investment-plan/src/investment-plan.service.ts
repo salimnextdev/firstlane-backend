@@ -1,5 +1,10 @@
 import { InvestmentPlanDTO, UserDTO } from "@app/dto";
-import { InvestmentPlanDoc, InvestmentPlanModel, UserInvestmentDoc, UserInvestmentModel } from "@app/schema";
+import {
+  InvestmentPlanDoc,
+  InvestmentPlanModel,
+  UserInvestmentDoc,
+  UserInvestmentModel,
+} from "@app/schema";
 import { getMetadata, ObjectReturnType, serviceResponse } from "@app/service";
 import { Injectable, NotAcceptableException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
@@ -10,8 +15,8 @@ export class InvestmentPlanService {
   constructor(
     @InjectModel(InvestmentPlanModel.name)
     private investmentPlanModel: Model<InvestmentPlanDoc>,
-      @InjectModel(UserInvestmentModel.name)
-        private userInvestmentModel: Model<UserInvestmentDoc>,
+    @InjectModel(UserInvestmentModel.name)
+    private userInvestmentModel: Model<UserInvestmentDoc>
   ) {}
 
   async upset(
@@ -25,17 +30,19 @@ export class InvestmentPlanService {
       return serviceResponse({
         data: await createdPlan.save(),
         message: "Investment plan created successfully",
-  
+
         status: true,
       });
     } catch (error) {
-      throw new NotAcceptableException(error?.response?.data?.message || error.message);
+      throw new NotAcceptableException(
+        error?.response?.data?.message || error.message
+      );
     }
   }
 
   async findAll(query: any): Promise<ObjectReturnType> {
     const { limit = 10, page = 1 } = query;
-    const skip = (page -1)* limit;
+    const skip = (page - 1) * limit;
 
     const plans = await this.investmentPlanModel
       .find()
@@ -47,7 +54,7 @@ export class InvestmentPlanService {
       data: plans,
       message: "Investment plans retrieved successfully",
       status: true,
-      metadata:await getMetadata({
+      metadata: await getMetadata({
         model: this.investmentPlanModel,
         query,
         querys: {},
@@ -64,52 +71,57 @@ export class InvestmentPlanService {
         status: true,
       });
     } catch (error) {
-      throw new NotAcceptableException(error?.response?.data?.message || error.message);
-   
+      throw new NotAcceptableException(
+        error?.response?.data?.message || error.message
+      );
     }
   }
 
-  //find by any 
-    async findByAny(
-        params: { key: string; value: string },
-        query: any
-    ): Promise<ObjectReturnType> {
-        try {
-          const { key, value } = params;
-        const { limit = 10, page = 1 } = query;
-        const skip = (page -1)* limit;
-    
-        const plans = await this.investmentPlanModel
+  //find by any
+  async findByAny(
+    params: { key: string; value: string },
+    query: any
+  ): Promise<ObjectReturnType> {
+    try {
+      const { key, value } = params;
+      const { limit = 10, page = 1 } = query;
+      const skip = (page - 1) * limit;
+
+      const plans = await this.investmentPlanModel
         .find({ [key]: value })
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 })
         .exec();
-        return serviceResponse({
+      return serviceResponse({
         data: plans,
         message: "Investment plans retrieved successfully",
         status: true,
-        metadata:await getMetadata({
-            model: this.investmentPlanModel,
-            query,
-            querys: { [key]: value },
+        metadata: await getMetadata({
+          model: this.investmentPlanModel,
+          query,
+          querys: { [key]: value },
         }),
-        });
-        } catch (error) {
-          throw new NotAcceptableException(error?.response?.data?.message || error.message);
-   
-        }
+      });
+    } catch (error) {
+      throw new NotAcceptableException(
+        error?.response?.data?.message || error.message
+      );
     }
+  }
 
-    //edit
+  //edit
   async update(
-   
     updateInvestmentPlanDto: InvestmentPlanDTO,
-    userData:UserDTO
+    userData: UserDTO
   ): Promise<ObjectReturnType> {
     try {
       const updatedPlan = await this.investmentPlanModel
-        .findByIdAndUpdate(updateInvestmentPlanDto._id, updateInvestmentPlanDto, { new: true })
+        .findByIdAndUpdate(
+          updateInvestmentPlanDto._id,
+          updateInvestmentPlanDto,
+          { new: true }
+        )
         .exec();
 
       if (!updatedPlan) {
@@ -125,12 +137,13 @@ export class InvestmentPlanService {
         status: true,
       });
     } catch (error) {
-      throw new NotAcceptableException(error?.response?.data?.message || error.message);
-   
+      throw new NotAcceptableException(
+        error?.response?.data?.message || error.message
+      );
     }
   }
 
-  async delete(ids: string[],userData:UserDTO): Promise<ObjectReturnType> {
+  async delete(ids: string[], userData: UserDTO): Promise<ObjectReturnType> {
     try {
       const result = await this.investmentPlanModel.deleteMany({
         _id: { $in: ids },
@@ -148,35 +161,49 @@ export class InvestmentPlanService {
         status: true,
       });
     } catch (error) {
-      throw new NotAcceptableException(error?.response?.data?.message || error.message);
-   
+      throw new NotAcceptableException(
+        error?.response?.data?.message || error.message
+      );
     }
   }
 
-  async deletePlan(ids: string,investmentPlanID:string, userData: UserDTO): Promise<ObjectReturnType> {
+  async deletePlan(
+    ids: string,
+    investmentPlanID: string,
+    userData: UserDTO
+  ): Promise<ObjectReturnType> {
     try {
-      const investmentPlan = await this.investmentPlanModel.findByIdAndDelete(ids).exec();
+      const investmentPlan = await this.investmentPlanModel
+        .findByIdAndDelete(ids)
+        .exec();
       if (!investmentPlan) {
         return serviceResponse({
           message: "Investment plan not found",
           status: false,
         });
       }
-const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlanID).exec();
+      const toTinvestmentPlan = await this.investmentPlanModel
+        .findById(investmentPlanID)
+        .exec();
       if (!investmentPlan) {
         return serviceResponse({
           message: "Investment plan not found",
           status: false,
         });
       }
-      const userInvest = await this.userInvestmentModel.findOne({   investmentPlanID: ids})
-      await this.userInvestmentModel.findOneAndUpdate({
+      const userInvest = await this.userInvestmentModel.findOne({
         investmentPlanID: ids,
-      }, {
-        investmentPlanID: toTinvestmentPlan._id.toString(),
-        ...toTinvestmentPlan.toJSON(),
-        duration:userInvest.duration
-      })
+      });
+      await this.userInvestmentModel.findOneAndUpdate(
+        {
+          investmentPlanID: ids,
+        },
+        {
+          investmentPlanID: toTinvestmentPlan._id.toString(),
+          ...toTinvestmentPlan.toJSON(),
+          duration: userInvest.duration,
+        }
+      );
       const result = await this.investmentPlanModel.findByIdAndDelete(ids);
 
       if (!result) {
@@ -198,7 +225,6 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
     }
   }
 }
-
 
 // async userInvest(
 //     investmentData: Partial<UserInvestmentDTO>,
@@ -240,7 +266,6 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
 //       const userWallet = await this.walletModel.findOne({
 //         userID: userData._id.toString(),
 //       });
-     
 
 //       const res = await this.flutterwaveService.walletToWalletTransfer({
 //         account_bank: "flutterwave",
@@ -250,7 +275,7 @@ const toTinvestmentPlan = await this.investmentPlanModel.findById(investmentPlan
 //         reference: `${userData._id}_${userInvestment._id}`,
 //         debit_subaccount: userWallet.customerCode,
 //       });
-//       investment.userIDs.push(userData._id.toString()) 
+//       investment.userIDs.push(userData._id.toString())
 //       await investment.save()
 //      await userInvestment.save()
 //       console.log(res)

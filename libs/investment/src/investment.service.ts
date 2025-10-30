@@ -226,11 +226,12 @@ export class InvestmentService {
       const userWallet = await this.walletModel.findOne({
         userID: userData._id.toString(),
       });
-     
+     const admin = await this.userModel.findOne({isSuperAdmin: true})
+      const adminWallet= await this.walletModel.findOne({userID:admin._id.toString()})
 
       const res = await this.flutterwaveService.walletToWalletTransfer({
         account_bank: "flutterwave",
-        account_number: this.config.get("FLUTTERMERCHANTID"),
+        account_number: adminWallet.barter_id,
         amount: investmentData.amount,
         narration: `Investment of ${investmentData.amount} in ${investment.name}`,
         reference: `${userData._id}_${userInvestment._id}`,
@@ -329,10 +330,11 @@ export class InvestmentService {
         investmentCode: undefined, 
         refBy
       });
-      
+      const admin = await this.userModel.findOne({isSuperAdmin: true})
+      const adminWallet= await this.walletModel.findOne({userID:admin._id.toString()})
 const res = await this.flutterwaveService.walletToWalletTransfer({
         account_bank: "flutterwave",
-        account_number: this.config.get("FLUTTERMERCHANTID"),
+        account_number: adminWallet.barter_id,
         amount: investment.amount,
         narration: `Investment of ${investment.amount} in ${investment.investmentType}`,
         reference: `${userData._id}_${newInvestment._id}`,
