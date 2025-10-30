@@ -325,6 +325,8 @@ export class InvestmentService {
       }
       const newInvestment = new this.userInvestmentModel({
         ...investment.toObject(),
+        investmentID:investment._id,
+        status:InvestmentStatus.ACTIVE,
         userID: userData._id.toString(),
         _id: undefined, 
         investmentCode: undefined, 
