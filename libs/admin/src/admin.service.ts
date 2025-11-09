@@ -423,7 +423,7 @@ let transferResponse: any = {}
 
       // Current period aggregations
       const totalLoansIssuedAgg = await this.loanModel.aggregate([
-        { $match: { status: LoanStatus.APPROVED } },
+        { $match: { $or:[{ status: LoanStatus.APPROVED,}, {status: LoanStatus.PAID},{status: LoanStatus.OVERDUE}] } },
         { $group: { _id: null, total: { $sum: "$amountRequested" } } },
       ]);
       const totalLoansIssued = totalLoansIssuedAgg[0]?.total || 0;
@@ -456,10 +456,11 @@ let transferResponse: any = {}
       // Last month aggregations (created before start of current month)
       const lastMonthLoansIssuedAgg = await this.loanModel.aggregate([
         {
-          $match: {
+          $match: { $or:[{
             status: LoanStatus.APPROVED,
             createdAt: { $lt: startOfCurrentMonth },
-          },
+          }, {status: LoanStatus.PAID, createdAt: { $lt: startOfCurrentMonth }}, {status: LoanStatus.OVERDUE, createdAt: { $lt: startOfCurrentMonth }}
+       ] },
         },
         { $group: { _id: null, total: { $sum: "$amountRequested" } } },
       ]);

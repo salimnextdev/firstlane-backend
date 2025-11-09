@@ -462,8 +462,8 @@ const currentLoansAggRepaid = await this.loanModel.aggregate([
       {
         $group: {
           _id: null,
-          totalRequested: { $sum: "$amountRequested" },
-          totalRepaid: { $sum: "$amountRequested" }
+          totalRequested: { $sum: "$totalRepayable" },
+          totalRepaid: { $sum: "$totalRepayable" }
         }
       }
     ]);
@@ -504,7 +504,7 @@ const currentLoansAggRepaid = await this.loanModel.aggregate([
         $group: {
           _id: null,
           totalRequested: { $sum: "$amountRequested" },
-          totalRepaid: { $sum: "$amountRepaid" }
+          totalRepaid: { $sum: "$totalRepayable" }
         }
       }
     ]);
@@ -578,8 +578,8 @@ async getUserLoanStats(userID: string): Promise<ObjectReturnType> {
       {
         $group: {
           _id: null,
-          totalCollected: { $sum: "$amountRequested" },
-          totalRepaid: { $sum: "$amountRepaid" }
+          totalCollected: { $sum: "$totalRepayable" },
+          totalRepaid: { $sum: "$totalRepayable" }
         }
       }
     ]);
@@ -614,8 +614,8 @@ const currentLoanAggCollected = await this.loanModel.aggregate([
       {
         $group: {
           _id: null,
-          totalCollected: { $sum: "$amountRequested" },
-          totalRepaid: { $sum: "$amountRequested" }
+          totalCollected: { $sum: "$totalRepayable" },
+          totalRepaid: { $sum: "$totalRepayable" }
         }
       }
     ]);
