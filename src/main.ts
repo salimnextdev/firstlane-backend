@@ -28,6 +28,7 @@ async function bootstrap() {
     origin: [
       "https://app.firstlanemultinvestment.com",
       "https://access.firstlanemultinvestment.com",
+      "http://localhost:5175",
     ], credentials: true
   });
   app.use(express.json({ limit: "50mb" }));
