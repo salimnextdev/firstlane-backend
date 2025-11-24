@@ -3,7 +3,7 @@ docker-run:
 		--name firstlane-api \
 		--env-file ./infra/.env.production \
 		-p 5000:3000 \
- 		ghcr.io/jamforte-ebenezer/firstlane-api:8426950 
+ 		firstlane-api 
 
 docker-build:
 	cd .. && docker build -f infra/Dockerfile -t firstlane-api .
