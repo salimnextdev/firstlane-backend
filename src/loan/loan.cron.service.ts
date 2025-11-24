@@ -50,7 +50,7 @@ export class LoanCronService {
   ) {}
 
   // Runs every day at 8 AM
-  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  @Cron(CronExpression.EVERY_2_HOURS)
   async handleLoanReminders() {
     this.logger.log("🔁 Running loan reminder cron job...");
 

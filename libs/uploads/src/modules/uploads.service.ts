@@ -105,7 +105,7 @@ export class UploadsService {
         url: result.url,
       };
     } catch (error) {
-      console.error('❌ Error uploading to S3/Wasabi:', error);
+      console.error('❌ Error uploading to S3:', error);
       throw new InternalServerErrorException('Upload to S3 failed');
     }
   }
