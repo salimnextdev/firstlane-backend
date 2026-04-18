@@ -59,3 +59,16 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 infra/.env.production
 infra/.env.repo-secrets
 .vscode/*
+
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+*.pem
+*.key
+
+
+# no change change

@@ -30,12 +30,10 @@ export class DmsService implements OnModuleInit {
 
         this.client = new S3Client({
             region: s3_region,
-            endpoint: endpoint,
             credentials: {
                 accessKeyId: accessKeyId,
                 secretAccessKey: secretAccessKey
             },
-            forcePathStyle: true,
         });
 
     }
@@ -99,7 +97,6 @@ export class DmsService implements OnModuleInit {
                 Key: key,
                 Body: file.buffer,
                 ContentType: file.mimetype,
-                ACL: isPublic ? 'public-read' : 'private',
 
                 Metadata: {
                     originalName: file.originalname,
@@ -110,7 +107,7 @@ export class DmsService implements OnModuleInit {
 
             return {
                 url: isPublic
-                    ? (await this.getFileUrl(key)).url
+                    ? (await this.getFileUrl(key))
                     : (await this.getPresignedSignedUrl(key)).url,
                 key,
                 isPublic,
@@ -121,8 +118,11 @@ export class DmsService implements OnModuleInit {
     }
 
     async getFileUrl(key: string) {
-        return { url: `https://${this.bucketName}.s3.eu-west-3.wasabisys.com/${key}` };
+        const region = this.configService.get<string>('S3_REGION');
+        return `https://${this.bucketName}.s3.${region}.amazonaws.com/${key}`;
     }
+
+
 
     async getPresignedSignedUrl(key: string) {
         const command = new GetObjectCommand({
