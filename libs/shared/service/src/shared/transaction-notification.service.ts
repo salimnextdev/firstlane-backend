@@ -29,7 +29,7 @@ export class TransactionNotificationService {
     private readonly smsService: SmsService,
     @InjectModel(SettingsModel.name) private settingsModel: Model<SettingsDoc>,
     @InjectModel(UserModel.name) private userModel: Model<UserDoc>,
-  ) {}
+  ) { }
 
   async sendTransactionNotifications(data: TransactionNotificationData): Promise<void> {
     try {
@@ -46,9 +46,9 @@ export class TransactionNotificationService {
       // Always send email notification
       await this.sendEmailNotification(user, data);
 
-      
+
       if (settings?.smsNotification) {
-       
+
         await this.sendSmsNotification(user, data);
       }
     } catch (error) {
@@ -60,7 +60,7 @@ export class TransactionNotificationService {
     try {
       const subject = this.getEmailSubject(data.type, data.status);
       const htmlContent = this.generateEmailContent(user, data);
-      const from = data.type === TransactionType.LOAN ? "Firstlane Loan<loan@firstlanemultinvestment.com>" : TransactionType.INVESTMENT?"Firstlane Investment<investment@firstlanemultinvestment.com>":TransactionType.FX?"Firstlane FX<fx@firstlanemultinvestment.com>":null;
+      const from = data.type === TransactionType.LOAN ? "Firstlane Loan<loan@firstlanemultinvestment.com>" : TransactionType.INVESTMENT ? "Firstlane Investment<investment@firstlanemultinvestment.com>" : TransactionType.FX ? "Firstlane FX<fx@firstlanemultinvestment.com>" : null;
       await this.sendMailService.sendMail({
         to: user.email,
         subject,
@@ -84,7 +84,7 @@ export class TransactionNotificationService {
       const message = this.generateSmsContent(user, data);
 
       await this.smsService.sendSingleSMS(
-         user.phone,
+        user.phone,
         message,
       );
 
@@ -94,10 +94,10 @@ export class TransactionNotificationService {
     }
   }
 
-  private getEmailSubject(type: TransactionType, status: TransactionStatus): string {
-    const statusText = status === TransactionStatus.PAID ? 'Successful' : 
-                      status === TransactionStatus.PENDING ? 'Pending' : 'Failed';
-    
+  private getEmailSubject(type: TransactionType, status: TransactionStatus | any): string {
+    const statusText = status === TransactionStatus.PAID || status === TransactionStatus.COMPLETED || status === "approved" ? 'Successful' :
+      status === TransactionStatus.PENDING ? 'Pending' : 'Failed';
+
     switch (type) {
       case TransactionType.DEPOSIT:
         return `Wallet Funding ${statusText}`;
@@ -113,14 +113,14 @@ export class TransactionNotificationService {
   }
 
   private generateEmailContent(user: UserDoc, data: TransactionNotificationData): string {
-    const statusColor = data.status === TransactionStatus.PAID ? '#28a745' : 
-    data.status === TransactionStatus.COMPLETED ? 'Successful' :
-                       data.status === TransactionStatus.PENDING ? '#ffc107' : '#dc3545';
-    
+    const statusColor = data.status === TransactionStatus.PAID ? '#28a745' :
+      data.status === TransactionStatus.COMPLETED ? 'Successful' :
+        data.status === TransactionStatus.PENDING ? '#ffc107' : '#dc3545';
+
     const transactionTypeText = this.getTransactionTypeText(data.type);
-    const statusText = data.status === TransactionStatus.PAID ? 'Successful' : 
-                      data.status === TransactionStatus.COMPLETED ? 'Successful' :
-                      data.status === TransactionStatus.PENDING ? 'Pending' : 'Failed';
+    const statusText = data.status === TransactionStatus.PAID ? 'Successful' :
+      data.status === TransactionStatus.COMPLETED ? 'Successful' :
+        data.status === TransactionStatus.PENDING ? 'Pending' : 'Failed';
 
     return `
       <!DOCTYPE html>
@@ -256,10 +256,10 @@ export class TransactionNotificationService {
   private generateSmsContent(user: UserDoc, data: TransactionNotificationData): string {
     const transactionTypeText = this.getTransactionTypeText(data.type);
     const statusText = data.status === TransactionStatus.PAID ? 'successful' :
-    data.status === TransactionStatus.COMPLETED ? 'Successful' :
-                      data.status === TransactionStatus.PENDING ? 'pending' : 'failed';
+      data.status === TransactionStatus.COMPLETED ? 'Successful' :
+        data.status === TransactionStatus.PENDING ? 'pending' : 'failed';
 
-   return `Hi ${user.firstname}, your ${transactionTypeText.toLowerCase()} of ₦${data.amount.toLocaleString()} on FIRSTLANE Multi Investment was ${statusText}. Reference: ${data.reference}. Contact support if you didn't initiate this transaction.`;
+    return `Hi ${user.firstname}, your ${transactionTypeText.toLowerCase()} of ₦${data.amount.toLocaleString()} on FIRSTLANE Multi Investment was ${statusText}. Reference: ${data.reference}. Contact support if you didn't initiate this transaction.`;
 
   }
 

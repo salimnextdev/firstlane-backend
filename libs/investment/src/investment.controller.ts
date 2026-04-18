@@ -12,7 +12,9 @@ import {
   UseGuards,
 } from "@nestjs/common";
 
-import { JwtAuthGuard } from "@app/guard";
+import { JwtAuthGuard, PermissionsGuard } from "@app/guard";
+import { AdminPermission } from "@app/enum";
+import { Permissions } from "@app/decorator";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -53,7 +55,8 @@ export class InvestmentController {
     type: InvestmentDTO,
     description: "Creating a new investment Details",
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.INVESTMENT)
   async create(@Body() investment: InvestmentDTO, @Request() req: any) {
     // await this.organizationAbilityFactory.checkAbility(
     //   investment.organizationID,
@@ -70,7 +73,8 @@ export class InvestmentController {
     type: UpdateInvestmentDTO,
     description: "Updating existing investments",
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.INVESTMENT)
   async update(@Body() investment: InvestmentDTO, @Request() req: any) {
     // await this.organizationAbilityFactory.checkAbility(
     //   investment.organizationID,
@@ -102,6 +106,8 @@ export class InvestmentController {
     description: "Number of investments per page",
     type: Number,
   })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.INVESTMENT)
   async findbyId(
     @Param() params: { key: string; value: string },
     @Query() query: any
@@ -125,12 +131,15 @@ export class InvestmentController {
     description: "Number of investments per page",
     type: Number,
   })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.INVESTMENT)
   async findAll(@Query() query: any) {
     return this.investmentService.findAll(query);
   }
 
   @Delete("transfer-delete/:investmentID")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.INVESTMENT)
   @ApiParam({
     name: "investmentID",
     description: "The investmentID to search for",

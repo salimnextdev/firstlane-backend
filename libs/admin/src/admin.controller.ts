@@ -3,8 +3,9 @@
 import { Body, Controller, Get, Param, Patch, Query, Req, Request, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AdminService, TimeFrame } from './admin.service';
-import { JwtAuthGuard } from '@app/guard';
-import { LoanStatus } from '@app/enum';
+import { JwtAuthGuard, PermissionsGuard } from '@app/guard';
+import { AdminPermission, LoanStatus } from '@app/enum';
+import { Permissions } from '@app/decorator';
 import { SettingsDTO } from '@app/dto';
 
 @Controller('admin')
@@ -27,7 +28,8 @@ constructor(private readonly adminService: AdminService) {}
      
     },
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.USERS)
   async updateKycStatus(
     @Param('userId') userId: string,
     @Body() body: { status: 'verified' | 'rejected'; notes?: string },
@@ -57,7 +59,8 @@ constructor(private readonly adminService: AdminService) {}
     type: Number,
   })
   
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.USERS)
   async getAllKycUsers( @Query() query: any) {
     return this.adminService.getAllKycUsers(query);
   }
@@ -74,7 +77,8 @@ constructor(private readonly adminService: AdminService) {}
       },
     },
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.LOANS)
   async updateLoanStatus(
     @Param('loanId') loanId: string,
     @Body() body: { status: LoanStatus; notes?: string },
@@ -109,20 +113,23 @@ constructor(private readonly adminService: AdminService) {}
     description: "Number of investments per page",
     type: Number,
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.INVESTMENT)
   async getUserInvestments(@Req() req: any,@Query("userID") userID: string,@Query() query: any) {
     return this.adminService.getUserInvestments(userID,query );
   }
   @Get("stats")
   @ApiOperation({ summary: "Get admin dashboard statistics" })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async getAdminStats() {
     return this.adminService.getAdminStats();
   }
 
   @Get("financial-stats")
   @ApiOperation({ summary: "Get admin financial statistics" })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.WALLET)
   async getAdminFinancialStats() {
     return this.adminService.getAdminFinancialStats();
   }
@@ -154,7 +161,8 @@ constructor(private readonly adminService: AdminService) {}
     description: "End date for filtering (YYYY-MM-DD)",
     type: String,
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.FX_TRANSACTION)
   async getFxVolumesByCurrencySimple(
     @Query('userID') userID?: string,
     @Query('status') status?: string,
@@ -188,13 +196,15 @@ constructor(private readonly adminService: AdminService) {}
   @Patch('settings')
   @ApiOperation({ summary: 'Create or update platform settings (Admin)' })
   @ApiBody({ type: SettingsDTO })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async createOrUpdateSettings(@Body() body: SettingsDTO) {
     return this.adminService.createSettings(body);
   }
   @Get('settings')
   @ApiOperation({ summary: 'Get platform settings (Admin)' })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async getSettings() {
     return this.adminService.getSettings();
   }
@@ -215,7 +225,8 @@ constructor(private readonly adminService: AdminService) {}
   type: String,
   enum: ['today' , '7d' , '30d' , '90d' , '360d'],
 })
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions(AdminPermission.ADMIN)
 async getTopReferralStaff(
   @Query('n') n?: number,
   @Query('timeframe') timeframe?: TimeFrame
@@ -224,10 +235,10 @@ async getTopReferralStaff(
 }
 
 //getInvestmentsSortedByDueDate
-@Get("upcoming")
-  // @UseGuards(JwtAuthGuard)
+  @Get("upcoming")
   @ApiOperation({ summary: "Get all upcoming user investments" })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.LOANS, AdminPermission.INVESTMENT)
   @ApiQuery({
     name: "page",
     required: false,
@@ -242,6 +253,54 @@ async getTopReferralStaff(
   })
   async findAll(@Query() query: any) {
     return this.adminService.getInvestmentsSortedByDueDate(query);
+  }
+
+  @Get("upcoming-payouts")
+  @ApiOperation({ summary: "Get all upcoming payouts (Loans, Investment, FX)" })
+  @ApiQuery({ name: 'type', required: false, enum: ['loan', 'investment', 'fx'], description: 'Filter by payout type' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.LOANS, AdminPermission.INVESTMENT, AdminPermission.FX_TRANSACTION)
+  async getUpcomingPayouts(@Query() query: any) {
+    return this.adminService.getUpcomingPayouts(query);
+  }
+
+  @Patch('assign-permissions/:userId')
+  @ApiOperation({ summary: 'Assign permissions to an admin (Super Admin only)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        permissions: { 
+          type: 'array', 
+          items: { type: 'string' },
+          example: ['loans', 'investment', 'fx transaction', 'wallet', 'users', 'Admin', 'support']
+        },
+      },
+    },
+  })
+  @UseGuards(JwtAuthGuard)
+  async assignPermissions(
+    @Param('userId') userId: string,
+    @Body() body: { permissions: string[] },
+    @Req() req: any,
+  ) {
+    return this.adminService.assignAdminPermissions(
+      userId,
+      body.permissions,
+      req.user,
+    );
+  }
+
+  @Get('admins')
+  @ApiOperation({ summary: 'Get all admins (Super Admin only)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
+  async getAllAdmins(@Query() query: any) {
+    return this.adminService.getAllAdmins(query);
   }
 
 }

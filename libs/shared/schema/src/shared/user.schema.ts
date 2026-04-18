@@ -162,7 +162,12 @@ export class UserModel {
   title?: string;
   @Prop()
   playerId?: string;
+
+  @Prop({ type: [String] })
   roles: string[];
+
+  @Prop({ type: [String], default: [] })
+  permissions: string[];
 
   @Prop({ type: String, enum: UserType, default: UserType.USER })
   userType: string;

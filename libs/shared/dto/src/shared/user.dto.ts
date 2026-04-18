@@ -131,7 +131,10 @@ export class UserDTO {
   status?: string;
 
   @ApiProperty({ description: 'user roles', example: ['investment',"loan"] })
- roles: string[];
+  roles: string[];
+
+  @ApiProperty({ description: 'user permissions', example: ['loans', 'investment'] })
+  permissions: string[];
 
   emailStatus?: string;
 

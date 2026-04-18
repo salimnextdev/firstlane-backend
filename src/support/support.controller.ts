@@ -1,18 +1,20 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
 
 import { SupportDTO } from '@app/dto';
-import { JwtAuthGuard } from '@app/guard';
+import { JwtAuthGuard, PermissionsGuard } from '@app/guard';
 import { ApiOperation, ApiBody, ApiParam, ApiQuery, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { SupportService } from './support.service';
+import { AdminPermission } from '@app/enum';
+import { Permissions } from '@app/decorator';
 
 @ApiTags("support")
 @ApiBearerAuth("access-token")
 
 @Controller('support')
 export class SupportController {
-  constructor(private readonly supportService: SupportService) {}
+  constructor(private readonly supportService: SupportService) { }
 
-   @Post()
+  @Post()
   @ApiOperation({ summary: "Create a new support" })
   @ApiBody({
     type: SupportDTO,
@@ -48,7 +50,7 @@ export class SupportController {
     //   Action.Update,
     //   SupportModel,
     // );
-    return this.supportService.update( supportID, support, req.user);
+    return this.supportService.update(supportID, support, req.user);
   }
 
   @Get("by-any/:key/:value")
@@ -78,7 +80,7 @@ export class SupportController {
   ) {
     return this.supportService.findByAny(params, query);
   }
-@Get("user-admin-support-list")
+  @Get("user-admin-support-list")
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: "Get user or admin support list where supportID is null" })
   @ApiQuery({
@@ -132,9 +134,9 @@ export class SupportController {
     description: "Page number for pagination",
     type: Number,
   })
-   @ApiQuery({
+  @ApiQuery({
     name: "supportID",
-     required: false,
+    required: false,
     description: "ID of the support ticket",
     type: String,
   })
@@ -150,11 +152,13 @@ export class SupportController {
 
   @Delete()
   @UseGuards(JwtAuthGuard)
-  
+
   @ApiOperation({ summary: "Delete supports by their IDs" })
   @ApiBody({ type: [String], description: "Array of support IDs to delete" })
-  async delete(@Body() ids: string[],  @Req() req: any) {
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.SUPPORT)
+  async delete(@Body() ids: string[], @Req() req: any) {
     return this.supportService.delete(ids, req.user);
   }
-  
+
 }

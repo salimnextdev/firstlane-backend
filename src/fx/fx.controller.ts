@@ -1,17 +1,19 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
 import { FxService } from './fx.service';
 import { FxDTO } from '@app/dto';
-import { JwtAuthGuard } from '@app/guard';
+import { JwtAuthGuard, PermissionsGuard } from '@app/guard';
 import { ApiOperation, ApiBody, ApiParam, ApiQuery, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { AdminPermission } from '@app/enum';
+import { Permissions } from '@app/decorator';
 
 @ApiTags("fx")
 @ApiBearerAuth("access-token")
 
 @Controller('fx')
 export class FxController {
-  constructor(private readonly fxService: FxService) {}
+  constructor(private readonly fxService: FxService) { }
 
-   @Post()
+  @Post()
   @ApiOperation({ summary: "Create a new fx" })
   @ApiBody({
     type: FxDTO,
@@ -47,7 +49,7 @@ export class FxController {
     //   Action.Update,
     //   FxModel,
     // );
-    return this.fxService.update( fxID, fx, req.user);
+    return this.fxService.update(fxID, fx, req.user);
   }
 
   @Get("by-any/:key/:value")
@@ -100,10 +102,12 @@ export class FxController {
 
   @Delete()
   @UseGuards(JwtAuthGuard)
-  
+
   @ApiOperation({ summary: "Delete fxs by their IDs" })
   @ApiBody({ type: [String], description: "Array of fx IDs to delete" })
-  async delete(@Body() ids: string[],  @Req() req: any) {
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.FX_TRANSACTION)
+  async delete(@Body() ids: string[], @Req() req: any) {
     return this.fxService.delete(ids, req.user);
   }
   @Patch(":fxID/status")
@@ -136,7 +140,8 @@ export class FxController {
   @Post("find-by-many")
   @ApiOperation({ summary: "Find fxs by multiple criteria" })
   @ApiBody({ type: FxDTO, description: "Criteria to filter fxs" })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.FX_TRANSACTION)
   async findByMany(@Body() data: FxDTO, @Query() query: any) {
     return this.fxService.findByMany(data, query);
   }
