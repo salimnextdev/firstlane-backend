@@ -14,7 +14,9 @@ import {
   Res,
 } from "@nestjs/common";
 import { PaymentRequestDTO, WalletService } from "./wallet.service";
-import { JwtAuthGuard } from "@app/guard";
+import { JwtAuthGuard, PermissionsGuard } from "@app/guard";
+import { AdminPermission } from "@app/enum";
+import { Permissions } from "@app/decorator";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -29,7 +31,7 @@ import {
 @Controller("wallet")
 @UseGuards(JwtAuthGuard)
 export class WalletController {
-  constructor(private walletService: WalletService) {}
+  constructor(private walletService: WalletService) { }
 
   // flutterwaveWebhook
   @Post("flutterwave-webhook")
@@ -84,7 +86,7 @@ export class WalletController {
       type: "object",
       properties: {
         amount: { type: "number", example: 100 },
-      
+
       },
     },
   })
@@ -93,10 +95,10 @@ export class WalletController {
     @Body()
     body: {
       amount: number;
-     
+
     }
   ) {
-    return await this.walletService.testDeposit({...body,userID:req.user._id.toString()});
+    return await this.walletService.testDeposit({ ...body, userID: req.user._id.toString() });
   }
   a;
 
@@ -167,7 +169,7 @@ export class WalletController {
   }
 
 
-  
+
   // withdrawFunds
   @Post("withdraw-funds")
   @UseGuards(JwtAuthGuard)
@@ -191,13 +193,13 @@ export class WalletController {
       account_number: string;
       amount: number;
       narration?: string;
-      otp:string
+      otp: string
     }
   ) {
     return await this.walletService.withdrawFunds({ ...body, userID: req.user._id.toString() });
   }
 
-@Get("by-any/:key/:value")
+  @Get("by-any/:key/:value")
   // @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: "Find a transaction by any key-value pair" })
   @ApiParam({ name: "key", description: "The key to search by", type: String })
@@ -244,41 +246,41 @@ export class WalletController {
   async findAll(@Query() query: any) {
     return this.walletService.findAll(query);
   }
-// initiateCheckout
-@Post("fund-account")
-@ApiOperation({ summary: "Initiate a payment to fund account" })
-@ApiBody({
-  schema: {
-    type: "object",
-    properties: {
-      amount: { type: "number", example: 5000 },
-      redirect_url: { type: "string", example: "https://example.com/redirect" },
+  // initiateCheckout
+  @Post("fund-account")
+  @ApiOperation({ summary: "Initiate a payment to fund account" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        amount: { type: "number", example: 5000 },
+        redirect_url: { type: "string", example: "https://example.com/redirect" },
+      },
+      required: ["amount", "redirect_url"],
     },
-    required: ["amount", "redirect_url"],
-  },
-})
-@UseGuards(JwtAuthGuard)
-async fundAccount(
-  @Request() req,
-  @Body()
-  body: PaymentRequestDTO
-) {
-  const userData = req.user; // assuming JWT user includes _id, email, etc.
-  return await this.walletService.initiateCheckout(userData, body);
-}
+  })
+  @UseGuards(JwtAuthGuard)
+  async fundAccount(
+    @Request() req,
+    @Body()
+    body: PaymentRequestDTO
+  ) {
+    const userData = req.user; // assuming JWT user includes _id, email, etc.
+    return await this.walletService.initiateCheckout(userData, body);
+  }
 
 
- // verify a bank account number
+  // verify a bank account number
   @Get("verify-fund/:id")
   @ApiOperation({ summary: "Verify a fund paid" })
   async verifyCheckout(
     @Param("id") id: string,
-    
+
   ) {
     return await this.walletService.verifyCheckout(
       id
     );
   }
 
-  
+
 }

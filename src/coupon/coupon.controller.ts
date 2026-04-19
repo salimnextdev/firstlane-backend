@@ -1,9 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards } from '@nestjs/common';
 import { CouponService } from './coupon.service';
 
-import { JwtAuthGuard } from '@app/guard';
+import { JwtAuthGuard, PermissionsGuard } from '@app/guard';
 import { ApiOperation, ApiBody, ApiParam, ApiQuery, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CouponDTO } from '@app/dto';
+import { AdminPermission } from '@app/enum';
+import { Permissions } from '@app/decorator';
 
 @ApiTags("coupon")
 @ApiBearerAuth("access-token")
@@ -18,7 +20,8 @@ export class CouponController {
     type: CouponDTO,
     description: "Creating a new coupon Details",
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async create(@Body() coupon: CouponDTO, @Req() req: any) {
     // await this.organizationAbilityFactory.checkAbility(
     //   coupon.organizationID,
@@ -40,7 +43,8 @@ export class CouponController {
     type: CouponDTO,
     description: "Updating existing coupons",
   })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async update(@Body() coupon: CouponDTO, @Param("couponID") couponID: string, @Req() req: any) {
     // await this.organizationAbilityFactory.checkAbility(
     //   coupon.organizationID,
@@ -72,6 +76,8 @@ export class CouponController {
     description: "Number of coupons per page",
     type: Number,
   })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async findbyId(
     @Param() params: { key: string; value: string },
     @Query() query: any
@@ -95,6 +101,8 @@ export class CouponController {
     description: "Number of coupons per page",
     type: Number,
   })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async findAll(@Query() query: any) {
     return this.couponService.findAll(query);
   }
@@ -104,6 +112,8 @@ export class CouponController {
   
   @ApiOperation({ summary: "Delete coupons by their IDs" })
   @ApiBody({ type: [String], description: "Array of coupon IDs to delete" })
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.ADMIN)
   async delete(@Body() ids: string[],  @Req() req: any) {
     return this.couponService.delete(ids, req.user);
   }

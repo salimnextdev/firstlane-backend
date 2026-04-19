@@ -74,7 +74,7 @@ export class AdminService {
     private notificationActivity: NotificationService,
     private transactionNotificationService: TransactionNotificationService,
     private authNotificationService: AuthNotificationService
-  ) {}
+  ) { }
 
   // Update KYC status (for admin use)
   async updateKycStatus(
@@ -208,7 +208,7 @@ export class AdminService {
             status: false,
           });
         }
-const isVendor = loan.loanType === LoanType.ASSETFINANCE 
+        const isVendor = loan.loanType === LoanType.ASSETFINANCE
         const transferData = {
           account_bank: isVendor ? loan.vendorBankCode : userWallet.bankCode,
           account_number: isVendor ? loan.vendorAccountNumber : userWallet.accountNumber,
@@ -218,17 +218,17 @@ const isVendor = loan.loanType === LoanType.ASSETFINANCE
 
           debit_subaccount: adminWallet.customerCode,
         };
-let transferResponse: any = {}
-        if(!isVendor){
-           transferResponse = await this.flutterwaveService.walletToWalletTransfer(
-          transferData
-        );
+        let transferResponse: any = {}
+        if (!isVendor) {
+          transferResponse = await this.flutterwaveService.walletToWalletTransfer(
+            transferData
+          );
         }
-       
+
         const transaction = await this.transactionModel.create({
           userID: loan.userID,
           amount: loan.amountRequested,
-          reference: transferResponse?.data?.reference?? `LOAN_${loanId}_${Date.now()}`,
+          reference: transferResponse?.data?.reference ?? `LOAN_${loanId}_${Date.now()}`,
           type: TransactionType.LOAN,
           status: TransactionStatus.COMPLETED,
           receiverBank: isVendor ? loan.vendorBankName : userWallet.bankName,
@@ -423,7 +423,7 @@ let transferResponse: any = {}
 
       // Current period aggregations
       const totalLoansIssuedAgg = await this.loanModel.aggregate([
-        { $match: { status: LoanStatus.APPROVED } },
+        { $match: { $or: [{ status: LoanStatus.APPROVED, }, { status: LoanStatus.PAID }, { status: LoanStatus.OVERDUE }] } },
         { $group: { _id: null, total: { $sum: "$amountRequested" } } },
       ]);
       const totalLoansIssued = totalLoansIssuedAgg[0]?.total || 0;
@@ -457,8 +457,11 @@ let transferResponse: any = {}
       const lastMonthLoansIssuedAgg = await this.loanModel.aggregate([
         {
           $match: {
-            status: LoanStatus.APPROVED,
-            createdAt: { $lt: startOfCurrentMonth },
+            $or: [{
+              status: LoanStatus.APPROVED,
+              createdAt: { $lt: startOfCurrentMonth },
+            }, { status: LoanStatus.PAID, createdAt: { $lt: startOfCurrentMonth } }, { status: LoanStatus.OVERDUE, createdAt: { $lt: startOfCurrentMonth } }
+            ]
           },
         },
         { $group: { _id: null, total: { $sum: "$amountRequested" } } },
@@ -789,17 +792,78 @@ let transferResponse: any = {}
         },
       },
     ];
-return serviceResponse({
-              message: "Top referral investors retrieved successfully",
+    return serviceResponse({
+      message: "Top referral investors retrieved successfully",
 
+      status: true,
+      data: await this.userInvestmentModel.aggregate(pipeline).exec(),
+    });
+  }
+
+  async assignAdminPermissions(
+    userId: string,
+    permissions: string[],
+    adminData: UserDTO
+  ): Promise<ObjectReturnType> {
+    try {
+      if (!adminData.isSuperAdmin) {
+        throw new BadRequestException("Only Super Admins can assign permissions");
+      }
+
+      const user = await this.userModel.findById(userId);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        userId,
+        {
+          isAdmin: true,
+          userType: UserType.ADMIN,
+          permissions: permissions,
+        },
+        { new: true }
+      );
+
+      return serviceResponse({
+        message: "Admin permissions assigned successfully",
         status: true,
-        data: this.userInvestmentModel.aggregate(pipeline).exec(),})
-    
+        data: updatedUser,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async getAllAdmins(query: any): Promise<ObjectReturnType> {
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
+    try {
+      const admins = await this.userModel
+        .find({ isAdmin: true })
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return serviceResponse({
+        message: "Admins retrieved successfully",
+        status: true,
+        data: admins,
+        metadata: await getMetadata({
+          model: this.userModel,
+          query,
+          querys: { isAdmin: true },
+        }),
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 
   // --- Helper for Dates ---
   private calculateStartDate(timeframe: TimeFrame): Date {
-    
+
     const m = moment().utc(); // Use UTC if your DB stores UTC
     switch (timeframe) {
       case "today":
@@ -817,26 +881,103 @@ return serviceResponse({
     }
   }
 
-    async getInvestmentsSortedByDueDate(query): Promise<any> {
-       const { limit = 10, page = 1 } = query;
-        const skip = (page - 1) * limit;
+  async getInvestmentsSortedByDueDate(query): Promise<any> {
+    const { limit = 10, page = 1 } = query;
+    const skip = (page - 1) * limit;
 
-  const userPlans=   await this.userInvestmentModel
-      .find({status:UserInvestmentStatus.ACTIVE}) 
+    const userPlans = await this.userInvestmentModel
+      .find({ status: UserInvestmentStatus.ACTIVE })
       .skip(skip)
       .limit(limit)
-      .sort({ investmentDueDate: 1 }) 
+      .sort({ investmentDueDate: 1 })
       .exec();
 
-       return serviceResponse({
+    return serviceResponse({
       data: userPlans,
       message: "Investments retrieved successfully",
       status: true,
       metadata: await getMetadata({
         model: this.userInvestmentModel,
         query,
-        querys: {status:UserInvestmentStatus.ACTIVE},
+        querys: { status: UserInvestmentStatus.ACTIVE },
       }),
     });
+  }
+
+  async getUpcomingPayouts(query: any): Promise<ObjectReturnType> {
+    const { limit = 10, page = 1, type } = query;
+    const skip = (page - 1) * limit;
+
+    try {
+      let data = [];
+      let total = 0;
+
+      if (type === 'investment') {
+        data = await this.userInvestmentModel
+          .find({ status: UserInvestmentStatus.ACTIVE })
+          .skip(skip)
+          .limit(limit)
+          .sort({ investmentDueDate: 1 })
+          .populate("userID investmentID")
+          .exec();
+        total = await this.userInvestmentModel.countDocuments({ status: UserInvestmentStatus.ACTIVE });
+      } else if (type === 'loan') {
+        // Upcoming disbursements (requested and pending)
+        data = await this.loanModel
+          .find({ status: LoanStatus.PENDING })
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: 1 })
+          .populate("userID")
+          .exec();
+        total = await this.loanModel.countDocuments({ status: LoanStatus.PENDING });
+      } else if (type === 'fx') {
+        data = await this.fxModel
+          .find({ status: 'pending' })
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: 1 })
+          .populate("userID")
+          .exec();
+        total = await this.fxModel.countDocuments({ status: 'pending' });
+      } else {
+        // Return all combined and sorted
+        const [investments, loans, fxs] = await Promise.all([
+          this.userInvestmentModel.find({ status: UserInvestmentStatus.ACTIVE }).limit(limit).sort({ investmentDueDate: 1 }).populate("userID investmentID").exec(),
+          this.loanModel.find({ status: LoanStatus.PENDING }).limit(limit).sort({ createdAt: 1 }).populate("userID").exec(),
+          this.fxModel.find({ status: 'pending' }).limit(limit).sort({ createdAt: 1 }).populate("userID").exec(),
+        ]);
+
+        data = [
+          ...investments.map(i => ({ ...i.toObject(), payoutType: 'investment' })),
+          ...loans.map(l => ({ ...l.toObject(), payoutType: 'loan' })),
+          ...fxs.map(f => ({ ...f.toObject(), payoutType: 'fx' })),
+        ]
+          // .sort((a, b) => {
+          //   const dateA = a.investmentDueDate || a.createdAt;
+          //   const dateB = b.investmentDueDate || b.createdAt;
+          //   return new Date(dateA).getTime() - new Date(dateB).getTime();
+          // })
+          .slice(0, limit);
+
+        total = (await this.userInvestmentModel.countDocuments({ status: UserInvestmentStatus.ACTIVE })) +
+          (await this.loanModel.countDocuments({ status: LoanStatus.PENDING })) +
+          (await this.fxModel.countDocuments({ status: 'pending' }));
+      }
+
+      return serviceResponse({
+        message: "Upcoming payouts retrieved successfully",
+        status: true,
+        data,
+        metadata: {
+          total,
+          limit,
+          page,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

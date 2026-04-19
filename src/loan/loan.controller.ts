@@ -1,8 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { LoanService } from './loan.service';
 import { LoanDTO, LoanRepaymentDTO } from '@app/dto';
-import { JwtAuthGuard } from '@app/guard';
+import { JwtAuthGuard, PermissionsGuard } from '@app/guard';
 import { ApiOperation, ApiBody, ApiParam, ApiQuery, ApiBearerAuth, ApiTags, ApiProperty } from '@nestjs/swagger';
+import { AdminPermission } from '@app/enum';
+import { Permissions } from '@app/decorator';
 import { LoanCronService } from './loan.cron.service';
 import { LoanDoc, LoanModel } from '@app/schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,10 +15,10 @@ import * as moment from "moment";
 
 @Controller('loan')
 export class LoanController {
-  constructor(private readonly loanService: LoanService,@InjectModel(LoanModel.name)
-    private loanModel: Model<LoanDoc>, private readonly loanCronService: LoanCronService) {}
+  constructor(private readonly loanService: LoanService, @InjectModel(LoanModel.name)
+  private loanModel: Model<LoanDoc>, private readonly loanCronService: LoanCronService) { }
 
-   @Post()
+  @Post()
   @ApiOperation({ summary: "Create a new loan" })
   @ApiBody({
     type: LoanDTO,
@@ -52,7 +54,7 @@ export class LoanController {
     //   Action.Update,
     //   LoanModel,
     // );
-    return this.loanService.update( loanID, loan, req.user);
+    return this.loanService.update(loanID, loan, req.user);
   }
 
   @Get("by-any/:key/:value")
@@ -105,14 +107,16 @@ export class LoanController {
 
   @Delete()
   @UseGuards(JwtAuthGuard)
-  
+
   @ApiOperation({ summary: "Delete loans by their IDs" })
   @ApiBody({ type: [String], description: "Array of loan IDs to delete" })
-  async delete(@Body() ids: string[],  @Req() req: any) {
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @Permissions(AdminPermission.LOANS)
+  async delete(@Body() ids: string[], @Req() req: any) {
     return this.loanService.delete(ids, req.user);
   }
 
-//findByMany
+  //findByMany
   @Post("by-many")
   @ApiOperation({ summary: "Find loans by multiple criteria" })
   @ApiBody({
@@ -134,8 +138,8 @@ export class LoanController {
   async findByMany(@Body() data: LoanDTO, @Query() query: any) {
     return this.loanService.findByMany(data, query);
   }
-  
- // processLoanRepayment
+
+  // processLoanRepayment
   @Post("process-repayment/:loanID")
   @ApiOperation({ summary: "Process loan repayment" })
   @ApiParam({
@@ -144,7 +148,7 @@ export class LoanController {
     type: String,
   })
   @UseGuards(JwtAuthGuard)
-  async processLoanRepayment(@Param("loanID") loanID: string,  @Req() req: any) {
+  async processLoanRepayment(@Param("loanID") loanID: string, @Req() req: any) {
     const loan = await this.loanModel.findById(loanID);
     if (!loan) {
       throw new NotFoundException(`Loan with ID ${loanID} not found`);
@@ -153,7 +157,7 @@ export class LoanController {
     if (!nextPayment) {
       throw new NotFoundException(`No pending payment found for loan with ID ${loanID}`);
     }
-    return this.loanCronService.processLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
+    return this.loanCronService.processLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}`);
   }
 
   // processLoanRepayment
@@ -165,7 +169,7 @@ export class LoanController {
     type: String,
   })
   @UseGuards(JwtAuthGuard)
-  async processFullLoanRepayment(@Param("loanID") loanID: string,  @Req() req: any) {
+  async processFullLoanRepayment(@Param("loanID") loanID: string, @Req() req: any) {
     const loan = await this.loanModel.findById(loanID);
     if (!loan) {
       throw new NotFoundException(`Loan with ID ${loanID} not found`);
@@ -174,7 +178,7 @@ export class LoanController {
     if (!nextPayment) {
       throw new NotFoundException(`No pending payment found for loan with ID ${loanID}`);
     }
-    return this.loanCronService.processFullLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}` );
+    return this.loanCronService.processFullLoanRepayment(loan._id.toString(), nextPayment, `${loan._id.toString()}-${loan.userID}-${moment().format("YYYYMMDDHHmmss")}`);
   }
 }
 
