@@ -887,6 +887,7 @@ export class AdminService {
 
     const userPlans = await this.userInvestmentModel
       .find({ status: UserInvestmentStatus.ACTIVE })
+      .populate("userID investmentID")
       .skip(skip)
       .limit(limit)
       .sort({ investmentDueDate: 1 })
