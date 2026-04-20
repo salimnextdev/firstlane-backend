@@ -13,7 +13,11 @@ import {
   NotFoundException,
   Query,
   InternalServerErrorException,
+  Inject,
 } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { SettingsDoc, SettingsModel } from "@app/schema";
+import { Model } from "mongoose";
 
 import {
   ApiBearerAuth,
@@ -29,7 +33,9 @@ import * as fs from "fs";
 @Controller("")
 @ApiBearerAuth("access-token")
 export class AppController {
-  constructor() { }
+  constructor(
+    @InjectModel(SettingsModel.name) private settingsModel: Model<SettingsDoc>,
+  ) { }
   private readonly logger = new Logger(AppController.name);
   private readonly dataPath = path.resolve(process.cwd(), "nigeria.json");
 
@@ -97,6 +103,16 @@ export class AppController {
       found = data.map((s) => s.state).sort();
     }
     return found;
+  }
+  @Get('settings')
+  @ApiOperation({ summary: 'Get platform settings' })
+  async getSettings() {
+    const settings = await this.settingsModel.findOne({});
+    return {
+      message: "Settings retrieved successfully",
+      status: true,
+      data: settings,
+    };
   }
 
 }
