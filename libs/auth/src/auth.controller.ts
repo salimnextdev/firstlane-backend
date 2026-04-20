@@ -18,16 +18,16 @@ import { BankAccountDTO, DeleteAccountDTO, ForgotPasswordDTO, LoginDTO, OTPDTO }
 import { ChangePasswordDTO, RefreshTokenDTO, SetAuthenticatorDto, UserDTO, UserIDDTO, VerifyAuthenticationDto } from '@app/dto';
 import { JwtAuthGuard, LocalAuthGuard } from '@app/guard';
 
-  class RegisterDTO extends PickType(
-    UserDTO,
-    ['title','isAdmin','isSuperAdmin', 'userType','useRefCode','firstname' , 'fullname' , 'lastname' , 'email' , 'password' ,  'gender' , 'phone' , 'residentialAddress']
-) {}
+class RegisterDTO extends PickType(
+  UserDTO,
+  ['title', 'isAdmin', 'isSuperAdmin', 'userType', 'useRefCode', 'firstname', 'fullname', 'lastname', 'email', 'password', 'gender', 'phone', 'residentialAddress']
+) { }
 
 @ApiBearerAuth('access-token')
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -54,48 +54,48 @@ export class AuthController {
 
 
   @Post('send-code-to-email')
-  @ApiBody({ type: UserIDDTO , description: 'User ID for sending the code', }) 
+  @ApiBody({ type: UserIDDTO, description: 'User ID for sending the code', })
   @ApiOperation({ summary: 'Send two-factor authentication code via email' })
   @ApiResponse({ status: 200, description: 'Code sent successfully.' })
-  sendTwoFactorAuthenticationMail(@Request() req:Request) {
+  sendTwoFactorAuthenticationMail(@Request() req: Request) {
     return this.authService.sendTwoFactorAuthenticationMail(req.body);
   }
 
   @Post('send-code-to-sms')
-  @ApiBody({ type: OTPDTO , description: 'User ID for sending the code', }) 
+  @ApiBody({ type: OTPDTO, description: 'User ID for sending the code', })
   @ApiOperation({ summary: 'Send two-factor authentication code via email' })
   @ApiResponse({ status: 200, description: 'Code sent successfully.' })
-  sendTwoFactorAuthenticationSms(@Request() req:Request) {
+  sendTwoFactorAuthenticationSms(@Request() req: Request) {
     return this.authService.sendTwoFactorAuthenticationSms(req.body);
   }
 
   @Post('verify-authentication')
-  @ApiBody({ type: VerifyAuthenticationDto,  description: 'Data for verification' })
+  @ApiBody({ type: VerifyAuthenticationDto, description: 'Data for verification' })
   @ApiOperation({ summary: 'Verify two-factor authentication' })
   @ApiResponse({ status: 200, description: 'Authentication successful.' })
   @ApiResponse({ status: 404, description: 'Code not found or expired.' })
-  twoFactorAuthenticationLogin(@Request() req:Request) {
+  twoFactorAuthenticationLogin(@Request() req: Request) {
     return this.authService.twoFactorAuthenticationLogin(req.body);
   }
 
-  // @Post('set-authenticator')
-  // @ApiOperation({ summary: 'Set up two-factor authenticator' })
-  // @ApiResponse({ status: 200, description: 'Authenticator set successfully.' })
-  // @ApiBody({ type: SetAuthenticatorDto , description: 'User ID and secret for authenticator' })
-  // setTwoFactorAuthenticator(@Request() req:Request) {
-  //   return this.authService.setTwoFactorAuthenticator(req.body);
-  // }
+  @Post('set-authenticator')
+  @ApiOperation({ summary: 'Set up two-factor authenticator' })
+  @ApiResponse({ status: 200, description: 'Authenticator set successfully.' })
+  @ApiBody({ type: SetAuthenticatorDto, description: 'User ID and secret for authenticator' })
+  setTwoFactorAuthenticator(@Request() req: Request) {
+    return this.authService.setTwoFactorAuthenticator(req.body);
+  }
 
 
-  // @Get('authenticator-secret')
-  // @ApiOperation({ summary: 'Get authenticator secret' })
-  // @ApiResponse({ status: 200, description: 'Authenticator secret retrieved.' })
-  // sendAuthenticatorSecret() {
-  //   const secret =  randomUUID().replace(/\d+/g, '').replace(/-/g, '').toUpperCase().substring(0, 10)+randomUUID().replace(/\d+/g, '').replace(/-/g, '').toUpperCase().substring(0, 10);
-  //   return {
-  //     data:secret
-  //   };
-  // }
+  @Get('authenticator-secret')
+  @ApiOperation({ summary: 'Get authenticator secret' })
+  @ApiResponse({ status: 200, description: 'Authenticator secret retrieved.' })
+  sendAuthenticatorSecret() {
+    const secret = randomUUID().replace(/\d+/g, '').replace(/-/g, '').toUpperCase().substring(0, 10) + randomUUID().replace(/\d+/g, '').replace(/-/g, '').toUpperCase().substring(0, 10);
+    return {
+      data: secret
+    };
+  }
 
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token' })
@@ -135,11 +135,11 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('remove-bank-account/:accountNumber')
   @ApiOperation({ summary: 'Remove bank account details' })
- @ApiParam({ name: 'accountNumber', required: true, type: String, description: 'Account number to remove' })
+  @ApiParam({ name: 'accountNumber', required: true, type: String, description: 'Account number to remove' })
   @ApiResponse({ status: 404, description: 'Bank account not found' })
   @ApiResponse({ status: 200, description: 'Bank account removed successfully' })
-  removeBankAccount(@Request() req,@Param("accountNumber") accountNumber:string) {
-    return this.authService.removeBankAccount(req.user._id,accountNumber);
+  removeBankAccount(@Request() req, @Param("accountNumber") accountNumber: string) {
+    return this.authService.removeBankAccount(req.user._id, accountNumber);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -160,7 +160,7 @@ export class AuthController {
   editUserBankAccount(@Request() req) {
     return this.authService.editUserBanks(req.user._id, req.body);
   }
-  
+
   @Get('google')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Login with Google' })
@@ -176,7 +176,7 @@ export class AuthController {
   @Get("facebook")
   @UseGuards(AuthGuard("facebook"))
   @ApiOperation({ summary: 'Login with Facebook' })
-  async facebookLogin() {}
+  async facebookLogin() { }
 
   @Get("/facebook/callback")
   @UseGuards(AuthGuard("facebook"))
@@ -203,46 +203,48 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('change-password')
-  @ApiBody({ type: ChangePasswordDTO , })
+  @ApiBody({ type: ChangePasswordDTO, })
   @ApiOperation({ summary: 'Change Password' })
   @ApiResponse({ status: 200, description: 'Password successfully updated' })
   changePassword(@Request() req) {
-    return this.authService.changePassword(req.user._id,req.body.currentPassword,req.body.newPassword)
+    return this.authService.changePassword(req.user._id, req.body.currentPassword, req.body.newPassword)
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('delete-account')
-  @ApiBody({ type: DeleteAccountDTO , })
+  @ApiBody({ type: DeleteAccountDTO, })
   @ApiOperation({ summary: 'User deletes account' })
   @ApiResponse({ status: 200, description: 'Account successfully deleted' })
   deleteAccount(@Request() req) {
-    return this.authService.deleteAccount(req.user._id.toString(),req.body.email,req.body.reason)
+    return this.authService.deleteAccount(req.user._id.toString(), req.body.email, req.body.reason)
   }
 
   // @UseGuards(JwtAuthGuard)
   @Post('forgot-password')
-  @ApiBody({ type: ForgotPasswordDTO , })
+  @ApiBody({ type: ForgotPasswordDTO, })
   @ApiOperation({ summary: 'forgot Password' })
   @ApiResponse({ status: 200, description: 'Password successfully updated' })
   forgotPassword(@Request() req) {
-    return this.authService.forgotPassword(req.body.token,req.body.code,req.body.newPassword)
+    return this.authService.forgotPassword(req.body.token, req.body.code, req.body.newPassword)
   }
 
   //verify code
   @Post('verify-code')
-  @ApiBody({ schema:{
-    type: 'object',
-    properties: {
-      type: { type: 'string',example:'PasswordReset' },
-      code: { type: 'string',example:'123456' },
-    },
-  } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        type: { type: 'string', example: 'PasswordReset' },
+        code: { type: 'string', example: '123456' },
+      },
+    }
+  })
   @ApiOperation({ summary: 'verify code' })
   @ApiResponse({ status: 200, description: 'code successfully verified' })
   verifyCode(@Request() req) {
-    return this.authService.verifyCode(req.body.type,req.body.code)
+    return this.authService.verifyCode(req.body.type, req.body.code)
   }
-  
+
 
 
 
