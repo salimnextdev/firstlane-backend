@@ -68,7 +68,10 @@ export class AppController {
   @ApiQuery({ name: 'stateName', required: false })
   @ApiQuery({ name: 'lga', required: false })
   getStates(@Query() query: any) {
-    return this.getStatesV2(query);
+    return {
+      data: this.getStatesV2(query),
+      message: "Success",
+    };
   }
 
   private loadData() {
