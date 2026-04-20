@@ -82,9 +82,14 @@ export class AppController {
 
   private loadData() {
     try {
-      const data = fs.readFileSync(this.dataPath, "utf8");
-      return JSON.parse(data);
+      // const data = fs.readFileSync(this.dataPath, "utf8");
+      let data = JSON.parse(
+        readFileSync("nigeria.json", "utf-8")
+      );
+      return (data);
     } catch (error) {
+      console.log(error);
+
       throw new InternalServerErrorException("Could not load state data");
     }
   }
