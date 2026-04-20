@@ -33,7 +33,7 @@ export class AppController {
   private readonly logger = new Logger(AppController.name);
   private readonly dataPath = path.resolve(process.cwd(), "nigeria.json");
 
-  @Get("states")
+  @Get("statesV2")
   @ApiOperation({ summary: "Get all states" })
   @ApiQuery({ name: "stateName", required: false, type: String })
 
@@ -64,7 +64,7 @@ export class AppController {
   }
 
 
-  @Get('statesV2')
+  @Get('states')
   @ApiQuery({ name: 'stateName', required: false })
   @ApiQuery({ name: 'lga', required: false })
   getStates(@Query() query: any) {
