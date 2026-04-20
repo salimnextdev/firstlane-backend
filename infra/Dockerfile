@@ -6,7 +6,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 COPY package.json pnpm-lock.yaml* ./
 COPY allnigeria_polling_units_with_coords.json ./
-COPY nigerian.json ./
+COPY nigeria.json ./
 COPY . .
 RUN pnpm install --frozen-lockfile
 
@@ -19,7 +19,7 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/allnigeria_polling_units_with_coords.json ./
-COPY --from=builder /usr/src/app/nigerian.json ./
+COPY --from=builder /usr/src/app/nigeria.json ./
 COPY package.json ./
 
 # Set env + expose port
