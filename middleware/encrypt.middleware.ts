@@ -9,40 +9,46 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import * as crypto from 'crypto';
+import * as dotenv from 'dotenv';
 
-const algorithm = 'aes-256-cbc';
-const salt = 'salt'; // Use a secure salt in production
+dotenv.config();
+const algorithm = process.env.ENCRYPTION_ALGORITHM || 'aes-256-cbc';
+const salt = process.env.ENCRYPTION_SALT || 'salt'; // Use a secure salt in production
+const password = process.env.ENCRYPTION_PASSWORD || 'your-password';
 
 @Injectable()
 export class EncryptionInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-      const request = context.switchToHttp().getRequest();
-      const response = context.switchToHttp().getResponse();
+    const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
 
-      // Define your password securely, e.g., from an environment variable
-      const password = 'your-password';
 
-      return next.handle().pipe(
-          map((data) => {
-              // Encrypt the response data
-              const encryptedData = encryptJson(data, password);
-              return encryptedData;
-          }),
-      );
+    return next.handle().pipe(
+      map((data) => {
+        if (request.route.path.includes('config') || request.route.path.includes('webhook')) {
+          return data
+        }
+        // Encrypt the response data
+        const encryptedData = encryptJson(data);
+        return encryptedData;
+      }),
+    );
   }
 }
 
+export function encryptJson(data: any) {
+  const iv = crypto.randomBytes(16);
+  const vi = crypto.randomBytes(32);
 
-export function encryptJson(data: any, password: string) {
-  const iv = crypto.randomBytes(16); // Initialization vector
-  const key = crypto.scryptSync(password, salt, 32); // Key derivation
+  const cipher = crypto.createCipheriv('aes-256-cbc', vi, iv);
 
-  const cipher = crypto.createCipheriv(algorithm, key, iv);
-  let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
-  encrypted += cipher.final('hex');
+  // const cipher = crypto.createCipheriv(algorithm, Buffer.from(key1), iv);
+  let encrypted = cipher.update(JSON.stringify(data));
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
 
   return {
-      iv: iv.toString('hex'),
-      content: encrypted
+    iv: iv.toString('hex'),
+    vi: vi.toString('hex'),
+    content: encrypted.toString('base64'),
   };
 }
