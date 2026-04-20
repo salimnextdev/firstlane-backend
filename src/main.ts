@@ -19,8 +19,8 @@ import { RawBodyMiddleware } from "middleware/raw-body.middleware";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.useGlobalInterceptors(new DecryptInterceptor());
-  app.useGlobalInterceptors(new EncryptionInterceptor());
+  // app.useGlobalInterceptors(new DecryptInterceptor());
+  // app.useGlobalInterceptors(new EncryptionInterceptor());
 
   app.use(helmet());
   // app.useGlobalPipes(new ValidationPipe());
