@@ -18,7 +18,10 @@ import {
   AssignRoleDoc,
   FeeDoc,
   FeeModel,
+  SettingsModel,
+  SettingsDoc,
 } from "@app/schema";
+import { UserType } from "@app/enum";
 import { Model } from "mongoose";
 
 import { JwtService } from "@nestjs/jwt";
@@ -53,6 +56,7 @@ export class AuthService {
     @InjectModel(WalletModel.name) private walletModel: Model<WalletDoc>,
     @InjectModel(AuthenticatorModel.name)
     private authenticatorModel: Model<AuthenticatorDoc>,
+    @InjectModel(SettingsModel.name) private settingsModel: Model<SettingsDoc>,
     private jwtService: JwtService,
     private flutterwaveService: FlutterwaveService,
     private smsService: SmsService,
@@ -159,6 +163,19 @@ export class AuthService {
           eventType: 'login',
         });
         
+        // Check if 2FA is required for admins
+        const settings = await this.settingsModel.findOne({});
+        const isAdmin = user.userType === UserType.ADMIN || user.userType === UserType.SUPER_ADMIN || (user as any).isAdmin || (user as any).isSuperAdmin;
+
+        if (isAdmin && settings?.securitySettings?.enable2FAForAdmins) {
+          return {
+            message: "2FA required",
+            status: true,
+            needs2FA: true,
+            userID: user._id,
+          };
+        }
+
         return this.getLoginToken(user);
       }
       throw new UnauthorizedException("Invalid Credentials");
