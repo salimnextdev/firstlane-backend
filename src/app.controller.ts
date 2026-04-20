@@ -12,6 +12,7 @@ import {
   UseGuards,
   NotFoundException,
   Query,
+  InternalServerErrorException,
 } from "@nestjs/common";
 
 import {
@@ -23,33 +24,35 @@ import {
   PickType,
 } from "@nestjs/swagger";
 import { readFileSync } from "fs";
-
+import * as path from "path";
+import * as fs from "fs";
 @Controller("")
 @ApiBearerAuth("access-token")
 export class AppController {
-  constructor() {}
+  constructor() { }
   private readonly logger = new Logger(AppController.name);
+  private readonly dataPath = path.resolve(process.cwd(), "nigeria.json");
 
   @Get("states")
   @ApiOperation({ summary: "Get all states" })
   @ApiQuery({ name: "stateName", required: false, type: String })
- 
+
   async getLgaState(@Query("stateName") stateName?: string
   ): Promise<any> {
-   
+
     let data = JSON.parse(
       readFileSync("allnigeria_polling_units_with_coords.json", "utf-8")
     );
-let state
-     if (stateName ) {
-       state = data.find((state:any) => state.name.toLowerCase() === stateName.toLowerCase()).lgas.map((lga:any) => lga.name);
-  if (!state) return [];
-  
-    }else{
-       state = data.map((state:any) => state.name)
+    let state
+    if (stateName) {
+      state = data.find((state: any) => state.name.toLowerCase() === stateName.toLowerCase()).lgas.map((lga: any) => lga.name);
+      if (!state) return [];
+
+    } else {
+      state = data.map((state: any) => state.name)
     }
-    
-   
+
+
     try {
       return serviceResponse({
         message: "Success",
@@ -59,4 +62,38 @@ let state
       throw new NotFoundException(error.message);
     }
   }
+
+
+  @Get('statesV2')
+  @ApiQuery({ name: 'stateName', required: false })
+  @ApiQuery({ name: 'lga', required: false })
+  getStates(@Query() query: any) {
+    return this.getStatesV2(query);
+  }
+
+  private loadData() {
+    try {
+      const data = fs.readFileSync(this.dataPath, "utf8");
+      return JSON.parse(data);
+    } catch (error) {
+      throw new InternalServerErrorException("Could not load state data");
+    }
+  }
+
+  getStatesV2(query: any) {
+    const data = this.loadData();
+    const { stateName, lga } = query;
+    let found;
+    if (stateName) {
+      found =
+        data.find((s) => s.state.toLowerCase() === stateName.toLowerCase())
+          ?.lgas ?? [];
+    } else if (lga) {
+      found = data.flatMap((s) => s.lgas).sort();
+    } else {
+      found = data.map((s) => s.state).sort();
+    }
+    return found;
+  }
+
 }
