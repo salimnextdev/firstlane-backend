@@ -12,10 +12,10 @@ import { SettingsDTO } from '@app/dto';
 @ApiTags("admin")
 @ApiBearerAuth("access-token")
 export class AdminController {
-constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService) { }
 
 
-//   Update KYC status (for admin use)
+  //   Update KYC status (for admin use)
   @Patch('kyc-status/:userId')
   @ApiOperation({ summary: 'Update KYC status (Admin)' })
   @ApiBody({
@@ -23,9 +23,9 @@ constructor(private readonly adminService: AdminService) {}
       type: 'object',
       properties: {
         status: { type: 'string', example: 'verified', enum: ['verified', 'rejected'] },
-        notes: { type: 'string', example:"Image not clear" },
+        notes: { type: 'string', example: "Image not clear" },
       },
-     
+
     },
   })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -43,7 +43,7 @@ constructor(private readonly adminService: AdminService) {}
     );
   }
 
-//   get all users with KYC for kyc
+  //   get all users with KYC for kyc
   @Get('kyc-users')
   @ApiOperation({ summary: 'Get all users with KYC information (Admin)' })
   @ApiQuery({
@@ -58,13 +58,13 @@ constructor(private readonly adminService: AdminService) {}
     description: 'Number of users per page',
     type: Number,
   })
-  
+
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions(AdminPermission.USERS)
-  async getAllKycUsers( @Query() query: any) {
+  async getAllKycUsers(@Query() query: any) {
     return this.adminService.getAllKycUsers(query);
   }
-  
+
   //change loan status
   @Patch('loan-status/:loanId')
   @ApiOperation({ summary: 'Update loan status (Admin)' })
@@ -73,7 +73,7 @@ constructor(private readonly adminService: AdminService) {}
       type: 'object',
       properties: {
         status: { type: 'string', example: 'approved', enum: Object.values(LoanStatus) },
-        notes: { type: 'string', example:"Image not clear" },
+        notes: { type: 'string', example: "Image not clear" },
       },
     },
   })
@@ -92,7 +92,7 @@ constructor(private readonly adminService: AdminService) {}
     );
   }
 
-//get user investments
+  //get user investments
   @Get("user-investment")
   @ApiOperation({ summary: "Get all users investments" })
   @ApiQuery({
@@ -101,7 +101,7 @@ constructor(private readonly adminService: AdminService) {}
     description: "userID optional",
     type: String,
   })
-   @ApiQuery({
+  @ApiQuery({
     name: "page",
     required: false,
     description: "Page number for pagination",
@@ -115,8 +115,8 @@ constructor(private readonly adminService: AdminService) {}
   })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
   @Permissions(AdminPermission.INVESTMENT)
-  async getUserInvestments(@Req() req: any,@Query("userID") userID: string,@Query() query: any) {
-    return this.adminService.getUserInvestments(userID,query );
+  async getUserInvestments(@Req() req: any, @Query("userID") userID: string, @Query() query: any) {
+    return this.adminService.getUserInvestments(userID, query);
   }
   @Get("stats")
   @ApiOperation({ summary: "Get admin dashboard statistics" })
@@ -210,31 +210,31 @@ constructor(private readonly adminService: AdminService) {}
   }
 
   // get top n users that refer another user to invest
- @Get('top-referral-staff')
-@ApiOperation({ summary: 'Get top referral staff (Admin)' })
-@ApiQuery({
-  name: 'n',
-  required: false,
-  description: 'Number of top referral staff to retrieve',
-  type: Number,
-})
-@ApiQuery({
-  name: 'timeframe',
-  required: false,
-  description: 'Timeframe to filter referrals (today, 7days, 30days, 90days, 360days)',
-  type: String,
-  enum: ['today' , '7d' , '30d' , '90d' , '360d'],
-})
-@UseGuards(JwtAuthGuard, PermissionsGuard)
-@Permissions(AdminPermission.ADMIN)
-async getTopReferralStaff(
-  @Query('n') n?: number,
-  @Query('timeframe') timeframe?: TimeFrame
-) {
-  return this.adminService.getTopInvestmentReferrers( timeframe ,n );
-}
+  @Get('top-referral-staff')
+  @ApiOperation({ summary: 'Get top referral staff (Admin)' })
+  @ApiQuery({
+    name: 'n',
+    required: false,
+    description: 'Number of top referral staff to retrieve',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'timeframe',
+    required: false,
+    description: 'Timeframe to filter referrals (today, 7days, 30days, 90days, 360days)',
+    type: String,
+    enum: ['today', '7d', '30d', '90d', '360d'],
+  })
+  @UseGuards(JwtAuthGuard,)
+  // @Permissions(AdminPermission.ADMIN)
+  async getTopReferralStaff(
+    @Query('n') n?: number,
+    @Query('timeframe') timeframe?: TimeFrame
+  ) {
+    return this.adminService.getTopInvestmentReferrers(timeframe, n);
+  }
 
-//getInvestmentsSortedByDueDate
+  //getInvestmentsSortedByDueDate
   @Get("upcoming")
   @ApiOperation({ summary: "Get all upcoming user investments" })
   @UseGuards(JwtAuthGuard, PermissionsGuard)
@@ -272,8 +272,8 @@ async getTopReferralStaff(
     schema: {
       type: 'object',
       properties: {
-        permissions: { 
-          type: 'array', 
+        permissions: {
+          type: 'array',
           items: { type: 'string' },
           example: ['loans', 'investment', 'fx transaction', 'wallet', 'users', 'Admin', 'support']
         },
