@@ -21,6 +21,9 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     needs: gitleaks
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -29,17 +32,12 @@ jobs:
         run: docker build --no-cache -f infra/Dockerfile . -t firstlane-api:latest
 
       - name: Login to GHCR
-        env:
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}
-        run: echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Tag and Push Docker Image
-        env:
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          IMAGE=ghcr.io/$GHCR_USERNAME/firstlane-api:$SHORT_SHA
+          IMAGE=ghcr.io/${{ github.repository_owner }}/firstlane-api:$SHORT_SHA
           docker tag firstlane-api:latest $IMAGE
           docker push $IMAGE
           echo "IMAGE_TAG=$SHORT_SHA" >> $GITHUB_ENV
