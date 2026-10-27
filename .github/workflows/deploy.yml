@@ -29,7 +29,10 @@ jobs:
         run: docker build --no-cache -f infra/Dockerfile . -t firstlane-api:latest
 
       - name: Login to GHCR
-        run: echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u jamforte-ebenezer --password-stdin
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+        run: echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
       - name: Tag and Push Docker Image
         run: |
