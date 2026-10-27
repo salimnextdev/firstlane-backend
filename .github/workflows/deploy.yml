@@ -44,7 +44,13 @@ jobs:
 
       - name: Trigger Dokploy Deployment
         run: |
-          curl -X POST "${{ secrets.DOKPLOY_URL }}/api/application.deploy" \
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.DOKPLOY_URL }}/api/application.deploy" \
             -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{"applicationId": "${{ vars.DOKPLOY_APP_ID }}"}'
+            -d "{\"applicationId\": \"${{ vars.DOKPLOY_APP_ID }}\"}")
+          echo "$RESPONSE"
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Dokploy deployment failed with status $HTTP_CODE"
+            exit 1
+          fi
