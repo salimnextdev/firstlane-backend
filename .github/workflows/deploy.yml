@@ -1,4 +1,4 @@
-name: Firstlane-Api Deployment
+name: Firstlane-frontend
 on:
   push:
     branches:
@@ -29,7 +29,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker Image
-        run: docker build --no-cache -f infra/Dockerfile . -t firstlane-api:latest
+        run: docker build --no-cache -f infra/Dockerfile . -t firstlane-frontend:latest
 
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
@@ -37,9 +37,11 @@ jobs:
       - name: Tag and Push Docker Image
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          IMAGE=ghcr.io/${{ github.repository_owner }}/firstlane-api:$SHORT_SHA
-          docker tag firstlane-api:latest $IMAGE
-          docker push $IMAGE
+          IMAGE=ghcr.io/jamforte-salim/firstlane-api
+          docker tag firstlane-api:latest "$IMAGE:$SHORT_SHA"
+          docker tag firstlane-api:latest "$IMAGE:latest"
+          docker push "$IMAGE:$SHORT_SHA"
+          docker push "$IMAGE:latest"
           echo "IMAGE_TAG=$SHORT_SHA" >> $GITHUB_ENV
 
       - name: Trigger Dokploy Deployment
