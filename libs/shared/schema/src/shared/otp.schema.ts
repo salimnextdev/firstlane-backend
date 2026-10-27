@@ -2,7 +2,7 @@ import { OtpType } from '@app/enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomInt, randomUUID } from 'crypto';
 import { HydratedDocument,models,model } from 'mongoose';
-import * as unique from 'mongoose-unique-validator'
+import unique from 'mongoose-unique-validator'
 
 export type OTPDoc = HydratedDocument<OTPModel>;
 
@@ -31,7 +31,7 @@ export class OTPModel {
 }
 
 export const OTPSchema = SchemaFactory.createForClass(OTPModel);
-unique(OTPSchema)
+OTPSchema.plugin(unique)
 OTPSchema.index({ createdAt: 1 }, { expireAfterSeconds: 30 * 60 });
 OTPSchema.pre<OTPModel>('save', async function (next,error) {
 if(!this.code)

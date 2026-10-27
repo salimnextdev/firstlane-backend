@@ -2,7 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomInt, randomUUID } from 'crypto';
 import { HydratedDocument,models,model } from 'mongoose';
-import * as unique from 'mongoose-unique-validator'
+import unique from 'mongoose-unique-validator'
 
 export type AssignRoleDoc = HydratedDocument<AssignRoleModel>;
 
@@ -30,7 +30,7 @@ export class AssignRoleModel {
 }
 
 export const AssignRoleSchema = SchemaFactory.createForClass(AssignRoleModel);
-unique(AssignRoleSchema)
+AssignRoleSchema.plugin(unique)
 AssignRoleSchema.pre<AssignRoleModel>('save', async function (next,error) {
 
   this.id = randomInt(99999) + randomUUID().replace(/\D/g, '').substring(0, 5);

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { randomInt, randomUUID } from "crypto";
 import { HydratedDocument } from "mongoose";
-import * as uniqueValidator from "mongoose-unique-validator";
+import uniqueValidator from "mongoose-unique-validator";
 import * as bcrypt from "bcrypt";
 import {
   Gender,

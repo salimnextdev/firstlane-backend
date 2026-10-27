@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomInt, randomUUID } from 'crypto';
 import { HydratedDocument,models,model } from 'mongoose';
-import * as unique from 'mongoose-unique-validator'
+import unique from 'mongoose-unique-validator'
 
 export type AuthenticatorDoc = HydratedDocument<AuthenticatorModel>;
 
@@ -21,7 +21,7 @@ export class AuthenticatorModel {
 }
 
 export const AuthenticatorSchema = SchemaFactory.createForClass(AuthenticatorModel);
-unique(AuthenticatorSchema)
+AuthenticatorSchema.plugin(unique)
 AuthenticatorSchema.pre<AuthenticatorModel>('save', async function (next,error) {
 
   
