@@ -38,8 +38,8 @@ jobs:
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           IMAGE=ghcr.io/jamforte-salim/firstlane-api
-          docker tag firstlane-api:latest "$IMAGE:$SHORT_SHA"
-          docker tag firstlane-api:latest "$IMAGE:latest"
+          docker tag firstlane-backend:latest "$IMAGE:$SHORT_SHA"
+          docker tag firstlane-backend:latest "$IMAGE:latest"
           docker push "$IMAGE:$SHORT_SHA"
           docker push "$IMAGE:latest"
           echo "IMAGE_TAG=$SHORT_SHA" >> $GITHUB_ENV
