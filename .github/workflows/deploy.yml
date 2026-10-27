@@ -35,9 +35,11 @@ jobs:
         run: echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
       - name: Tag and Push Docker Image
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
         run: |
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          IMAGE=ghcr.io/jamforte-ebenezer/firstlane-api:$SHORT_SHA
+          IMAGE=ghcr.io/$GHCR_USERNAME/firstlane-api:$SHORT_SHA
           docker tag firstlane-api:latest $IMAGE
           docker push $IMAGE
           echo "IMAGE_TAG=$SHORT_SHA" >> $GITHUB_ENV
