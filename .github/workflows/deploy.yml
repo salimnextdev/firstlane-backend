@@ -43,9 +43,11 @@ jobs:
           echo "IMAGE_TAG=$SHORT_SHA" >> $GITHUB_ENV
 
       - name: Trigger Dokploy Deployment
+        env:
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
         run: |
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.DOKPLOY_URL }}/api/application.deploy" \
-            -H "Authorization: Bearer ${{ secrets.DOKPLOY_API_KEY }}" \
+            -H "x-api-key: $DOKPLOY_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"applicationId\": \"${{ vars.DOKPLOY_APP_ID }}\"}")
           echo "$RESPONSE"
